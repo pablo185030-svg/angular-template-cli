@@ -5,7 +5,7 @@
 - This project is developed using [OpenSpec](https://github.com/Fission-AI/OpenSpec) (spec-driven development). Specs and change proposals live in the `openspec/` directory.
 
 ## Layout
-- `cli/`: the wizard (ESM JavaScript, `@clack/prompts`). Tests: `npm test --prefix cli` (Node's built-in runner).
+- `cli/`: the wizard (ESM JavaScript, `@clack/prompts`; creates projects as siblings of this repo by default). Tests: `npm test --prefix cli` (Node's built-in runner).
 - `templates/public/`, `templates/backoffice/`: complete, buildable Angular projects. Each has its own `CLAUDE.md` with commands and conventions; read it before changing that template.
 - `scripts/verify-templates.mjs`: installs, lints, tests, builds and runs e2e for every template, then the CLI tests (`npm run verify`).
 - `openspec/`: specs (`openspec/specs/`) and changes (`openspec/changes/`).

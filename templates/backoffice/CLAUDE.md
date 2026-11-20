@@ -33,7 +33,7 @@ Run a single unit spec with `npx ng test --watch=false --include "src/app/**/hea
 ```
 src/app/
   core/
-    auth/          AuthService contract, KeycloakAuthService, MockAuthService, testing/FakeAuthService
+    auth/          AuthService contract, KeycloakAuthService, MockAuthService (demo), testing/FakeAuthService
     guards/        auth.guard.ts
     interceptors/  auth.interceptor.ts
     services/ models/
@@ -43,6 +43,8 @@ src/app/
     products/      CRUD example: models/, services/, pages/products-list-page, pages/product-form-page
   app.routes.ts    every route sits behind authGuard
 mock/server.mjs   in-memory products API (GET/POST/PUT/DELETE /api/products)
+scripts/configure-keycloak.mjs   writes Keycloak settings into the environment files
+README.md         user-facing docs (keep in sync with this file)
 ```
 
 Add a feature by creating `domains/<name>/` and a lazy route in `app.routes.ts`.
@@ -69,9 +71,13 @@ Per environment, in `src/environments/environment*.ts`:
 3. Valid redirect URIs: `http://localhost:4200/*`. Web origins: `http://localhost:4200`.
 4. Create a user in the realm, set `auth.keycloak.url`, and run `npm start`.
 
-### Without Keycloak
+### Demo mode (no Keycloak)
 
-`environment.e2e.ts` sets `auth.mode: 'mock'`, which provides `MockAuthService` (a fake signed-in user). The `e2e` build configuration uses it, so `npm run test:e2e` needs no Keycloak. Never set `mock` in a deployed environment. Unit tests use `FakeAuthService` from `core/auth/testing/`.
+`environment.ts` ships with `auth.mode: 'mock'`: `MockAuthService` signs in a fake "Demo User", the header shows a "Demo mode" badge and hides logout, so the app is fully usable without a Keycloak server. `environment.e2e.ts` is always `mock`, so `npm run test:e2e` needs no Keycloak. Never set `mock` in a deployed environment (`environment.prod.ts` is `keycloak`). Unit tests use `FakeAuthService` from `core/auth/testing/`.
+
+### Connect Keycloak later
+
+Run `npm run configure:keycloak` (asks for URL, realm and client id, or pass `--url --realm --client-id`). It writes the values into `environment.ts` and `environment.prod.ts` and switches `environment.ts` to `mode: 'keycloak'`. The project generator can do the same at creation time.
 
 ## Mock API and the CRUD example
 

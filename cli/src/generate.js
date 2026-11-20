@@ -102,6 +102,24 @@ function defaultRunGit(args, cwd) {
 }
 
 /**
+ * Writes the Keycloak settings into a generated backoffice by running the project's own
+ * `scripts/configure-keycloak.mjs`, the same script behind `npm run configure:keycloak`.
+ * @param {string} directory - Generated project directory.
+ * @param {{ url: string, realm: string, clientId: string }} settings
+ * @param {(args: string[], cwd: string) => void} [runNode] - Node runner, injectable for tests.
+ */
+export function configureKeycloak(directory, { url, realm, clientId }, runNode = defaultRunNode) {
+  runNode(
+    ['scripts/configure-keycloak.mjs', '--url', url, '--realm', realm, '--client-id', clientId],
+    directory,
+  );
+}
+
+function defaultRunNode(args, cwd) {
+  execFileSync(process.execPath, args, { cwd, stdio: 'pipe' });
+}
+
+/**
  * Generates a project: checks the target, copies the template, renames it, verifies the
  * rename and initializes git. Each step is reported through `runStep`.
  * @param {object} options
@@ -111,8 +129,19 @@ function defaultRunGit(args, cwd) {
  * @param {(label: string, action: () => Promise<void> | void) => Promise<void>} options.runStep
  *   Runs one step, showing progress. Must rethrow when the action fails.
  * @param {(args: string[], cwd: string) => void} [options.runGit] - Git runner, injectable for tests.
+ * @param {{ url: string, realm: string, clientId: string }} [options.keycloak] - Keycloak settings
+ *   to write into a backoffice; omitted to leave the project in demo mode.
+ * @param {(args: string[], cwd: string) => void} [options.runNode] - Node runner, injectable for tests.
  */
-export async function generateProject({ templateDir, targetDir, projectName, runStep, runGit }) {
+export async function generateProject({
+  templateDir,
+  targetDir,
+  projectName,
+  runStep,
+  runGit,
+  keycloak,
+  runNode,
+}) {
   const templateExists = await stat(templateDir).then(
     (info) => info.isDirectory(),
     () => false,
@@ -127,5 +156,8 @@ export async function generateProject({ templateDir, targetDir, projectName, run
     await replacePlaceholders(targetDir, projectName);
     await assertNoPlaceholders(targetDir, projectName);
   });
+  if (keycloak) {
+    await runStep('Configurando Keycloak', () => configureKeycloak(targetDir, keycloak, runNode));
+  }
   await runStep('Inicializando el repositorio git', () => initGit(targetDir, runGit));
 }

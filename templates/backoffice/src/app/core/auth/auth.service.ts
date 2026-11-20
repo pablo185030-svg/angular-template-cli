@@ -6,6 +6,9 @@ import { Signal } from '@angular/core';
  * unit tests provide their own fake.
  */
 export abstract class AuthService {
+  /** True when no real identity provider is used (demo mode with a fake user). */
+  abstract readonly isDemo: boolean;
+
   /** True while the user holds a valid access token. */
   abstract readonly isAuthenticated: Signal<boolean>;
 

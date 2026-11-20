@@ -1,11 +1,15 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { AuthService } from './auth.service';
 
-/** Signs in a fake user without contacting Keycloak. Used by the e2e configuration only. */
+/**
+ * Signs in a fake user without contacting Keycloak. Used in demo mode (the default until Keycloak
+ * is configured, see `npm run configure:keycloak`) and by the e2e configuration.
+ */
 @Injectable()
 export class MockAuthService extends AuthService {
   private readonly authenticated = signal(true);
 
+  readonly isDemo = true;
   readonly isAuthenticated = this.authenticated.asReadonly();
   readonly userName = computed(() => (this.authenticated() ? 'Demo User' : ''));
 
@@ -21,7 +25,7 @@ export class MockAuthService extends AuthService {
 
   /** @inheritdoc */
   logout(): void {
-    this.authenticated.set(false);
+    // Demo mode has no session to end: the fake user stays signed in.
   }
 
   /** @inheritdoc */

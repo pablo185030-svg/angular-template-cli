@@ -1,10 +1,14 @@
 import { match, ok, strictEqual } from 'node:assert';
 import { access, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
-import { run } from '../src/run.js';
+import { run as realRun, DEFAULT_OUT_DIR } from '../src/run.js';
 import { buildSummary } from '../src/ui.js';
 import { CANCEL, fakePrompts, makeTempDir, makeTemplates } from '../support/test-helpers.js';
+
+// Tests write into a temp dir: unless a test says otherwise, projects go to `cwd`.
+const run = (argv, deps = {}) => realRun(argv, { defaultOutDir: deps.cwd, ...deps });
 
 const exists = (path) => access(path).then(() => true, () => false);
 
@@ -147,3 +151,94 @@ function plainReporter(write) {
 function deepEqual(actual, expected) {
   strictEqual(JSON.stringify(actual), JSON.stringify(expected));
 }
+
+test('by default the project is created next to this repository, not inside it', () => {
+  const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+
+  strictEqual(DEFAULT_OUT_DIR, dirname(repoRoot));
+  ok(!DEFAULT_OUT_DIR.startsWith(`${repoRoot}/`), 'default output is inside the repository');
+});
+
+test('relative --out is resolved from the current directory', async () => {
+  const { cwd, templatesDir, write } = await setup();
+
+  const code = await run(['--type', 'public', '--name', 'my-shop', '--yes', '--out', 'sub'], { templatesDir, cwd, write, isTTY: false });
+
+  strictEqual(code, 0);
+  strictEqual(await exists(join(cwd, 'sub', 'my-shop', 'package.json')), true);
+});
+
+test('backoffice with Keycloak flags writes the settings and switches to Keycloak', async () => {
+  const { cwd, templatesDir, output, write } = await setup();
+
+  const code = await run(
+    ['--type', 'backoffice', '--name', 'my-admin', '--yes', '--keycloak-url', 'https://sso.example.com', '--keycloak-realm', 'corp'],
+    { templatesDir, cwd, write, isTTY: false },
+  );
+
+  strictEqual(code, 0);
+  const dev = await readFile(join(cwd, 'my-admin', 'src', 'environments', 'environment.ts'), 'utf8');
+  const prod = await readFile(join(cwd, 'my-admin', 'src', 'environments', 'environment.prod.ts'), 'utf8');
+  for (const source of [dev, prod]) {
+    match(source, /url: 'https:\/\/sso\.example\.com'/);
+    match(source, /realm: 'corp'/);
+    match(source, /clientId: 'my-admin'/);
+  }
+  match(dev, /mode: 'keycloak'/);
+  const text = output.join('\n');
+  match(text, /Configurando Keycloak\.\.\. listo/);
+  match(text, /Keycloak configurado/);
+});
+
+test('backoffice without Keycloak stays in demo mode and the summary says how to connect it later', async () => {
+  const { cwd, templatesDir, output, write } = await setup();
+
+  const code = await run(['--type', 'backoffice', '--name', 'my-admin', '--yes'], { templatesDir, cwd, write, isTTY: false });
+
+  strictEqual(code, 0);
+  const dev = await readFile(join(cwd, 'my-admin', 'src', 'environments', 'environment.ts'), 'utf8');
+  match(dev, /mode: 'mock'/);
+  const text = output.join('\n');
+  ok(!/Configurando Keycloak/.test(text));
+  match(text, /modo demo/);
+  match(text, /npm run configure:keycloak/);
+});
+
+test('the public summary does not mention Keycloak', async () => {
+  const { cwd, templatesDir, output, write } = await setup();
+
+  await run(['--type', 'public', '--name', 'my-shop', '--yes'], { templatesDir, cwd, write, isTTY: false });
+
+  ok(!/Keycloak/.test(output.join('\n')));
+});
+
+test('a failing Keycloak step is reported and exits non-zero', async () => {
+  const { cwd, templatesDir, output, write } = await setup();
+
+  const code = await run(
+    ['--type', 'backoffice', '--name', 'my-admin', '--yes', '--keycloak-url', 'https://sso.example.com', '--keycloak-realm', 'corp'],
+    { templatesDir, cwd, write, isTTY: false, runNode: () => { throw new Error('boom'); } },
+  );
+
+  strictEqual(code, 1);
+  match(output.join('\n'), /Configurando Keycloak\.\.\. FALLÓ/);
+});
+
+test('the summary tells the user where to cd, relative to the current directory', async () => {
+  const { cwd, templatesDir, output, write } = await setup();
+
+  await run(['--type', 'public', '--name', 'my-shop', '--yes'], { templatesDir, cwd, write, isTTY: false });
+
+  match(output.join('\n'), /cd my-shop/);
+});
+
+test('the summary uses the absolute path when the relative one climbs too far, and quotes spaces', async () => {
+  const { root, templatesDir, write, output } = await setup();
+  const deep = join(root, 'a', 'b', 'c', 'd');
+  await mkdir(deep, { recursive: true });
+  const out = join(root, 'dir with spaces');
+
+  await run(['--type', 'public', '--name', 'my-shop', '--yes', '--out', out], { templatesDir, cwd: deep, write, isTTY: false });
+
+  match(output.join('\n'), new RegExp(`cd "${join(out, 'my-shop').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
+});

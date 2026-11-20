@@ -45,4 +45,4 @@ Add a feature by creating `domains/<name>/pages/<name>-page/` and a lazy route i
 
 ## SSR
 
-`src/server.ts` is the Express entry point. `@angular/ssr` rejects unknown hosts: add the public hostname to `ssr.allowedHosts` in `src/environments/environment.prod.ts`. `Dockerfile` runs the built server; `nginx.conf` is an optional reverse proxy that serves static assets and forwards the rest to Node.
+`src/server.ts` is the Express entry point. `@angular/ssr` rejects unknown hosts: add the public hostname to `ssr.allowedHosts` in `src/environments/environment.prod.ts`. `README.md` has the user-facing docs (keep it in sync with this file). `Dockerfile` runs the built server; `nginx.conf` is an optional reverse proxy that serves static assets and forwards the rest to Node.

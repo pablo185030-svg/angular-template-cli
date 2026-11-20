@@ -14,7 +14,8 @@
     "format": "prettier --write \"src/**/*.{ts,html,scss,json}\" \"e2e/**/*.ts\"",
     "prepare": "husky",
     "mock:api": "node mock/server.mjs",
-    "start:e2e": "ng serve --configuration e2e"
+    "start:e2e": "ng serve --configuration e2e",
+    "configure:keycloak": "node scripts/configure-keycloak.mjs"
   },
   "prettier": {
     "printWidth": 100,

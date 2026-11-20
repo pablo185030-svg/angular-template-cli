@@ -29,6 +29,14 @@
     gap: 0.75rem;
   }
 
+  &__demo {
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--mat-sys-corner-full, 9999px);
+    background: var(--mat-sys-tertiary-container);
+    color: var(--mat-sys-on-tertiary-container);
+    font: var(--mat-sys-label-small);
+  }
+
   &__user-name {
     font: var(--mat-sys-label-large);
   }

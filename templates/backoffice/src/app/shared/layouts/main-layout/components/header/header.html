@@ -27,9 +27,16 @@
     >
   </nav>
   <div class="header__user">
+    @if (auth.isDemo) {
+      <span class="header__demo" data-testid="demo-badge" title="Keycloak is not configured">
+        Demo mode
+      </span>
+    }
     <span class="header__user-name" data-testid="user-name">{{ auth.userName() }}</span>
-    <button mat-stroked-button type="button" data-testid="logout" (click)="logout()">
-      Log out
-    </button>
+    @if (!auth.isDemo) {
+      <button mat-stroked-button type="button" data-testid="logout" (click)="logout()">
+        Log out
+      </button>
+    }
   </div>
 </header>

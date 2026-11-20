@@ -3,6 +3,7 @@ import { AuthService } from '../auth.service';
 
 /** Controllable AuthService for unit tests. */
 export class FakeAuthService extends AuthService {
+  isDemo = false;
   readonly authenticated = signal(false);
   readonly name = signal('');
   readonly loginCalls: (string | undefined)[] = [];

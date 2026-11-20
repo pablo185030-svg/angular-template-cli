@@ -37,26 +37,35 @@
 - [x] 5.3 Implement the products list page with a table; verify a component spec renders mock data and an empty state
 - [x] 5.4 Implement the create and edit form with Signal Forms and required-field validation; verify specs for valid submit and validation errors
 - [x] 5.5 Implement delete with a confirmation step; verify a spec that cancelling keeps the product and confirming removes it
-- [ ] 5.6 Add one Playwright e2e covering list, create, edit and delete against the mock API with the auth service faked; verify it passes without a Keycloak server
+- [x] 5.6 Add one Playwright e2e covering list, create, edit and delete against the mock API with the auth service faked; verify it passes without a Keycloak server
 
 ## 6. CLI wizard
 
-- [ ] 6.1 Create `cli/` (ESM, `@clack/prompts`, `picocolors`) with an entry point supporting flags `--type`, `--name` and `--yes`, and a root `npm run create` script; verify `npm run create -- --help` prints usage
-- [ ] 6.2 Implement the guided flow: banner, app type selection, project name prompt with inline validation, and Ctrl+C cancellation; verify with tests that simulate prompt input, invalid names and cancel (nothing written)
-- [ ] 6.2b Add a plain-text fallback for non-TTY and `--yes` runs; verify a test that captures output contains no ANSI codes or animation
-- [ ] 6.3 Implement name validation and the non-empty target directory check before writing; verify tests for invalid names and an existing directory leave the filesystem untouched
-- [ ] 6.4 Implement template copy that excludes `node_modules`, `dist`, `.git` and `.angular`, and placeholder replacement that skips binary files and fails on leftover tokens; verify tests on a fixture template
-- [ ] 6.5 Initialize a fresh git repository on `main` in the generated project; verify the generated project has no history from this repository
-- [ ] 6.4b Show a spinner per generation step (copy, rename, git init) with success or failure state; verify a test that a failing step reports an error and exits non-zero
-- [ ] 6.6 Print a styled summary with next steps and the note that `@coto-dev/ui-kit` comes from the private registry in the generated `.npmrc`; verify the output in a test
-- [ ] 6.7 Run the CLI on Windows path semantics (path joins, separators) using Node's `path` APIs only; verify via a test that does not hardcode `/`
+- [x] 6.1 Create `cli/` (ESM, `@clack/prompts`, `picocolors`) with an entry point supporting flags `--type`, `--name` and `--yes`, and a root `npm run create` script; verify `npm run create -- --help` prints usage
+- [x] 6.2 Implement the guided flow: banner, app type selection, project name prompt with inline validation, and Ctrl+C cancellation; verify with tests that simulate prompt input, invalid names and cancel (nothing written)
+- [x] 6.2b Add a plain-text fallback for non-TTY and `--yes` runs; verify a test that captures output contains no ANSI codes or animation
+- [x] 6.3 Implement name validation and the non-empty target directory check before writing; verify tests for invalid names and an existing directory leave the filesystem untouched
+- [x] 6.4 Implement template copy that excludes `node_modules`, `dist`, `.git` and `.angular`, and placeholder replacement that skips binary files and fails on leftover tokens; verify tests on a fixture template
+- [x] 6.5 Initialize a fresh git repository on `main` in the generated project; verify the generated project has no history from this repository
+- [x] 6.4b Show a spinner per generation step (copy, rename, git init) with success or failure state; verify a test that a failing step reports an error and exits non-zero
+- [x] 6.6 Print a styled summary with next steps and the note that `@coto-dev/ui-kit` comes from the private registry in the generated `.npmrc`; verify the output in a test
+- [x] 6.7 Run the CLI on Windows path semantics (path joins, separators) using Node's `path` APIs only; verify via a test that does not hardcode `/`
 
 ## 7. Integration and documentation
 
-- [ ] 7.1 Generate a project of each type with the CLI into a temp directory, then run install, build, unit tests and e2e on each; verify all pass and no `coto-angular-template` text remains in the generated project
-- [ ] 7.2 Add a root `README.md` explaining the repository, how to run the CLI, and how to develop and verify the templates; verify the documented commands run as written
-- [ ] 7.3 Update the root `CLAUDE.md` to reference the `/openspec-*` skills and the repository layout; verify it matches the final structure
-- [ ] 7.4 Add a CI-friendly root script that builds and tests both templates; verify it exits non-zero when a template fails
+- [x] 7.1 Generate a project of each type with the CLI into a temp directory, then run install, build, unit tests and e2e on each; verify all pass and no `coto-angular-template` text remains in the generated project
+- [x] 7.2 Add a root `README.md` explaining the repository, how to run the CLI, and how to develop and verify the templates; verify the documented commands run as written
+- [x] 7.3 Update the root `CLAUDE.md` to reference the `/openspec-*` skills and the repository layout; verify it matches the final structure
+- [x] 7.4 Add a CI-friendly root script that builds and tests both templates; verify it exits non-zero when a template fails
+
+## 8. Follow-up: READMEs, sibling output, Keycloak options and demo mode
+
+- [x] 8.1 Add a README to each template modeled on the website README; verify the documented commands exist in `package.json` and the README is formatted by Prettier
+- [x] 8.2 Create projects next to the repository by default (`--out` overrides); verify the default output directory is the parent of the repo and a test shows nothing is created inside it
+- [x] 8.3 Ship the backoffice in demo mode (fake user, badge, no logout) with production on Keycloak and `isDemo` on the auth contract; verify unit specs and that the e2e shows the demo badge
+- [x] 8.4 Add `scripts/configure-keycloak.mjs` and `npm run configure:keycloak` to the backoffice; verify tests for valid values, invalid values leaving files untouched, idempotence and the e2e file staying on the mock
+- [x] 8.5 Ask for Keycloak in the wizard (confirm + URL, realm, client id) and via `--keycloak-*` flags, running the template's script; verify tests for prompts, flags, validation, cancel, public-site rejection and the summary text
+- [x] 8.6 Translate the wizard text to Spanish; verify the help and summary in a real terminal and that the CLI tests pass
 
 ## Workflow follow-up
 

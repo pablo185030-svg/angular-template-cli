@@ -70,6 +70,32 @@ describe('Header', () => {
     );
   });
 
+  it('shows a demo badge and no logout button in demo mode', async () => {
+    TestBed.resetTestingModule();
+    const auth = new FakeAuthService();
+    auth.isDemo = true;
+    auth.authenticated.set(true);
+    auth.name.set('Demo User');
+    TestBed.configureTestingModule({
+      imports: [Header],
+      providers: [{ provide: AuthService, useValue: auth }, provideRouter([])],
+    });
+    const fixture = TestBed.createComponent(Header);
+    fixture.detectChanges();
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('[data-testid="demo-badge"]')?.textContent?.trim()).toBe(
+      'Demo mode',
+    );
+    expect(element.querySelector('[data-testid="logout"]')).toBeNull();
+  });
+
+  it('hides the demo badge when a real identity provider is used', async () => {
+    const { element } = await setup();
+
+    expect(element.querySelector('[data-testid="demo-badge"]')).toBeNull();
+  });
+
   it('logs out when the logout button is clicked', async () => {
     const { auth, element } = await setup();
 

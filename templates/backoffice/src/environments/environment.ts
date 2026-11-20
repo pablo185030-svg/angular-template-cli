@@ -3,10 +3,10 @@ export const environment = {
   envName: 'local',
   apiBaseUrl: '/api',
   auth: {
-    // 'keycloak' authenticates against the server below. 'mock' skips Keycloak entirely and
-    // signs in a fake user; it exists for the e2e configuration only and must never be used in
-    // a deployed environment.
-    mode: 'keycloak' as 'keycloak' | 'mock',
+    // 'mock' runs the app in demo mode: a fake signed-in user and no Keycloak server needed.
+    // 'keycloak' authenticates against the settings below. `npm run configure:keycloak` sets
+    // them and switches this to 'keycloak'. Never use 'mock' in a deployed environment.
+    mode: 'mock' as 'keycloak' | 'mock',
     keycloak: {
       // Base URL of the Keycloak server, the part before "/realms".
       url: 'https://keycloak.example.com',

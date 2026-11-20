@@ -13,6 +13,7 @@ export class KeycloakAuthService extends AuthService {
   private readonly authenticated = signal(false);
   private readonly name = signal('');
 
+  readonly isDemo = false;
   readonly isAuthenticated = this.authenticated.asReadonly();
   readonly userName = this.name.asReadonly();
 

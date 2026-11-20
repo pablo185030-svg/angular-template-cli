@@ -28,3 +28,27 @@ export function validateAppType(type) {
   }
   return `Tipo de app desconocido "${type}". Usá uno de: ${APP_TYPES.map((t) => t.value).join(', ')}.`;
 }
+
+/**
+ * Validates the Keycloak base URL (the part before "/realms").
+ * @param {string | undefined} url
+ * @returns {string | undefined} An error message, or undefined when valid.
+ */
+export function validateKeycloakUrl(url) {
+  if (!url || !/^https?:\/\/[^\s']+$/.test(url)) {
+    return 'Ingresá una URL que empiece con http:// o https:// (la parte previa a "/realms").';
+  }
+  return undefined;
+}
+
+/**
+ * Validates a Keycloak realm name or client id.
+ * @param {string | undefined} value
+ * @returns {string | undefined} An error message, or undefined when valid.
+ */
+export function validateKeycloakName(value) {
+  if (!value || !/^[^\s'/]+$/.test(value)) {
+    return 'Ingresá un valor sin espacios, comillas ni barras.';
+  }
+  return undefined;
+}

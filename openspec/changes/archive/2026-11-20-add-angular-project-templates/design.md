@@ -33,6 +33,10 @@ Alternatives: web wizard (rejected: needs hosting, no file access); shell script
 `templates/public/` and `templates/backoffice/` are each a full project. The CLI copies one folder. Duplication between them is limited to `angular.json`, tsconfig, lint and test config because the ui-kit already carries shared styling and components.
 Alternative: base plus overlays merged by the CLI (rejected: requires merging `package.json`, `app.config.ts` and routes, which recreates the over-engineering we want to avoid, and no layer is buildable alone).
 
+### Demo mode by default, Keycloak configured on demand
+A backoffice that shows nothing until Keycloak credentials exist is a poor first experience. Local development therefore ships with `auth.mode: 'mock'` (a fake user and a "Demo mode" badge); production stays on `keycloak`; the e2e configuration is always `mock`. `AuthService` exposes `isDemo` so the header can show the badge and hide logout. The wizard asks (opt-in) for URL, realm and client id, and `npm run configure:keycloak` does the same later. Both go through one implementation, `scripts/configure-keycloak.mjs` inside the template: the CLI runs that script in the generated project instead of duplicating the logic. The script rewrites only the `keycloak` block of the dev and prod environment files and flips the dev mode.
+Alternatives: wizard-only configuration (rejected: no way to add it later); requiring credentials up front (rejected: blocks seeing the app); defaulting to `keycloak` with placeholder values (rejected: blank page).
+
 ### Keycloak is part of the backoffice, not an option
 A backoffice without authentication is not useful, so the wizard does not offer a toggle. Authentication goes through `angular-oauth2-oidc` as in the previous template. Settings (URL, realm, client id) live in environment files. Tests and the mock API must not need a live Keycloak: authentication is behind a small service that tests replace with a fake.
 
@@ -83,6 +87,12 @@ CLAUDE.md
 ### CLI distribution: run from a clone
 The CLI is not published. Users clone this repository, run `npm install` in `cli/`, and run `npm run create` from the root (which calls `node cli/index.js`). Templates are read from the sibling `templates/` directory, so there is no packaging step and no registry publishing.
 Alternative: publish to the Nexus registry and run with `npx` (rejected for now: adds a release process; can be added later without changing the generated output).
+
+### Output location
+New projects are created in the folder that contains this repository (a sibling), so a generated project is never nested inside the template repo and its own git repository. `--out` overrides it (relative paths resolve from the current directory). The summary prints `cd` relative to the current directory.
+
+### READMEs
+Each template ships a `README.md` modeled on the public website's README (badges, table of contents, quick start, stack, requirements, commands, environments, structure, path aliases, breakpoints, tests), shortened to what a template needs. It sits beside `CLAUDE.md`, which stays the guide for AI assistants; both must be kept in sync.
 
 ### Wizard language
 All text the wizard shows to the user (prompts, step names, errors, help, summary) is in Spanish, by explicit decision. Code, comments, identifiers and flag names stay in English. Generated projects and their documentation remain in English.

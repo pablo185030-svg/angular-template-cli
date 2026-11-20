@@ -14,10 +14,24 @@ const BANNER = [
  * @param {{ name: string, type: string, targetDir: string }} project
  * @returns {{ title: string, lines: string[] }}
  */
-export function buildSummary({ name, type, targetDir }) {
-  const commands = [`cd ${name}`, 'npm install'];
+export function buildSummary({ name, type, targetDir, cdPath = name, keycloakConfigured = false }) {
+  const commands = [`cd ${cdPath}`, 'npm install'];
   if (type === 'backoffice') commands.push('npm run mock:api   # en una segunda terminal');
   commands.push('npm start');
+
+  const keycloakLines =
+    type !== 'backoffice'
+      ? []
+      : keycloakConfigured
+        ? [
+            'Keycloak configurado. Agregá http://localhost:4200/* como redirect URI del client.',
+            '',
+          ]
+        : [
+            'Keycloak sin configurar: el backoffice arranca en modo demo (usuario ficticio).',
+            'Para conectarlo después: npm run configure:keycloak',
+            '',
+          ];
 
   return {
     title: `Proyecto "${name}" creado en ${targetDir}`,
@@ -25,6 +39,7 @@ export function buildSummary({ name, type, targetDir }) {
       'Próximos pasos:',
       ...commands.map((command) => `  ${command}`),
       '',
+      ...keycloakLines,
       '@coto-dev/ui-kit se instala desde el registry privado configurado en .npmrc;',
       'tiene que ser accesible desde tu red al correr npm install.',
     ],
@@ -99,5 +114,6 @@ export function createPlainReporter(write = (line) => console.log(line)) {
 export const clackPrompts = {
   select: (options) => clack.select(options),
   text: (options) => clack.text(options),
+  confirm: (options) => clack.confirm(options),
   isCancel: (value) => clack.isCancel(value),
 };

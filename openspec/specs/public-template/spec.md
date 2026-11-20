@@ -1,10 +1,10 @@
-# Spec Delta
+# public-template Specification
 
 ## Purpose
 
 Provides a simple but functional starting point for a public-facing website, server-side rendered and styled with the shared Coto design system, with a main layout and two example pages.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Buildable and runnable out of the box
 The public template SHALL install, build, run and pass its tests without any modification after generation, given access to the private registry.
@@ -46,6 +46,13 @@ The public template SHALL provide a home page at `/` and an about page at `/abou
 #### Scenario: Unknown route
 - **WHEN** the user visits a path that matches no page
 - **THEN** a not-found page is displayed inside the main layout
+
+### Requirement: README
+The public template SHALL include a README that explains what it is, how to start it, its stack, commands, environments, server-side rendering settings, project structure and deployment.
+
+#### Scenario: README present
+- **WHEN** a project is generated from the public template
+- **THEN** it contains a README covering those topics
 
 ### Requirement: Shared design system usage
 The public template SHALL obtain its theme, typography and shared components from `@coto-dev/ui-kit` and MUST NOT define its own color palette.

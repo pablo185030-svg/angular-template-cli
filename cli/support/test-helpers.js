@@ -1,6 +1,9 @@
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const REAL_BACKOFFICE = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'templates', 'backoffice');
 
 /** Creates a temp directory and returns its path. */
 export function makeTempDir() {
@@ -30,7 +33,18 @@ export async function makeTemplates(root) {
       Buffer.concat([Buffer.from([0, 1, 2]), Buffer.from('coto-angular-template')]),
     );
   }
+  await addKeycloakFiles(join(templatesDir, 'backoffice'));
   return templatesDir;
+}
+
+/** Copies the real Keycloak script and environment files into a fixture backoffice. */
+async function addKeycloakFiles(dir) {
+  await mkdir(join(dir, 'scripts'), { recursive: true });
+  await mkdir(join(dir, 'src', 'environments'), { recursive: true });
+  await cp(join(REAL_BACKOFFICE, 'scripts', 'configure-keycloak.mjs'), join(dir, 'scripts', 'configure-keycloak.mjs'));
+  for (const file of ['environment.ts', 'environment.prod.ts']) {
+    await cp(join(REAL_BACKOFFICE, 'src', 'environments', file), join(dir, 'src', 'environments', file));
+  }
 }
 
 /** Prompts double: returns queued answers in order; `CANCEL` simulates Ctrl+C. */
@@ -46,6 +60,10 @@ export function fakePrompts(answers) {
       return queue.shift();
     },
     text: async (options) => {
+      asked.push(options);
+      return queue.shift();
+    },
+    confirm: async (options) => {
       asked.push(options);
       return queue.shift();
     },

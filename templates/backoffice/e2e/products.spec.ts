@@ -51,6 +51,7 @@ test('the signed-in user name and the layout are shown', async ({ page }) => {
   await page.goto('/');
 
   await expect(page.getByTestId('user-name')).toHaveText('Demo User');
+  await expect(page.getByTestId('demo-badge')).toBeVisible();
   await expect(page.getByTestId('header')).toBeVisible();
   await expect(page.getByTestId('footer')).toBeVisible();
 });
