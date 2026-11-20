@@ -1,0 +1,20 @@
+{
+  "name": "coto-angular-wizard",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Wizard that generates a new Angular project from a Coto template.",
+  "bin": {
+    "coto-angular-wizard": "./index.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.9.0",
+    "picocolors": "^1.1.1"
+  }
+}

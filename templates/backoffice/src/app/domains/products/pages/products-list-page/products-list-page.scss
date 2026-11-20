@@ -1,0 +1,44 @@
+:host {
+  display: block;
+}
+
+.products-list-page {
+  display: grid;
+  gap: 1rem;
+  max-width: 64rem;
+  margin: 0 auto;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  &__title {
+    margin: 0;
+    font: var(--mat-sys-headline-medium);
+  }
+
+  &__table {
+    width: 100%;
+  }
+
+  &__actions {
+    text-align: end;
+    white-space: nowrap;
+  }
+
+  &__error {
+    margin: 0;
+    color: var(--mat-sys-error);
+  }
+
+  &__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}

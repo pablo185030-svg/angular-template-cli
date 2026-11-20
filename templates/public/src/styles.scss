@@ -1,0 +1,23 @@
+@use '@angular/material' as mat;
+@use '@coto-dev/ui-kit/styles' as coto;
+
+html {
+  @include mat.core();
+  @include coto.theme(); // Coto UI Kit palette, typography, elevation and shape (light by default)
+}
+
+// Dark mode: apply the `coto-dark-theme` class on <html> (CotoThemeService from the ui-kit
+// toggles it and persists the choice).
+@include coto.dark-theme();
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--mat-sys-body-medium-font, '"Open Sans", sans-serif');
+  color: var(--mat-sys-on-surface);
+  background: var(--mat-sys-surface);
+}

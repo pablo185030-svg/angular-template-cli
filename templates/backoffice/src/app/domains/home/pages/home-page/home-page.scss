@@ -1,0 +1,22 @@
+:host {
+  display: block;
+}
+
+.home-page {
+  display: grid;
+  justify-items: start;
+  gap: 1rem;
+  max-width: 48rem;
+  margin: 0 auto;
+
+  &__title {
+    margin: 0;
+    font: var(--mat-sys-headline-medium);
+  }
+
+  &__lead {
+    margin: 0;
+    font: var(--mat-sys-body-large);
+    color: var(--mat-sys-on-surface-variant);
+  }
+}

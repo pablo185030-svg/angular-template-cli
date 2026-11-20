@@ -1,0 +1,13 @@
+{
+  "name": "coto-angular-templates",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Angular project templates for Coto apps, with a CLI wizard to generate new projects.",
+  "scripts": {
+    "create": "node cli/index.js",
+    "test:cli": "npm test --prefix cli",
+    "verify": "node scripts/verify-templates.mjs",
+    "verify:quick": "node scripts/verify-templates.mjs --skip-e2e"
+  }
+}

@@ -1,0 +1,22 @@
+<header class="header" data-testid="header">
+  <a class="header__brand" routerLink="/" aria-label="Home">
+    <img ngSrc="coto-logo.svg" alt="Coto" width="111" height="40" priority />
+  </a>
+  <nav class="header__nav" aria-label="Main">
+    <a
+      mat-button
+      routerLink="/"
+      routerLinkActive="header__link--active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      data-testid="nav-home"
+      >Home</a
+    >
+    <a
+      mat-button
+      routerLink="/about"
+      routerLinkActive="header__link--active"
+      data-testid="nav-about"
+      >About</a
+    >
+  </nav>
+</header>

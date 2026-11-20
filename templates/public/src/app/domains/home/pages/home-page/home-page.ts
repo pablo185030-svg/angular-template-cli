@@ -1,0 +1,12 @@
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { RouterLink } from '@angular/router';
+
+@Component({
+  selector: 'app-home-page',
+  imports: [MatButtonModule, RouterLink],
+  templateUrl: './home-page.html',
+  styleUrl: './home-page.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class HomePage {}

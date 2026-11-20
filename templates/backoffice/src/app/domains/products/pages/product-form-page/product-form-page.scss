@@ -1,0 +1,31 @@
+:host {
+  display: block;
+}
+
+.product-form-page {
+  display: grid;
+  gap: 1rem;
+  max-width: 32rem;
+  margin: 0 auto;
+
+  &__title {
+    margin: 0;
+    font: var(--mat-sys-headline-medium);
+  }
+
+  &__form {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  &__error {
+    margin: 0;
+    color: var(--mat-sys-error);
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+}
