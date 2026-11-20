@@ -5,13 +5,13 @@ export const TEMPLATE_NAME = 'coto-angular-template';
 export const APP_TYPES = [
   {
     value: 'public',
-    label: 'Public website',
-    hint: 'Server-side rendered, home + about pages',
+    label: 'Sitio web público',
+    hint: 'Renderizado en servidor, páginas home y about',
   },
   {
     value: 'backoffice',
     label: 'Backoffice',
-    hint: 'Private SPA with Keycloak login and a CRUD example',
+    hint: 'SPA privada con login Keycloak y un ejemplo de ABM',
   },
 ];
 

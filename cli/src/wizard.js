@@ -29,14 +29,14 @@ export async function resolveOptions({ flags, interactive, prompts }) {
 
   if (!interactive) {
     if (type === undefined || name === undefined) {
-      throw new UsageError('Missing --type and/or --name. Both are required without a terminal.');
+      throw new UsageError('Faltan --type y/o --name. Ambos son obligatorios sin una terminal.');
     }
     return { type, name };
   }
 
   if (type === undefined) {
     const answer = await prompts.select({
-      message: 'What kind of app do you want to create?',
+      message: '¿Qué tipo de app querés crear?',
       options: APP_TYPES.map(({ value, label, hint }) => ({ value, label, hint })),
     });
     if (prompts.isCancel(answer)) throw new CancelledError();
@@ -45,8 +45,8 @@ export async function resolveOptions({ flags, interactive, prompts }) {
 
   if (name === undefined) {
     const answer = await prompts.text({
-      message: 'Project name',
-      placeholder: 'my-app',
+      message: 'Nombre del proyecto',
+      placeholder: 'mi-app',
       validate: (value) => validateProjectName(value),
     });
     if (prompts.isCancel(answer)) throw new CancelledError();

@@ -28,9 +28,9 @@ test('generates a project from flags with plain output and no ANSI codes', async
   strictEqual(JSON.parse(await readFile(join(cwd, 'my-shop', 'package.json'), 'utf8')).name, 'my-shop');
   const text = output.join('\n');
   ok(!/\u001b\[/.test(text), 'output has ANSI escape codes');
-  match(text, /\[1\] Checking the target directory\.\.\. done/);
+  match(text, /\[1\] Verificando el directorio de destino\.\.\. listo/);
   match(text, /npm install/);
-  match(text, /private registry/);
+  match(text, /registry privado/);
 });
 
 test('does not prompt without a terminal and fails when flags are missing', async () => {
@@ -39,7 +39,7 @@ test('does not prompt without a terminal and fails when flags are missing', asyn
   const code = await run(['--type', 'public'], { templatesDir, cwd, write, isTTY: false });
 
   strictEqual(code, 2);
-  match(output.join('\n'), /Missing --type and\/or --name/);
+  match(output.join('\n'), /Faltan --type y\/o --name/);
   deepEqual(await readdir(cwd), []);
 });
 
@@ -77,7 +77,7 @@ test('an existing non-empty target exits non-zero and keeps its files', async ()
   const code = await run(['--type', 'public', '--name', 'my-shop', '--yes'], { templatesDir, cwd, write, isTTY: false });
 
   strictEqual(code, 1);
-  match(output.join('\n'), /already exists and is not empty/);
+  match(output.join('\n'), /ya existe y no está vacío/);
   strictEqual(await readFile(join(cwd, 'my-shop', 'keep.txt'), 'utf8'), 'mine');
 });
 
@@ -87,7 +87,7 @@ test('an invalid name is rejected before anything is written', async () => {
   const code = await run(['--type', 'public', '--name', 'My Shop', '--yes'], { templatesDir, cwd, write, isTTY: false });
 
   strictEqual(code, 2);
-  match(output.join('\n'), /lowercase letters/);
+  match(output.join('\n'), /minúsculas/);
   deepEqual(await readdir(cwd), []);
 });
 
@@ -101,7 +101,7 @@ test('a failing step is reported and exits non-zero', async () => {
 
   strictEqual(code, 1);
   const text = output.join('\n');
-  match(text, /Initializing a git repository\.\.\. FAILED/);
+  match(text, /Inicializando el repositorio git\.\.\. FALLÓ/);
   match(text, /git is not installed/);
 });
 
@@ -122,7 +122,7 @@ test('unknown flags print usage and exit non-zero', async () => {
   const code = await run(['--nope'], { templatesDir, write, isTTY: false });
 
   strictEqual(code, 1);
-  match(output.join('\n'), /Usage:/);
+  match(output.join('\n'), /Uso:/);
 });
 
 test('the summary lists the mock API step only for the backoffice', () => {

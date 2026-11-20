@@ -16,17 +16,17 @@ const BANNER = [
  */
 export function buildSummary({ name, type, targetDir }) {
   const commands = [`cd ${name}`, 'npm install'];
-  if (type === 'backoffice') commands.push('npm run mock:api   # in a second terminal');
+  if (type === 'backoffice') commands.push('npm run mock:api   # en una segunda terminal');
   commands.push('npm start');
 
   return {
-    title: `Project "${name}" created in ${targetDir}`,
+    title: `Proyecto "${name}" creado en ${targetDir}`,
     lines: [
-      'Next steps:',
+      'Próximos pasos:',
       ...commands.map((command) => `  ${command}`),
       '',
-      '@coto-dev/ui-kit is installed from the private registry configured in .npmrc;',
-      'it must be reachable from your network when you run npm install.',
+      '@coto-dev/ui-kit se instala desde el registry privado configurado en .npmrc;',
+      'tiene que ser accesible desde tu red al correr npm install.',
     ],
   };
 }
@@ -36,7 +36,7 @@ export function createInteractiveReporter() {
   return {
     intro() {
       console.log(pc.cyan(BANNER.join('\n')));
-      clack.intro(pc.bgCyan(pc.black(' Coto Angular wizard ')));
+      clack.intro(pc.bgCyan(pc.black(' Asistente Angular de Coto ')));
     },
     async runStep(label, action) {
       const spinner = clack.spinner();
@@ -45,21 +45,21 @@ export function createInteractiveReporter() {
         await action();
         spinner.stop(pc.green(label));
       } catch (error) {
-        spinner.stop(pc.red(`${label} failed`), 1);
+        spinner.stop(pc.red(`${label}: falló`), 1);
         throw error;
       }
     },
     summary(project) {
       const { title, lines } = buildSummary(project);
       clack.note(lines.join('\n'), title);
-      clack.outro(pc.green('Happy coding!'));
+      clack.outro(pc.green('¡A programar!'));
     },
     cancelled() {
-      clack.cancel('Cancelled. Nothing was written.');
+      clack.cancel('Cancelado. No se escribió nada.');
     },
     error(message) {
       clack.log.error(message);
-      clack.outro(pc.red('Generation failed.'));
+      clack.outro(pc.red('La generación falló.'));
     },
   };
 }
@@ -69,15 +69,15 @@ export function createPlainReporter(write = (line) => console.log(line)) {
   let step = 0;
   return {
     intro() {
-      write('Coto Angular wizard');
+      write('Asistente Angular de Coto');
     },
     async runStep(label, action) {
       step++;
       try {
         await action();
-        write(`[${step}] ${label}... done`);
+        write(`[${step}] ${label}... listo`);
       } catch (error) {
-        write(`[${step}] ${label}... FAILED`);
+        write(`[${step}] ${label}... FALLÓ`);
         throw error;
       }
     },
@@ -87,7 +87,7 @@ export function createPlainReporter(write = (line) => console.log(line)) {
       lines.forEach((line) => write(line));
     },
     cancelled() {
-      write('Cancelled. Nothing was written.');
+      write('Cancelado. No se escribió nada.');
     },
     error(message) {
       write(`Error: ${message}`);

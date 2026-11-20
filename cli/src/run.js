@@ -7,16 +7,16 @@ import { CancelledError, UsageError, resolveOptions } from './wizard.js';
 
 const DEFAULT_TEMPLATES_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'templates');
 
-export const HELP = `Usage: npm run create -- [options]
+export const HELP = `Uso: npm run create -- [opciones]
 
-Generates a new Angular project from a Coto template.
+Genera un proyecto Angular nuevo a partir de un template de Coto.
 
-Options:
-  --type <public|backoffice>  Kind of app to create
-  --name <project-name>       Project name (lowercase, numbers and hyphens)
-  --out <directory>           Parent directory for the new project (default: current directory)
-  -y, --yes                   Do not prompt; plain text output (needs --type and --name)
-  -h, --help                  Show this help
+Opciones:
+  --type <public|backoffice>  Tipo de app a crear
+  --name <nombre-proyecto>    Nombre del proyecto (minúsculas, números y guiones)
+  --out <directorio>          Directorio donde crear el proyecto (por defecto: el actual)
+  -y, --yes                   Sin preguntas; salida en texto plano (requiere --type y --name)
+  -h, --help                  Muestra esta ayuda
 `;
 
 /**

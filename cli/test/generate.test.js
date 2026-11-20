@@ -43,7 +43,7 @@ test('fails when a placeholder is left behind', async () => {
   const root = await makeTempDir();
   await writeFile(join(root, 'left.txt'), 'still coto-angular-template here');
 
-  await rejects(assertNoPlaceholders(root, 'my-shop'), /not fully replaced/);
+  await rejects(assertNoPlaceholders(root, 'my-shop'), /No se reemplazó por completo/);
 });
 
 test('accepts a directory that does not exist yet and an empty one', async () => {
@@ -62,7 +62,7 @@ test('rejects a non-empty target directory and does not modify it', async () => 
 
   await rejects(
     generateProject({ templateDir: join(templates, 'public'), targetDir: target, projectName: 'taken', runStep }),
-    /already exists and is not empty/,
+    /ya existe y no está vacío/,
   );
 
   deepStrictEqual(await readdir(target), ['keep.txt']);
@@ -74,7 +74,7 @@ test('fails clearly when the template folder is missing', async () => {
 
   await rejects(
     generateProject({ templateDir: join(root, 'nope'), targetDir: join(root, 'out'), projectName: 'x', runStep }),
-    /Template not found/,
+    /No se encontró el template/,
   );
   strictEqual(await exists(join(root, 'out')), false);
 });

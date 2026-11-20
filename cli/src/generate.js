@@ -16,7 +16,7 @@ export async function assertTargetAvailable(targetDir) {
     throw error;
   }
   if (entries.length > 0) {
-    throw new Error(`The directory "${targetDir}" already exists and is not empty.`);
+    throw new Error(`El directorio "${targetDir}" ya existe y no está vacío.`);
   }
 }
 
@@ -84,7 +84,7 @@ export async function assertNoPlaceholders(directory, projectName) {
     }
   }
   if (leftovers.length > 0) {
-    throw new Error(`The template name was not fully replaced in: ${leftovers.join(', ')}`);
+    throw new Error(`No se reemplazó por completo el nombre del template en: ${leftovers.join(', ')}`);
   }
 }
 
@@ -118,14 +118,14 @@ export async function generateProject({ templateDir, targetDir, projectName, run
     () => false,
   );
   if (!templateExists) {
-    throw new Error(`Template not found: ${templateDir}`);
+    throw new Error(`No se encontró el template: ${templateDir}`);
   }
 
-  await runStep('Checking the target directory', () => assertTargetAvailable(targetDir));
-  await runStep('Copying the template', () => copyTemplate(templateDir, targetDir));
-  await runStep(`Naming the project "${projectName}"`, async () => {
+  await runStep('Verificando el directorio de destino', () => assertTargetAvailable(targetDir));
+  await runStep('Copiando el template', () => copyTemplate(templateDir, targetDir));
+  await runStep(`Nombrando el proyecto "${projectName}"`, async () => {
     await replacePlaceholders(targetDir, projectName);
     await assertNoPlaceholders(targetDir, projectName);
   });
-  await runStep('Initializing a git repository', () => initGit(targetDir, runGit));
+  await runStep('Inicializando el repositorio git', () => initGit(targetDir, runGit));
 }

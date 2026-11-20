@@ -84,6 +84,9 @@ CLAUDE.md
 The CLI is not published. Users clone this repository, run `npm install` in `cli/`, and run `npm run create` from the root (which calls `node cli/index.js`). Templates are read from the sibling `templates/` directory, so there is no packaging step and no registry publishing.
 Alternative: publish to the Nexus registry and run with `npx` (rejected for now: adds a release process; can be added later without changing the generated output).
 
+### Wizard language
+All text the wizard shows to the user (prompts, step names, errors, help, summary) is in Spanish, by explicit decision. Code, comments, identifiers and flag names stay in English. Generated projects and their documentation remain in English.
+
 ### Wizard look and feel
 The CLI uses `@clack/prompts` for guided prompts, selectable lists, spinners and cancel handling, and `picocolors` for color, plus a small ASCII banner. It is plain ESM JavaScript with no build step. When output is not a TTY or `--yes` is passed, it falls back to plain text.
 Alternatives: Ink (React renderer used by Claude Code; closest look, but needs React, JSX and a build step for a small tool); Inquirer or Enquirer (less polished, no built-in spinners and framing); hand-written ANSI (rejected: unmaintainable).

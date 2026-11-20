@@ -9,10 +9,10 @@ const NAME_PATTERN = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
  */
 export function validateProjectName(name) {
   if (!name || name.trim() === '') {
-    return 'Enter a project name.';
+    return 'Ingresá un nombre de proyecto.';
   }
   if (!NAME_PATTERN.test(name)) {
-    return 'Use lowercase letters, numbers and single hyphens, starting with a letter (e.g. my-shop).';
+    return 'Usá minúsculas, números y guiones simples, empezando con una letra (ej.: mi-tienda).';
   }
   return undefined;
 }
@@ -26,5 +26,5 @@ export function validateAppType(type) {
   if (APP_TYPES.some((appType) => appType.value === type)) {
     return undefined;
   }
-  return `Unknown app type "${type}". Use one of: ${APP_TYPES.map((t) => t.value).join(', ')}.`;
+  return `Tipo de app desconocido "${type}". Usá uno de: ${APP_TYPES.map((t) => t.value).join(', ')}.`;
 }
