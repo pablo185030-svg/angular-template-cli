@@ -7,7 +7,7 @@ test('theme: the toggle switches themes when enabled, and the app stays light ot
 }) => {
   await page.goto('/');
   const html = page.locator('html');
-  const toggle = page.getByTestId('theme-toggle');
+  const toggle = page.getByTestId('header').getByTestId('theme-toggle');
 
   if ((await toggle.count()) === 0) {
     await expect(html).not.toHaveClass(/coto-dark-theme/);
@@ -21,6 +21,6 @@ test('theme: the toggle switches themes when enabled, and the app stays light ot
   await page.reload();
   await expect(html).toHaveClass(/coto-dark-theme/);
 
-  await page.getByTestId('theme-toggle').click();
+  await page.getByTestId('header').getByTestId('theme-toggle').click();
   await expect(html).not.toHaveClass(/coto-dark-theme/);
 });

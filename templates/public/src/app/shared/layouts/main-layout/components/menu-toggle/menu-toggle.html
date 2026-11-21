@@ -1,0 +1,21 @@
+<button
+  #button
+  mat-icon-button
+  type="button"
+  class="menu-toggle"
+  data-testid="menu-toggle"
+  [class.menu-toggle--open]="open()"
+  [attr.aria-label]="open() ? 'Cerrar menú' : 'Abrir menú'"
+  [attr.aria-expanded]="open()"
+  [attr.aria-controls]="controls()"
+  (click)="toggled.emit()"
+>
+  <!-- Three bars: the outer ones cross into an X and the middle one fades out. -->
+  <svg class="menu-toggle__icon" viewBox="0 0 24 24" aria-hidden="true">
+    <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line class="menu-toggle__bar menu-toggle__bar--top" x1="4" y1="7" x2="20" y2="7" />
+      <line class="menu-toggle__bar menu-toggle__bar--middle" x1="4" y1="12" x2="20" y2="12" />
+      <line class="menu-toggle__bar menu-toggle__bar--bottom" x1="4" y1="17" x2="20" y2="17" />
+    </g>
+  </svg>
+</button>

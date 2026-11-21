@@ -75,4 +75,88 @@ describe('Header', () => {
       expect(element.querySelector('[data-testid="theme-toggle"]')).not.toBeNull();
     });
   });
+
+  describe('drawer', () => {
+    const drawer = (element: HTMLElement) =>
+      element.querySelector<HTMLElement>('[data-testid="drawer"]')!;
+    const toggle = (element: HTMLElement) =>
+      element.querySelector<HTMLButtonElement>('[data-testid="menu-toggle"]')!;
+    const root = (element: HTMLElement) =>
+      element.querySelector<HTMLElement>('[data-testid="drawer-root"]')!;
+
+    afterEach(() => {
+      document.body.classList.remove('no-scroll');
+      vi.unstubAllGlobals();
+    });
+
+    it('starts closed and opens when the hamburger button is clicked', async () => {
+      const { fixture, element } = await setup();
+
+      expect(root(element).classList.contains('drawer--open')).toBe(false);
+      expect(drawer(element).hasAttribute('inert')).toBe(true);
+
+      toggle(element).click();
+      fixture.detectChanges();
+
+      expect(root(element).classList.contains('drawer--open')).toBe(true);
+      expect(drawer(element).hasAttribute('inert')).toBe(false);
+      expect(toggle(element).getAttribute('aria-expanded')).toBe('true');
+      expect(document.body.classList.contains('no-scroll')).toBe(true);
+      expect(drawer(element).querySelector('[data-testid="drawer-nav-about"]')).not.toBeNull();
+    });
+
+    it('closes on backdrop click, Escape and link activation', async () => {
+      const { fixture, element } = await setup();
+      const open = () => {
+        toggle(element).click();
+        fixture.detectChanges();
+      };
+      const isOpen = () => root(element).classList.contains('drawer--open');
+
+      open();
+      element.querySelector<HTMLElement>('[data-testid="drawer-backdrop"]')!.click();
+      fixture.detectChanges();
+      expect(isOpen()).toBe(false);
+
+      open();
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      fixture.detectChanges();
+      expect(isOpen()).toBe(false);
+
+      open();
+      element.querySelector<HTMLElement>('[data-testid="drawer-nav-about"]')!.click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(isOpen()).toBe(false);
+      expect(TestBed.inject(Router).url).toBe('/acerca-de');
+      expect(document.body.classList.contains('no-scroll')).toBe(false);
+    });
+
+    it('closes when the viewport grows to the desktop layout', async () => {
+      let listener: (event: { matches: boolean }) => void = () => undefined;
+      vi.stubGlobal('matchMedia', () => ({
+        matches: false,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        addEventListener: (_: string, fn: typeof listener) => (listener = fn),
+        removeEventListener: () => undefined,
+      }));
+      const { fixture, element } = await setup();
+
+      toggle(element).click();
+      fixture.detectChanges();
+      listener({ matches: true });
+      fixture.detectChanges();
+
+      expect(root(element).classList.contains('drawer--open')).toBe(false);
+    });
+
+    it('shows the theme toggle inside the drawer when dark mode is enabled', async () => {
+      environment.theme.darkMode = true;
+      const { element } = await setup();
+
+      expect(drawer(element).querySelector('[data-testid="theme-toggle"]')).not.toBeNull();
+      environment.theme.darkMode = false;
+    });
+  });
 });

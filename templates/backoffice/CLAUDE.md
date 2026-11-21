@@ -37,7 +37,7 @@ src/app/
     guards/        auth.guard.ts
     interceptors/  auth.interceptor.ts
     services/ models/
-  shared/          layouts/main-layout (header with user + logout, page, footer), components/confirm-dialog, pages/not-found-page
+  shared/          layouts/main-layout (header with hamburger drawer, user + logout, page, footer), components/confirm-dialog, pages/not-found-page
   domains/
     home/ about/   example pages
     products/      CRUD example: models/, services/, pages/products-list-page, pages/product-form-page
@@ -90,6 +90,8 @@ Run `npm run configure:keycloak` (asks for URL, realm and client id, or pass `--
 `ProductsService` is a contract; `environment.api.mode` picks `HttpProductsService` (`'http'`) or `JsonProductsService` (`'json'`: loads `public/mock/products.json`, create/update/delete live in browser memory). `npm run remove:mock-api` switches dev and e2e to `json` and deletes the mock server, the proxy and their config; production stays `http`.
 
 ## Dark mode
+
+The header shows the navigation and the user area (theme toggle, demo badge, user name, logout) inline from 768px (`tablet-portrait`); below it a hamburger `MenuToggle` opens a drawer that holds both. The `links` and `user` templates in `header.html` are rendered in both places; the drawer copies have a `drawer-` `data-testid` prefix. Keep new pages free of horizontal overflow at 320px (the products list turns its table into cards below 768px; follow that pattern for new tables).
 
 `theme.darkMode` (default `false`) controls the header `ThemeToggle` and whether `CotoThemeService` is created in `App`; when false the app is always light. `npm run configure:theme -- --dark-mode|--no-dark-mode` flips it in every environment file.
 

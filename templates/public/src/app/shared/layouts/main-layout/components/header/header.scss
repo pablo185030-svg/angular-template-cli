@@ -1,10 +1,15 @@
+@use '@coto-dev/ui-kit/styles' as coto;
+
+$drawer-duration: 0.3s;
+$drawer-easing: cubic-bezier(0.4, 0, 0.2, 1);
+
 :host {
   display: block;
 }
 
 .header {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 1rem;
   padding: 0.75rem 1rem;
@@ -15,16 +20,108 @@
     display: block;
     height: 2.5rem;
     width: auto;
+    max-width: 100%;
   }
 
+  // Mobile: the navigation lives in the drawer.
   &__nav {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.25rem;
+    display: none;
+  }
+
+  // Stays above the drawer so it can turn into the close button.
+  &__menu-toggle {
+    position: relative;
+    z-index: 1003;
   }
 
   &__link--active {
     --mat-button-text-label-text-color: var(--mat-sys-primary);
     font-weight: 600;
+  }
+
+  @include coto.breakpoint-up(tablet-portrait) {
+    grid-template-columns: auto 1fr;
+
+    &__nav {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.25rem;
+    }
+
+    &__menu-toggle {
+      display: none;
+    }
+  }
+}
+
+.drawer {
+  &__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1001;
+    padding: 0;
+    border: 0;
+    background: var(--mat-sys-scrim);
+    opacity: 0;
+    visibility: hidden; // a closed drawer must not block clicks on the page
+    transition:
+      opacity $drawer-duration $drawer-easing,
+      visibility 0s linear $drawer-duration;
+  }
+
+  &__panel {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-end: 0;
+    z-index: 1002;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+    box-sizing: border-box;
+    width: min(20rem, 85vw);
+    padding: 4.5rem 1rem 1rem;
+    overflow-y: auto;
+    background: var(--mat-sys-surface-container-high);
+    box-shadow: var(--mat-sys-level3);
+    transform: translateX(100%);
+    visibility: hidden;
+    // Hide only after the slide-out has finished.
+    transition:
+      transform $drawer-duration $drawer-easing,
+      visibility 0s linear $drawer-duration;
+
+    a {
+      justify-content: flex-start;
+    }
+  }
+
+  &--open &__backdrop {
+    opacity: 0.4;
+    visibility: visible;
+    transition:
+      opacity $drawer-duration $drawer-easing,
+      visibility 0s;
+  }
+
+  &--open &__panel {
+    transform: none;
+    visibility: visible;
+    transition:
+      transform $drawer-duration $drawer-easing,
+      visibility 0s;
+  }
+
+  @include coto.breakpoint-up(tablet-portrait) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer__backdrop,
+  .drawer--open .drawer__backdrop,
+  .drawer__panel,
+  .drawer--open .drawer__panel {
+    transition: none;
   }
 }

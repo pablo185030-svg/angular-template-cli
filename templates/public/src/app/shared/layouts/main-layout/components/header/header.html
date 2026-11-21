@@ -1,25 +1,62 @@
+<ng-template #links let-prefix>
+  <a
+    mat-button
+    routerLink="/"
+    routerLinkActive="header__link--active"
+    [routerLinkActiveOptions]="{ exact: true }"
+    [attr.data-testid]="prefix + 'nav-home'"
+    (click)="onLinkClick(prefix)"
+    >Inicio</a
+  >
+  <a
+    mat-button
+    routerLink="/acerca-de"
+    routerLinkActive="header__link--active"
+    [attr.data-testid]="prefix + 'nav-about'"
+    (click)="onLinkClick(prefix)"
+    >Acerca de</a
+  >
+</ng-template>
+
 <header class="header" data-testid="header">
   <a class="header__brand" routerLink="/" aria-label="Inicio">
     <img ngSrc="coto-logo.svg" alt="Coto" width="111" height="40" priority />
   </a>
   <nav class="header__nav" aria-label="Principal">
-    <a
-      mat-button
-      routerLink="/"
-      routerLinkActive="header__link--active"
-      [routerLinkActiveOptions]="{ exact: true }"
-      data-testid="nav-home"
-      >Inicio</a
-    >
-    <a
-      mat-button
-      routerLink="/acerca-de"
-      routerLinkActive="header__link--active"
-      data-testid="nav-about"
-      >Acerca de</a
-    >
+    <ng-container [ngTemplateOutlet]="links" [ngTemplateOutletContext]="{ $implicit: '' }" />
     @if (darkMode) {
       <app-theme-toggle />
     }
   </nav>
+  <app-menu-toggle
+    class="header__menu-toggle"
+    [open]="menuOpen()"
+    controls="header-drawer"
+    (toggled)="toggleMenu()"
+  />
 </header>
+
+<div class="drawer" [class.drawer--open]="menuOpen()" data-testid="drawer-root">
+  <button
+    type="button"
+    class="drawer__backdrop"
+    tabindex="-1"
+    aria-hidden="true"
+    data-testid="drawer-backdrop"
+    (click)="closeMenu()"
+  ></button>
+  <nav
+    id="header-drawer"
+    class="drawer__panel"
+    aria-label="Principal (móvil)"
+    data-testid="drawer"
+    cdkTrapFocus
+    [cdkTrapFocusAutoCapture]="menuOpen()"
+    [attr.inert]="menuOpen() ? null : ''"
+  >
+    <ng-container [ngTemplateOutlet]="links" [ngTemplateOutletContext]="{ $implicit: 'drawer-' }" />
+    @if (darkMode) {
+      <app-theme-toggle />
+    }
+  </nav>
+</div>

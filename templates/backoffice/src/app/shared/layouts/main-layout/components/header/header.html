@@ -1,45 +1,105 @@
+<ng-template #links let-prefix>
+  <a
+    mat-button
+    routerLink="/"
+    routerLinkActive="header__link--active"
+    [routerLinkActiveOptions]="{ exact: true }"
+    [attr.data-testid]="prefix + 'nav-home'"
+    (click)="onLinkClick(prefix)"
+    >Inicio</a
+  >
+  <a
+    mat-button
+    routerLink="/productos"
+    routerLinkActive="header__link--active"
+    [attr.data-testid]="prefix + 'nav-products'"
+    (click)="onLinkClick(prefix)"
+    >Productos</a
+  >
+  <a
+    mat-button
+    routerLink="/acerca-de"
+    routerLinkActive="header__link--active"
+    [attr.data-testid]="prefix + 'nav-about'"
+    (click)="onLinkClick(prefix)"
+    >Acerca de</a
+  >
+</ng-template>
+
+<ng-template #user let-prefix>
+  @if (darkMode) {
+    <app-theme-toggle />
+  }
+  @if (auth.isDemo) {
+    <span
+      class="header__demo"
+      [attr.data-testid]="prefix + 'demo-badge'"
+      title="Keycloak no está configurado"
+    >
+      Modo demo
+    </span>
+  }
+  <span class="header__user-name" [attr.data-testid]="prefix + 'user-name'">{{
+    auth.userName()
+  }}</span>
+  @if (!auth.isDemo) {
+    <button
+      mat-stroked-button
+      type="button"
+      [attr.data-testid]="prefix + 'logout'"
+      (click)="logout()"
+    >
+      Cerrar sesión
+    </button>
+  }
+</ng-template>
+
 <header class="header" data-testid="header">
   <a class="header__brand" routerLink="/" aria-label="Inicio">
     <img ngSrc="coto-logo.svg" alt="Coto" width="111" height="40" priority />
   </a>
   <nav class="header__nav" aria-label="Principal">
-    <a
-      mat-button
-      routerLink="/"
-      routerLinkActive="header__link--active"
-      [routerLinkActiveOptions]="{ exact: true }"
-      data-testid="nav-home"
-      >Inicio</a
-    >
-    <a
-      mat-button
-      routerLink="/productos"
-      routerLinkActive="header__link--active"
-      data-testid="nav-products"
-      >Productos</a
-    >
-    <a
-      mat-button
-      routerLink="/acerca-de"
-      routerLinkActive="header__link--active"
-      data-testid="nav-about"
-      >Acerca de</a
-    >
+    <ng-container [ngTemplateOutlet]="links" [ngTemplateOutletContext]="{ $implicit: '' }" />
   </nav>
   <div class="header__user">
-    @if (darkMode) {
-      <app-theme-toggle />
-    }
-    @if (auth.isDemo) {
-      <span class="header__demo" data-testid="demo-badge" title="Keycloak no está configurado">
-        Modo demo
-      </span>
-    }
-    <span class="header__user-name" data-testid="user-name">{{ auth.userName() }}</span>
-    @if (!auth.isDemo) {
-      <button mat-stroked-button type="button" data-testid="logout" (click)="logout()">
-        Cerrar sesión
-      </button>
-    }
+    <ng-container [ngTemplateOutlet]="user" [ngTemplateOutletContext]="{ $implicit: '' }" />
   </div>
+  <app-menu-toggle
+    class="header__menu-toggle"
+    [open]="menuOpen()"
+    controls="header-drawer"
+    (toggled)="toggleMenu()"
+  />
 </header>
+
+<div class="drawer" [class.drawer--open]="menuOpen()" data-testid="drawer-root">
+  <button
+    type="button"
+    class="drawer__backdrop"
+    tabindex="-1"
+    aria-hidden="true"
+    data-testid="drawer-backdrop"
+    (click)="closeMenu()"
+  ></button>
+  <div
+    id="header-drawer"
+    class="drawer__panel"
+    data-testid="drawer"
+    cdkTrapFocus
+    [cdkTrapFocusAutoCapture]="menuOpen()"
+    [attr.inert]="menuOpen() ? null : ''"
+  >
+    <nav class="drawer__nav" aria-label="Principal (móvil)">
+      <ng-container
+        [ngTemplateOutlet]="links"
+        [ngTemplateOutletContext]="{ $implicit: 'drawer-' }"
+      />
+    </nav>
+    <div class="drawer__user">
+      <ng-container
+        [ngTemplateOutlet]="user"
+        [ngTemplateOutletContext]="{ $implicit: 'drawer-' }"
+      />
+    </div>
+  </div>
+</div>

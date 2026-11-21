@@ -1,0 +1,38 @@
+$duration: 0.3s;
+$easing: cubic-bezier(0.4, 0, 0.2, 1);
+
+.menu-toggle {
+  &__icon {
+    display: block;
+    width: 1.5rem;
+    height: 1.5rem;
+    overflow: visible;
+  }
+
+  &__bar {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition:
+      transform $duration $easing,
+      opacity $duration $easing;
+  }
+
+  &--open &__bar--top {
+    transform: translateY(5px) rotate(45deg);
+  }
+
+  &--open &__bar--middle {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  &--open &__bar--bottom {
+    transform: translateY(-5px) rotate(-45deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-toggle__bar {
+    transition: none;
+  }
+}

@@ -211,6 +211,9 @@ They work in the dev server, the build and the unit tests with no extra configur
 
 Breakpoints come from `@coto-dev/ui-kit`, so SCSS and TypeScript share the same thresholds. The design system is **mobile-first**: write base styles for the smallest screen and layer overrides upward.
 
+
+**Responsive header.** From `tablet-portrait` (768px) up the header shows the navigation inline. Below it, a hamburger button (`menu-toggle`) opens an animated drawer with the same links (and the theme toggle when dark mode is on). The drawer closes on backdrop click, Escape or link activation, traps the focus while open, and respects `prefers-reduced-motion`. To add a link, edit the shared `links` template in `header.html`: it feeds both the inline navigation and the drawer.
+
 | Breakpoint name    | Min width |
 | ------------------ | --------- |
 | `mobile`           | 320px     |

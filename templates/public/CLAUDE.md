@@ -33,7 +33,7 @@ Run a single unit spec with `npx ng test --watch=false --include "src/app/**/hea
 ```
 src/app/
   core/       app-wide singletons: guards/ interceptors/ services/ models/
-  shared/     layouts/main-layout (header + routed page + footer), components/, pages/not-found-page
+  shared/     layouts/main-layout (header with hamburger drawer + routed page + footer), components/, pages/not-found-page
   domains/    one folder per feature area: home/, about/ (pages/<name>-page/)
   app.routes.ts          main layout with child routes '', 'acerca-de' and a not-found '**'
   app.routes.server.ts   SSR render mode per route
@@ -46,6 +46,8 @@ e2e/                     Playwright specs
 Add a feature by creating `domains/<name>/pages/<name>-page/` and a lazy route in `app.routes.ts`. Routes (URL paths) are in Spanish (`/acerca-de`); folders, files and `data-testid`s stay in English.
 
 `theme.darkMode` (default `false`): when true the header shows `ThemeToggle` and `App` creates the ui-kit `CotoThemeService` (starts light, persists the choice); when false the app is always light.
+
+The header shows the navigation inline from 768px (`tablet-portrait`) and a hamburger `MenuToggle` plus a drawer below it (CSS decides which; `Header` only keeps the `menuOpen` signal and resets it when the viewport grows). Nav links are defined once in the `links` template of `header.html` and rendered in both places; the drawer copy has a `drawer-` `data-testid` prefix. Keep new pages free of horizontal overflow at 320px.
 
 ## SSR
 

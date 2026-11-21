@@ -5,9 +5,12 @@
 .main-layout {
   display: grid;
   grid-template-rows: auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr);
   min-height: 100vh;
 
   &__content {
+    min-width: 0;
     padding: 1.5rem 1rem;
+    overflow-wrap: anywhere;
   }
 }

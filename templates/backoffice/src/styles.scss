@@ -21,3 +21,8 @@ body {
   color: var(--mat-sys-on-surface);
   background: var(--mat-sys-surface);
 }
+
+// Set by the header while its drawer is open.
+body.no-scroll {
+  overflow: hidden;
+}

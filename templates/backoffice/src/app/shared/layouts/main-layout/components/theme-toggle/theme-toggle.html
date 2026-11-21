@@ -10,7 +10,7 @@
 >
   <!-- One sun that morphs into a moon: a cutout circle slides over the disc and the rays fold in. -->
   <svg class="theme-toggle__icon" viewBox="0 0 24 24" aria-hidden="true">
-    <mask id="theme-toggle-moon" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+    <mask [attr.id]="maskId" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
       <rect x="0" y="0" width="24" height="24" fill="white" />
       <circle class="theme-toggle__cutout" cx="30" cy="6" r="7" fill="black" />
     </mask>
@@ -20,7 +20,7 @@
       cy="12"
       r="5"
       fill="currentColor"
-      mask="url(#theme-toggle-moon)"
+      [attr.mask]="maskRef"
     />
     <g class="theme-toggle__rays" stroke="currentColor" stroke-width="2" stroke-linecap="round">
       <line x1="12" y1="1.5" x2="12" y2="4" />
