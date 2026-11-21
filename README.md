@@ -1,4 +1,4 @@
-# Coto Angular templates
+# angular-template-cli
 
 Two ready-to-run Angular 22 project templates for Coto apps, styled with `@coto-dev/ui-kit`, and a CLI wizard that generates a new project from either one.
 
@@ -19,8 +19,8 @@ Both are zoneless, standalone-component apps with ESLint, Prettier, Vitest, Husk
 This repository is not published: clone it and run the wizard from the clone.
 
 ```bash
-git clone <this-repo-url> coto-angular-templates
-cd coto-angular-templates
+git clone <this-repo-url> angular-template-cli
+cd angular-template-cli
 npm install --prefix cli     # once
 npm run create               # guided wizard
 ```
