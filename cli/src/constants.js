@@ -6,7 +6,7 @@ export const APP_TYPES = [
   {
     value: 'public',
     label: 'Sitio web expuesto a internet',
-    hint: 'Renderizado en servidor, páginas home y about',
+    hint: 'Con páginas de ejemplo: home y about',
   },
   {
     value: 'backoffice',
