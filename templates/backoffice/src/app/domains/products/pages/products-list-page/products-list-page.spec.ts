@@ -7,8 +7,8 @@ import { ProductsService } from '../../services/products.service';
 import { ProductsListPage } from './products-list-page';
 
 const PRODUCTS: Product[] = [
-  { id: 1, name: 'Olive oil', price: 8.5, stock: 120 },
-  { id: 2, name: 'Pasta', price: 2.2, stock: 300 },
+  { id: 1, name: 'Leche entera', price: 8.5, stock: 120 },
+  { id: 2, name: 'Pan lactal', price: 2.2, stock: 300 },
 ];
 
 describe('ProductsListPage', () => {
@@ -40,9 +40,9 @@ describe('ProductsListPage', () => {
     const { element, rows } = setup({});
 
     expect(rows().length).toBe(2);
-    expect(rows()[0].textContent).toContain('Olive oil');
+    expect(rows()[0].textContent).toContain('Leche entera');
     expect(rows()[0].textContent).toContain('$8.50');
-    expect(rows()[1].textContent).toContain('Pasta');
+    expect(rows()[1].textContent).toContain('Pan lactal');
     expect(element.querySelector('[data-testid="products-empty"]')).toBeNull();
   });
 
@@ -57,7 +57,7 @@ describe('ProductsListPage', () => {
     const { element } = setup({ list: throwError(() => new Error('boom')) });
 
     expect(element.querySelector('[data-testid="products-error"]')?.textContent).toContain(
-      'Could not load the products.',
+      'No se pudieron cargar los productos.',
     );
     expect(element.querySelector('[data-testid="products-empty"]')).toBeNull();
   });
@@ -67,7 +67,7 @@ describe('ProductsListPage', () => {
 
     const link = element.querySelector<HTMLAnchorElement>('[data-testid="edit-product-2"]');
 
-    expect(link?.getAttribute('href')).toBe('/products/2/edit');
+    expect(link?.getAttribute('href')).toBe('/productos/2/editar');
   });
 
   it('removes the row after the user confirms the deletion', () => {
@@ -79,7 +79,7 @@ describe('ProductsListPage', () => {
     expect(dialog.open).toHaveBeenCalledTimes(1);
     expect(service.remove).toHaveBeenCalledWith(1);
     expect(rows().length).toBe(1);
-    expect(rows()[0].textContent).toContain('Pasta');
+    expect(rows()[0].textContent).toContain('Pan lactal');
   });
 
   it('keeps the product when the user cancels the deletion', () => {
@@ -103,7 +103,7 @@ describe('ProductsListPage', () => {
 
     expect(rows().length).toBe(2);
     expect(element.querySelector('[data-testid="products-error"]')?.textContent).toContain(
-      'Could not delete the product.',
+      'No se pudo eliminar el producto.',
     );
   });
 });

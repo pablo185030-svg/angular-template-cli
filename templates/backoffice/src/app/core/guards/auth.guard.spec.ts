@@ -18,7 +18,7 @@ describe('authGuard', () => {
   }
 
   it('lets an authenticated user through without starting a login', () => {
-    const { auth, run: guard } = run('/products');
+    const { auth, run: guard } = run('/productos');
     auth.authenticated.set(true);
 
     expect(guard()).toBe(true);
@@ -26,9 +26,9 @@ describe('authGuard', () => {
   });
 
   it('blocks an unauthenticated user and starts the login for the requested route', () => {
-    const { auth, run: guard } = run('/products/new');
+    const { auth, run: guard } = run('/productos/nuevo');
 
     expect(guard()).toBe(false);
-    expect(auth.loginCalls).toEqual(['/products/new']);
+    expect(auth.loginCalls).toEqual(['/productos/nuevo']);
   });
 });

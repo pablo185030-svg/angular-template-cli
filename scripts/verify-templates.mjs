@@ -5,8 +5,13 @@
 //   node scripts/verify-templates.mjs --template backoffice # one template
 //   node scripts/verify-templates.mjs --only lint,test      # a subset of steps
 //   node scripts/verify-templates.mjs --skip-e2e            # without Playwright
+//   node scripts/verify-templates.mjs --skip-variant        # without the generated backoffice variant
+//
+// A full run also generates a backoffice with the wizard's non-default answers
+// (`--no-mock-api --dark-mode`) and runs the same steps on it.
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -28,6 +33,7 @@ const { values } = parseArgs({
     'skip-e2e': { type: 'boolean' },
     'templates-dir': { type: 'string' },
     'skip-cli': { type: 'boolean' },
+    'skip-variant': { type: 'boolean' },
   },
 });
 
@@ -68,10 +74,33 @@ for (const template of templates) {
   }
 }
 
-if (!values['skip-cli'] && !values.template && !selected) {
-  const cliDir = join(ROOT, 'cli');
+const fullRun = !values.template && !selected;
+const cliDir = join(ROOT, 'cli');
+
+if (!values['skip-cli'] && fullRun) {
   if (!npm(['install', '--no-audit', '--no-fund'], cliDir)) fail('cli: install');
   if (!npm(['test'], cliDir)) fail('cli: test');
+}
+
+// Generate a backoffice with the non-default wizard answers and verify it like a template.
+if (!values['skip-variant'] && fullRun && templates.includes('backoffice')) {
+  if (!existsSync(join(cliDir, 'node_modules'))) fail('variant: run `npm install --prefix cli` first');
+  const outDir = mkdtempSync(join(tmpdir(), 'coto-verify-'));
+  const generated = spawnSync(
+    process.execPath,
+    [
+      join(cliDir, 'index.js'),
+      ...['--type', 'backoffice', '--name', 'verify-variant', '--yes', '--no-mock-api', '--dark-mode'],
+      ...['--out', outDir],
+    ],
+    { stdio: 'inherit' },
+  );
+  if (generated.status !== 0) fail('variant: generation');
+  const projectDir = join(outDir, 'verify-variant');
+  for (const step of stepNames) {
+    if (!npm(STEPS[step], projectDir)) fail(`backoffice (--no-mock-api --dark-mode): ${step}`);
+  }
+  rmSync(outDir, { recursive: true, force: true });
 }
 
 console.log(`\nverify passed: ${templates.join(', ')}`);

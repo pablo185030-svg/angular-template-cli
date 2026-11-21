@@ -19,6 +19,7 @@
 - [Environments](#environments)
 - [Authentication (Keycloak)](#authentication)
 - [Mock API and the CRUD example](#mock-api)
+- [Dark mode](#dark-mode)
 - [Project structure](#project-structure)
 - [Path aliases](#path-aliases)
 - [Breakpoints](#breakpoints)
@@ -36,7 +37,7 @@ A backoffice (private web app) starter: an Angular 22 SPA (standalone components
 
 Theming and shared UI (M3 palette, typography, breakpoints, components) come from `@coto-dev/ui-kit`, an internal design-system library installed from the private Nexus registry — see [Dependencies](#dependencies).
 
-**It runs without Keycloak.** Until you configure it, the app starts in **demo mode**: a fake signed-in user and a "Demo mode" badge in the header. See [Authentication](#authentication).
+**It runs without Keycloak.** Until you configure it, the app starts in **demo mode**: a fake signed-in user and a "Modo demo" badge in the header. See [Authentication](#authentication).
 
 ---
 
@@ -137,6 +138,8 @@ Every `@angular/*` entry in `package.json` is pinned to the same exact version (
 | `npm start`                  | Dev server at `http://localhost:4200` with hot reload (proxies `/api` to the mock API) |
 | `npm run mock:api`           | Mock products API on `http://localhost:5000` — see [Mock API](#mock-api)               |
 | `npm run configure:keycloak` | Sets your Keycloak settings and switches local development to Keycloak                 |
+| `npm run configure:theme`    | `-- --dark-mode` or `-- --no-dark-mode`: turns the light/dark toggle on or off         |
+| `npm run remove:mock-api`    | Removes the mock API and switches the ABM to the JSON data source (see Mock API)       |
 | `npm run build`              | Production build to `dist/`                                                            |
 | `npm run build:dev`          | Development build                                                                      |
 | `npm run watch`              | Incremental build in development mode                                                  |
@@ -162,6 +165,8 @@ Run one unit spec: `npx ng test --watch=false --include "src/app/**/header.spec.
 
 `apiBaseUrl` (default `/api`) is the prefix that receives the access token; see [Authentication](#authentication).
 
+Two more settings live in every environment file: `api.mode` (`http` or `json`, see [Mock API](#mock-api)) and `theme.darkMode` (see [Dark mode](#dark-mode)).
+
 ---
 
 <a id="authentication"></a>
@@ -172,7 +177,7 @@ The app signs users in with the OIDC Authorization Code flow and PKCE (`angular-
 
 ### Demo mode (default)
 
-With `auth.mode: 'mock'`, `MockAuthService` signs in a fake "Demo User", so you can see and work on the whole app without a Keycloak server. The header shows a **Demo mode** badge and hides the logout button. **Never use `mock` in a deployed environment.**
+With `auth.mode: 'mock'`, `MockAuthService` signs in a fake "Usuario demo", so you can see and work on the whole app without a Keycloak server. The header shows a **Modo demo** badge and hides the logout button. **Never use `mock` in a deployed environment.**
 
 ### Connect Keycloak
 
@@ -212,7 +217,7 @@ Unit tests use `FakeAuthService` from `src/app/core/auth/testing/`. The `e2e` bu
 
 ## Mock API and the CRUD example
 
-`npm run mock:api` serves an in-memory products API (`mock/server.mjs`) on `http://localhost:5000`; data resets on restart. In development, `proxy.conf.json` forwards `/api` from the dev server to it.
+`npm run mock:api` starts a **mock**, not a real API: a small server (`mock/server.mjs`) that simulates the products API with sample data, so the ABM works without a backend. It serves an in-memory products API on `http://localhost:5000`; data resets on restart. In development, `proxy.conf.json` forwards `/api` from the dev server to it.
 
 | Method   | Path                | Description |
 | -------- | ------------------- | ----------- |
@@ -223,6 +228,21 @@ Unit tests use `FakeAuthService` from `src/app/core/auth/testing/`. The `e2e` bu
 | `DELETE` | `/api/products/:id` | Delete      |
 
 The example UI lives in `src/app/domains/products/`: a list (`mat-table`), a create/edit form built with Signal Forms, and a delete confirmation dialog. To use a real backend, point `proxy.conf.json` (development) and the `/api/` location in `nginx.conf` (deployed) at it, then delete `mock/`.
+
+### Without the mock API (JSON data source)
+
+`api.mode` in `src/environments/environment*.ts` chooses where the products come from:
+
+- `'http'` (default): `HttpProductsService` calls `/api/products` (the mock API in development, your backend later).
+- `'json'`: `JsonProductsService` loads `public/mock/products.json` once and applies create, edit and delete **in browser memory**: no server is needed, and changes are lost when the page is reloaded.
+
+`npm run remove:mock-api` (also run by the project wizard when you decline the mock API) sets `json` in `environment.ts` and `environment.e2e.ts`, deletes `mock/`, the dev proxy and the `mock:api` script, and removes the mock server from `playwright.config.ts`. The production environment stays on `http`: it expects a real backend behind `/api`. The sample products in `public/mock/products.json` are shared by both modes.
+
+<a id="dark-mode"></a>
+
+## Dark mode
+
+`theme.darkMode` in `src/environments/environment*.ts` is `false` by default: the app is always light and shows no toggle. Set it to `true` (or run `npm run configure:theme -- --dark-mode`) to show a light/dark toggle in the header. The app starts in light mode and the ui-kit's `CotoThemeService` remembers the user's choice. The dark styles are included either way (`coto.dark-theme()` in `src/styles.scss`); they only apply when the `coto-dark-theme` class is set.
 
 ---
 
@@ -238,16 +258,19 @@ src/app/
     interceptors/  auth.interceptor.ts
     services/ models/
   shared/
-    layouts/main-layout/        header (user, logout, demo badge) + routed page + footer
+    layouts/main-layout/        header (user, logout, demo badge, theme toggle) + routed page + footer
     components/confirm-dialog/
     pages/not-found-page/
   domains/
     home/ about/                example pages
-    products/                   CRUD example: models/ services/ pages/
+    products/                   CRUD example: models/ services/ (http + json) pages/
   app.routes.ts                 every route sits behind authGuard
 src/environments/               environment.ts, environment.prod.ts, environment.e2e.ts
-mock/server.mjs                 in-memory products API
+mock/server.mjs                 in-memory products API (removed without the mock API)
+public/mock/products.json       sample products shared by the mock API and the JSON data source
 scripts/configure-keycloak.mjs  writes Keycloak settings into the environment files
+scripts/configure-theme.mjs     turns dark mode support on or off
+scripts/remove-mock-api.mjs     removes the mock API and switches to the JSON data source
 e2e/                            Playwright specs
 ```
 

@@ -21,7 +21,7 @@ test('copies a template without node_modules and build output', async () => {
 
   await copyTemplate(join(templates, 'public'), target);
 
-  deepStrictEqual((await readdir(target)).sort(), ['logo.bin', 'package.json', 'src']);
+  deepStrictEqual((await readdir(target)).sort(), ['logo.bin', 'package.json', 'scripts', 'src']);
 });
 
 test('replaces the placeholder in text files and leaves binary files untouched', async () => {

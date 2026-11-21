@@ -10,6 +10,8 @@ describe('Footer', () => {
       .querySelector('[data-testid="footer"]')
       ?.textContent?.trim();
 
-    expect(text).toBe(`© ${new Date().getFullYear()} coto-angular-template. All rights reserved.`);
+    expect(text).toBe(
+      `© ${new Date().getFullYear()} coto-angular-template. Todos los derechos reservados.`,
+    );
   });
 });

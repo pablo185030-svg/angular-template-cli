@@ -242,3 +242,67 @@ test('the summary uses the absolute path when the relative one climbs too far, a
 
   match(output.join('\n'), new RegExp(`cd "${join(out, 'my-shop').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
 });
+
+async function generated(argv) {
+  const { cwd, templatesDir, output, write } = await setup();
+  const code = await run(argv, { templatesDir, cwd, write, isTTY: false });
+  const read = (...parts) => readFile(join(cwd, argv[3], ...parts), 'utf8');
+  return { code, output: output.join('\n'), read, dir: join(cwd, argv[3]) };
+}
+
+test('by default the backoffice keeps the mock API and is light only', async () => {
+  const { code, output, read, dir } = await generated(['--type', 'backoffice', '--name', 'my-admin', '--yes']);
+
+  strictEqual(code, 0);
+  strictEqual(await exists(join(dir, 'mock', 'server.mjs')), true);
+  match(await read('package.json'), /"mock:api"/);
+  match(await read('src', 'environments', 'environment.ts'), /mode: 'http'/);
+  match(await read('src', 'environments', 'environment.ts'), /darkMode: false/);
+  ok(!/Quitando la API mock|Habilitando el modo oscuro/.test(output));
+  match(output, /npm run mock:api/);
+  match(output, /Solo tema claro/);
+});
+
+test('--no-mock-api removes the mock API and switches the products example to JSON', async () => {
+  const { code, output, read, dir } = await generated(['--type', 'backoffice', '--name', 'my-admin', '--yes', '--no-mock-api']);
+
+  strictEqual(code, 0);
+  strictEqual(await exists(join(dir, 'mock')), false);
+  strictEqual(await exists(join(dir, 'proxy.conf.json')), false);
+  ok(!/"mock:api"/.test(await read('package.json')));
+  ok(!/mock:api/.test(await read('playwright.config.ts')));
+  match(await read('src', 'environments', 'environment.ts'), /mode: 'json'/);
+  match(output, /Quitando la API mock\.\.\. listo/);
+  match(output, /Sin API mock/);
+  ok(!/npm run mock:api/.test(output));
+});
+
+test('--dark-mode enables dark mode in a public site and in a backoffice', async () => {
+  for (const type of ['public', 'backoffice']) {
+    const { code, output, read } = await generated(['--type', type, '--name', 'my-app', '--yes', '--dark-mode']);
+
+    strictEqual(code, 0, type);
+    match(await read('src', 'environments', 'environment.ts'), /darkMode: true/);
+    match(output, /Habilitando el modo oscuro\.\.\. listo/);
+    match(output, /Modo oscuro habilitado/);
+  }
+});
+
+test('--no-mock-api with a public site exits non-zero and writes nothing', async () => {
+  const { cwd, templatesDir, output, write } = await setup();
+
+  const code = await run(['--type', 'public', '--name', 'my-shop', '--yes', '--no-mock-api'], { templatesDir, cwd, write, isTTY: false });
+
+  strictEqual(code, 2);
+  match(output.join('\n'), /--no-mock-api/);
+  strictEqual(await exists(join(cwd, 'my-shop')), false);
+});
+
+test('the help lists the new flags', async () => {
+  const { cwd, templatesDir, output, write } = await setup();
+
+  await run(['--help'], { templatesDir, cwd, write, isTTY: false });
+
+  match(output.join('\n'), /--no-mock-api/);
+  match(output.join('\n'), /--dark-mode/);
+});

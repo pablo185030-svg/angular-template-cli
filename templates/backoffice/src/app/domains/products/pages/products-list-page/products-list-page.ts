@@ -38,7 +38,7 @@ export class ProductsListPage {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Could not load the products.');
+        this.error.set('No se pudieron cargar los productos.');
         this.loading.set(false);
       },
     });
@@ -50,9 +50,9 @@ export class ProductsListPage {
    */
   confirmDelete(product: Product): void {
     const data: ConfirmDialogData = {
-      title: 'Delete product',
-      message: `Delete "${product.name}"? This cannot be undone.`,
-      confirmLabel: 'Delete',
+      title: 'Eliminar producto',
+      message: `¿Eliminar "${product.name}"? Esta acción no se puede deshacer.`,
+      confirmLabel: 'Eliminar',
     };
 
     this.dialog
@@ -69,7 +69,7 @@ export class ProductsListPage {
     this.error.set(null);
     this.products.remove(product.id).subscribe({
       next: () => this.items.update((items) => items.filter((item) => item.id !== product.id)),
-      error: () => this.error.set('Could not delete the product.'),
+      error: () => this.error.set('No se pudo eliminar el producto.'),
     });
   }
 }

@@ -22,6 +22,9 @@ Opciones:
   --keycloak-url <url>        Backoffice: URL de Keycloak (la parte previa a /realms)
   --keycloak-realm <realm>    Backoffice: realm
   --keycloak-client-id <id>   Backoffice: client id (por defecto: el nombre del proyecto)
+  --no-mock-api               Backoffice: sin la API mock; el ABM usa un JSON con datos de ejemplo
+                              y guarda los cambios solo en la memoria del navegador
+  --dark-mode                 Soportar modo oscuro (botón en el header; por defecto solo tema claro)
   -y, --yes                   Sin preguntas; salida en texto plano (requiere --type y --name)
   -h, --help                  Muestra esta ayuda
 `;
@@ -64,6 +67,8 @@ export async function run(argv, deps = {}) {
         'keycloak-url': { type: 'string' },
         'keycloak-realm': { type: 'string' },
         'keycloak-client-id': { type: 'string' },
+        'no-mock-api': { type: 'boolean' },
+        'dark-mode': { type: 'boolean' },
         yes: { type: 'boolean', short: 'y' },
         help: { type: 'boolean', short: 'h' },
       },
@@ -86,13 +91,15 @@ export async function run(argv, deps = {}) {
   reporter.intro();
 
   try {
-    const { type, name, keycloak } = await resolveOptions({
+    const { type, name, keycloak, mockApi, darkMode } = await resolveOptions({
       flags: {
         type: values.type,
         name: values.name,
         keycloakUrl: values['keycloak-url'],
         keycloakRealm: values['keycloak-realm'],
         keycloakClientId: values['keycloak-client-id'],
+        mockApi: values['no-mock-api'] ? false : undefined,
+        darkMode: values['dark-mode'] ? true : undefined,
       },
       interactive,
       prompts,
@@ -106,6 +113,8 @@ export async function run(argv, deps = {}) {
       runStep: reporter.runStep,
       runGit,
       keycloak,
+      mockApi,
+      darkMode,
       runNode,
     });
     reporter.summary({
@@ -114,6 +123,8 @@ export async function run(argv, deps = {}) {
       targetDir,
       cdPath: cdPathFor(cwd, targetDir),
       keycloakConfigured: Boolean(keycloak),
+      mockApi,
+      darkMode,
     });
     return 0;
   } catch (error) {

@@ -28,8 +28,8 @@ describe('app routes', () => {
     expect(element.querySelector('[data-testid="header"]')).not.toBeNull();
   });
 
-  it('shows the about page at "/about"', async () => {
-    const element = await navigate('/about');
+  it('shows the about page at "/acerca-de"', async () => {
+    const element = await navigate('/acerca-de');
 
     expect(element.querySelector('[data-testid="about-page"]')).not.toBeNull();
     expect(element.querySelector('[data-testid="footer"]')).not.toBeNull();
@@ -46,9 +46,9 @@ describe('app routes', () => {
     const auth = configure(false);
 
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/about');
+    await harness.navigateByUrl('/acerca-de');
 
-    expect(auth.loginCalls).toEqual(['/about']);
+    expect(auth.loginCalls).toEqual(['/acerca-de']);
     expect(
       (harness.routeNativeElement as HTMLElement | null)?.querySelector(
         '[data-testid="about-page"]',

@@ -64,7 +64,7 @@ test('keeps apiBaseUrl and the rest of the file untouched, and can run twice', a
   match(dev, /apiBaseUrl: '\/api'/);
   match(dev, /realm: 'other'/);
   ok(!/realm: 'corp'/.test(dev));
-  strictEqual((dev.match(/mode: '/g) ?? []).length, 1);
+  strictEqual((dev.match(/mode: '(mock|keycloak)'/g) ?? []).length, 1);
 });
 
 test('rejects invalid settings without touching any file', async () => {

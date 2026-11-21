@@ -20,7 +20,7 @@ export class ProductFormPage {
   private readonly products = inject(ProductsService);
   private readonly router = inject(Router);
 
-  /** Product id from the route (`/products/:id/edit`). Absent when creating. */
+  /** Product id from the route (`/productos/:id/editar`). Absent when creating. */
   readonly id = input<string>();
 
   protected readonly isEdit = computed(() => this.id() !== undefined);
@@ -30,9 +30,9 @@ export class ProductFormPage {
   private readonly model = signal<ProductInput>({ name: '', price: 0, stock: 0 });
 
   protected readonly productForm = form(this.model, (path) => {
-    required(path.name, { message: 'Enter a name' });
-    min(path.price, 0, { message: 'The price cannot be negative' });
-    min(path.stock, 0, { message: 'The stock cannot be negative' });
+    required(path.name, { message: 'Ingresá un nombre' });
+    min(path.price, 0, { message: 'El precio no puede ser negativo' });
+    min(path.stock, 0, { message: 'El stock no puede ser negativo' });
   });
 
   constructor() {
@@ -45,7 +45,7 @@ export class ProductFormPage {
       )
       .subscribe({
         next: ({ name, price, stock }) => this.model.set({ name, price, stock }),
-        error: () => this.error.set('Could not load the product.'),
+        error: () => this.error.set('No se pudo cargar el producto.'),
       });
   }
 
@@ -66,10 +66,10 @@ export class ProductFormPage {
     this.error.set(null);
     this.isSaving.set(true);
     request.subscribe({
-      next: () => this.router.navigate(['/products']),
+      next: () => this.router.navigate(['/productos']),
       error: () => {
         this.isSaving.set(false);
-        this.error.set('Could not save the product.');
+        this.error.set('No se pudo guardar el producto.');
       },
     });
   }

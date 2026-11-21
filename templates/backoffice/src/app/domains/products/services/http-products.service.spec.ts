@@ -2,18 +2,18 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { environment } from '@env/environment';
-import { ProductsService } from './products.service';
+import { HttpProductsService } from './http-products.service';
 
-describe('ProductsService', () => {
+describe('HttpProductsService', () => {
   const url = `${environment.apiBaseUrl}/products`;
   const input = { name: 'Tea', price: 3, stock: 10 };
 
   function setup() {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), HttpProductsService],
     });
     return {
-      service: TestBed.inject(ProductsService),
+      service: TestBed.inject(HttpProductsService),
       http: TestBed.inject(HttpTestingController),
     };
   }

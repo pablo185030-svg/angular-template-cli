@@ -1,5 +1,5 @@
 <section class="product-form-page" data-testid="product-form-page">
-  <h1 class="product-form-page__title">{{ isEdit() ? 'Edit product' : 'New product' }}</h1>
+  <h1 class="product-form-page__title">{{ isEdit() ? 'Editar producto' : 'Nuevo producto' }}</h1>
 
   <form
     class="product-form-page__form"
@@ -8,7 +8,7 @@
     data-testid="product-form"
   >
     <mat-form-field appearance="fill">
-      <mat-label>Name</mat-label>
+      <mat-label>Nombre</mat-label>
       <input matInput type="text" data-testid="product-name" [formField]="productForm.name" />
       @if (productForm.name().invalid() && productForm.name().touched()) {
         <mat-error>{{ productForm.name().errors()[0]?.message }}</mat-error>
@@ -16,7 +16,7 @@
     </mat-form-field>
 
     <mat-form-field appearance="fill">
-      <mat-label>Price</mat-label>
+      <mat-label>Precio</mat-label>
       <input
         matInput
         type="number"
@@ -50,9 +50,9 @@
     }
 
     <div class="product-form-page__actions">
-      <a mat-button routerLink="/products" data-testid="product-cancel">Cancel</a>
+      <a mat-button routerLink="/productos" data-testid="product-cancel">Cancelar</a>
       <button mat-flat-button type="submit" [disabled]="isSaving()" data-testid="product-save">
-        Save
+        Guardar
       </button>
     </div>
   </form>

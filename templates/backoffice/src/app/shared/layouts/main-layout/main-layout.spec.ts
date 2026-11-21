@@ -12,12 +12,16 @@ describe('MainLayout', () => {
       providers: [
         { provide: AuthService, useValue: new FakeAuthService() },
         provideRouter([
-          { path: '', component: MainLayout, children: [{ path: 'about', component: AboutPage }] },
+          {
+            path: '',
+            component: MainLayout,
+            children: [{ path: 'acerca-de', component: AboutPage }],
+          },
         ]),
       ],
     });
 
-    const harness = await RouterTestingHarness.create('/about');
+    const harness = await RouterTestingHarness.create('/acerca-de');
     const element = harness.routeNativeElement as HTMLElement;
     const layout = element.querySelector('[data-testid="main-layout"]');
 

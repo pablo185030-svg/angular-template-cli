@@ -2,9 +2,9 @@
 <mat-dialog-content data-testid="confirm-message">{{ data.message }}</mat-dialog-content>
 <mat-dialog-actions align="end">
   <button mat-button type="button" [mat-dialog-close]="false" data-testid="confirm-cancel">
-    Cancel
+    Cancelar
   </button>
   <button mat-flat-button type="button" [mat-dialog-close]="true" data-testid="confirm-accept">
-    {{ data.confirmLabel ?? 'Confirm' }}
+    {{ data.confirmLabel ?? 'Confirmar' }}
   </button>
 </mat-dialog-actions>

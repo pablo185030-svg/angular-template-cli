@@ -26,7 +26,7 @@ Run a single unit spec with `npx ng test --watch=false --include "src/app/**/hea
 - Styling: SCSS with BEM, `rem` for layout, mobile-first (`coto.breakpoint-up(...)`), colors only from `var(--mat-sys-*)`. Never define a color palette in this app.
 - Files and folders are kebab-case. Types live in `models/` folders, not in component or service files.
 - Unit tests next to the code (`*.spec.ts`). Select elements with `data-testid`, not CSS classes.
-- All code, comments and docs are written in English.
+- All code, comments and docs are written in English; user-visible UI text is in Spanish.
 
 ## Structure
 
@@ -42,12 +42,14 @@ src/app/
     home/ about/   example pages
     products/      CRUD example: models/, services/, pages/products-list-page, pages/product-form-page
   app.routes.ts    every route sits behind authGuard
-mock/server.mjs   in-memory products API (GET/POST/PUT/DELETE /api/products)
+mock/server.mjs   in-memory products API (GET/POST/PUT/DELETE /api/products); absent when generated with --no-mock-api
+public/mock/products.json   sample products shared by the mock API and `JsonProductsService`
+scripts/          configure-keycloak, configure-theme, remove-mock-api
 scripts/configure-keycloak.mjs   writes Keycloak settings into the environment files
 README.md         user-facing docs (keep in sync with this file)
 ```
 
-Add a feature by creating `domains/<name>/` and a lazy route in `app.routes.ts`.
+Add a feature by creating `domains/<name>/` and a lazy route in `app.routes.ts`. Routes (URL paths) are in Spanish (`/acerca-de`, `/productos`, `/productos/nuevo`, `/productos/:id/editar`); folders, files and `data-testid`s stay in English, and so does the API (`/api/products`).
 
 ## Authentication (Keycloak)
 
@@ -57,12 +59,14 @@ The app signs users in with the Authorization Code flow and PKCE through `angula
 
 Per environment, in `src/environments/environment*.ts`:
 
-| Setting                  | Meaning                                                  |
-| ------------------------ | -------------------------------------------------------- |
-| `auth.keycloak.url`      | Keycloak base URL, the part before `/realms`             |
-| `auth.keycloak.realm`    | Realm name                                               |
-| `auth.keycloak.clientId` | Client id (defaults to the project name)                 |
-| `apiBaseUrl`             | API prefix that receives the access token (default `/api`) |
+| Setting                  | Meaning                                                          |
+| ------------------------ | ---------------------------------------------------------------- |
+| `auth.keycloak.url`      | Keycloak base URL, the part before `/realms`                     |
+| `auth.keycloak.realm`    | Realm name                                                       |
+| `auth.keycloak.clientId` | Client id (defaults to the project name)                         |
+| `apiBaseUrl`             | API prefix that receives the access token (default `/api`)       |
+| `api.mode`               | `'http'` (API) or `'json'` (sample JSON, changes in memory)      |
+| `theme.darkMode`         | `true` shows a light/dark toggle (starts light); default `false` |
 
 ### Local realm setup
 
@@ -73,7 +77,7 @@ Per environment, in `src/environments/environment*.ts`:
 
 ### Demo mode (no Keycloak)
 
-`environment.ts` ships with `auth.mode: 'mock'`: `MockAuthService` signs in a fake "Demo User", the header shows a "Demo mode" badge and hides logout, so the app is fully usable without a Keycloak server. `environment.e2e.ts` is always `mock`, so `npm run test:e2e` needs no Keycloak. Never set `mock` in a deployed environment (`environment.prod.ts` is `keycloak`). Unit tests use `FakeAuthService` from `core/auth/testing/`.
+`environment.ts` ships with `auth.mode: 'mock'`: `MockAuthService` signs in a fake "Usuario demo", the header shows a "Modo demo" badge and hides logout, so the app is fully usable without a Keycloak server. `environment.e2e.ts` is always `mock`, so `npm run test:e2e` needs no Keycloak. Never set `mock` in a deployed environment (`environment.prod.ts` is `keycloak`). Unit tests use `FakeAuthService` from `core/auth/testing/`.
 
 ### Connect Keycloak later
 
@@ -81,7 +85,13 @@ Run `npm run configure:keycloak` (asks for URL, realm and client id, or pass `--
 
 ## Mock API and the CRUD example
 
-`npm run mock:api` serves `/api/products` from memory (data resets on restart); `proxy.conf.json` forwards `/api` from the dev server to it. To use a real backend, point the proxy (dev) or the nginx `/api/` location (deployed) at it and delete `mock/` when no longer needed.
+`npm run mock:api` is a mock, not a real API: it serves `/api/products` from memory (data resets on restart); `proxy.conf.json` forwards `/api` from the dev server to it. To use a real backend, point the proxy (dev) or the nginx `/api/` location (deployed) at it and delete `mock/` when no longer needed.
+
+`ProductsService` is a contract; `environment.api.mode` picks `HttpProductsService` (`'http'`) or `JsonProductsService` (`'json'`: loads `public/mock/products.json`, create/update/delete live in browser memory). `npm run remove:mock-api` switches dev and e2e to `json` and deletes the mock server, the proxy and their config; production stays `http`.
+
+## Dark mode
+
+`theme.darkMode` (default `false`) controls the header `ThemeToggle` and whether `CotoThemeService` is created in `App`; when false the app is always light. `npm run configure:theme -- --dark-mode|--no-dark-mode` flips it in every environment file.
 
 ## Deploy
 

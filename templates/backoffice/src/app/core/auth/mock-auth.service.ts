@@ -11,7 +11,7 @@ export class MockAuthService extends AuthService {
 
   readonly isDemo = true;
   readonly isAuthenticated = this.authenticated.asReadonly();
-  readonly userName = computed(() => (this.authenticated() ? 'Demo User' : ''));
+  readonly userName = computed(() => (this.authenticated() ? 'Usuario demo' : ''));
 
   /** @inheritdoc */
   async init(): Promise<void> {

@@ -1,0 +1,10 @@
+[
+  { "id": 1, "name": "Leche entera 1L", "price": 1450, "stock": 120 },
+  { "id": 2, "name": "Pan lactal 400g", "price": 2300, "stock": 80 },
+  { "id": 3, "name": "Yerba mate 1kg", "price": 5200, "stock": 150 },
+  { "id": 4, "name": "Arroz largo fino 1kg", "price": 1800, "stock": 200 },
+  { "id": 5, "name": "Aceite de girasol 900ml", "price": 2900, "stock": 95 },
+  { "id": 6, "name": "Fideos tallarín 500g", "price": 1350, "stock": 300 },
+  { "id": 7, "name": "Azúcar 1kg", "price": 1250, "stock": 180 },
+  { "id": 8, "name": "Café molido 250g", "price": 4100, "stock": 60 }
+]

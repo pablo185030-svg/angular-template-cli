@@ -1,41 +1,44 @@
 <header class="header" data-testid="header">
-  <a class="header__brand" routerLink="/" aria-label="Home">
+  <a class="header__brand" routerLink="/" aria-label="Inicio">
     <img ngSrc="coto-logo.svg" alt="Coto" width="111" height="40" priority />
   </a>
-  <nav class="header__nav" aria-label="Main">
+  <nav class="header__nav" aria-label="Principal">
     <a
       mat-button
       routerLink="/"
       routerLinkActive="header__link--active"
       [routerLinkActiveOptions]="{ exact: true }"
       data-testid="nav-home"
-      >Home</a
+      >Inicio</a
     >
     <a
       mat-button
-      routerLink="/products"
+      routerLink="/productos"
       routerLinkActive="header__link--active"
       data-testid="nav-products"
-      >Products</a
+      >Productos</a
     >
     <a
       mat-button
-      routerLink="/about"
+      routerLink="/acerca-de"
       routerLinkActive="header__link--active"
       data-testid="nav-about"
-      >About</a
+      >Acerca de</a
     >
   </nav>
   <div class="header__user">
+    @if (darkMode) {
+      <app-theme-toggle />
+    }
     @if (auth.isDemo) {
-      <span class="header__demo" data-testid="demo-badge" title="Keycloak is not configured">
-        Demo mode
+      <span class="header__demo" data-testid="demo-badge" title="Keycloak no está configurado">
+        Modo demo
       </span>
     }
     <span class="header__user-name" data-testid="user-name">{{ auth.userName() }}</span>
     @if (!auth.isDemo) {
       <button mat-stroked-button type="button" data-testid="logout" (click)="logout()">
-        Log out
+        Cerrar sesión
       </button>
     }
   </div>

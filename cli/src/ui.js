@@ -14,10 +14,38 @@ const BANNER = [
  * @param {{ name: string, type: string, targetDir: string }} project
  * @returns {{ title: string, lines: string[] }}
  */
-export function buildSummary({ name, type, targetDir, cdPath = name, keycloakConfigured = false }) {
+export function buildSummary({
+  name,
+  type,
+  targetDir,
+  cdPath = name,
+  keycloakConfigured = false,
+  mockApi = true,
+  darkMode = false,
+}) {
   const commands = [`cd ${cdPath}`, 'npm install'];
-  if (type === 'backoffice') commands.push('npm run mock:api   # en una segunda terminal');
+  if (type === 'backoffice' && mockApi) commands.push('npm run mock:api   # en una segunda terminal');
   commands.push('npm start');
+
+  const mockApiLines =
+    type === 'backoffice' && !mockApi
+      ? [
+          'Sin API mock: el ABM carga public/mock/products.json y los cambios solo viven en la memoria',
+          'del navegador. Para usar un backend real, poné api.mode en \'http\' en los environments.',
+          '',
+        ]
+      : [];
+
+  const themeLines = darkMode
+    ? [
+        'Modo oscuro habilitado: el header tiene un botón para alternar (arranca en claro).',
+        'Para quitarlo: npm run configure:theme -- --no-dark-mode',
+        '',
+      ]
+    : [
+        'Solo tema claro. Para habilitar el modo oscuro: npm run configure:theme -- --dark-mode',
+        '',
+      ];
 
   const keycloakLines =
     type !== 'backoffice'
@@ -40,6 +68,8 @@ export function buildSummary({ name, type, targetDir, cdPath = name, keycloakCon
       ...commands.map((command) => `  ${command}`),
       '',
       ...keycloakLines,
+      ...mockApiLines,
+      ...themeLines,
       '@coto-dev/ui-kit se instala desde el registry privado configurado en .npmrc;',
       'tiene que ser accesible desde tu red al correr npm install.',
     ],

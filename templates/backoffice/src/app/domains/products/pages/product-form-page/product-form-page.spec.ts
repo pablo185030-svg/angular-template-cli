@@ -12,7 +12,7 @@ describe('ProductFormPage', () => {
     options: { id?: string; get?: Observable<Product>; save?: Observable<Product> } = {},
   ) {
     const service = {
-      get: vi.fn(() => options.get ?? of({ id: 5, name: 'Pasta', price: 2.2, stock: 300 })),
+      get: vi.fn(() => options.get ?? of({ id: 5, name: 'Pan lactal', price: 2.2, stock: 300 })),
       create: vi.fn(() => options.save ?? of(SAVED)),
       update: vi.fn(() => options.save ?? of(SAVED)),
     };
@@ -52,7 +52,7 @@ describe('ProductFormPage', () => {
     await submit();
 
     expect(service.create).toHaveBeenCalledWith({ name: 'Tea', price: 3, stock: 10 });
-    expect(navigate).toHaveBeenCalledWith(['/products']);
+    expect(navigate).toHaveBeenCalledWith(['/productos']);
   });
 
   it('shows a validation message and sends nothing when the name is empty', async () => {
@@ -62,7 +62,7 @@ describe('ProductFormPage', () => {
 
     expect(service.create).not.toHaveBeenCalled();
     expect(navigate).not.toHaveBeenCalled();
-    expect(element.querySelector('mat-error')?.textContent).toContain('Enter a name');
+    expect(element.querySelector('mat-error')?.textContent).toContain('Ingresá un nombre');
   });
 
   it('rejects a negative price', async () => {
@@ -74,7 +74,7 @@ describe('ProductFormPage', () => {
 
     expect(service.create).not.toHaveBeenCalled();
     expect(element.querySelector('mat-error')?.textContent).toContain(
-      'The price cannot be negative',
+      'El precio no puede ser negativo',
     );
   });
 
@@ -83,14 +83,18 @@ describe('ProductFormPage', () => {
     await Promise.resolve();
 
     expect(service.get).toHaveBeenCalledWith(5);
-    expect(field('product-name').value).toBe('Pasta');
+    expect(field('product-name').value).toBe('Pan lactal');
 
-    await type('product-name', 'Pasta XL');
+    await type('product-name', 'Pan lactal XL');
     await submit();
 
-    expect(service.update).toHaveBeenCalledWith(5, { name: 'Pasta XL', price: 2.2, stock: 300 });
+    expect(service.update).toHaveBeenCalledWith(5, {
+      name: 'Pan lactal XL',
+      price: 2.2,
+      stock: 300,
+    });
     expect(service.create).not.toHaveBeenCalled();
-    expect(navigate).toHaveBeenCalledWith(['/products']);
+    expect(navigate).toHaveBeenCalledWith(['/productos']);
   });
 
   it('shows an error and stays on the page when saving fails', async () => {
@@ -103,7 +107,7 @@ describe('ProductFormPage', () => {
 
     expect(navigate).not.toHaveBeenCalled();
     expect(element.querySelector('[data-testid="product-error"]')?.textContent).toContain(
-      'Could not save the product.',
+      'No se pudo guardar el producto.',
     );
   });
 
@@ -113,7 +117,7 @@ describe('ProductFormPage', () => {
     fixture.detectChanges();
 
     expect(element.querySelector('[data-testid="product-error"]')?.textContent).toContain(
-      'Could not load the product.',
+      'No se pudo cargar el producto.',
     );
   });
 });

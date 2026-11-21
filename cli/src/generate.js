@@ -120,6 +120,26 @@ function defaultRunNode(args, cwd) {
 }
 
 /**
+ * Removes the mock API from a generated backoffice by running the project's own
+ * `scripts/remove-mock-api.mjs`, the same script behind `npm run remove:mock-api`.
+ * @param {string} directory - Generated project directory.
+ * @param {(args: string[], cwd: string) => void} [runNode] - Node runner, injectable for tests.
+ */
+export function removeMockApi(directory, runNode = defaultRunNode) {
+  runNode(['scripts/remove-mock-api.mjs'], directory);
+}
+
+/**
+ * Enables dark mode support by running the project's own `scripts/configure-theme.mjs`, the same
+ * script behind `npm run configure:theme`.
+ * @param {string} directory - Generated project directory.
+ * @param {(args: string[], cwd: string) => void} [runNode] - Node runner, injectable for tests.
+ */
+export function enableDarkMode(directory, runNode = defaultRunNode) {
+  runNode(['scripts/configure-theme.mjs', '--dark-mode'], directory);
+}
+
+/**
  * Generates a project: checks the target, copies the template, renames it, verifies the
  * rename and initializes git. Each step is reported through `runStep`.
  * @param {object} options
@@ -131,6 +151,8 @@ function defaultRunNode(args, cwd) {
  * @param {(args: string[], cwd: string) => void} [options.runGit] - Git runner, injectable for tests.
  * @param {{ url: string, realm: string, clientId: string }} [options.keycloak] - Keycloak settings
  *   to write into a backoffice; omitted to leave the project in demo mode.
+ * @param {boolean} [options.mockApi] - Backoffice only: false removes the mock API (default true).
+ * @param {boolean} [options.darkMode] - True enables dark mode support (default false: light only).
  * @param {(args: string[], cwd: string) => void} [options.runNode] - Node runner, injectable for tests.
  */
 export async function generateProject({
@@ -140,6 +162,8 @@ export async function generateProject({
   runStep,
   runGit,
   keycloak,
+  mockApi = true,
+  darkMode = false,
   runNode,
 }) {
   const templateExists = await stat(templateDir).then(
@@ -158,6 +182,12 @@ export async function generateProject({
   });
   if (keycloak) {
     await runStep('Configurando Keycloak', () => configureKeycloak(targetDir, keycloak, runNode));
+  }
+  if (!mockApi) {
+    await runStep('Quitando la API mock', () => removeMockApi(targetDir, runNode));
+  }
+  if (darkMode) {
+    await runStep('Habilitando el modo oscuro', () => enableDarkMode(targetDir, runNode));
   }
   await runStep('Inicializando el repositorio git', () => initGit(targetDir, runGit));
 }

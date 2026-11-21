@@ -15,7 +15,9 @@
     "prepare": "husky",
     "mock:api": "node mock/server.mjs",
     "start:e2e": "ng serve --configuration e2e",
-    "configure:keycloak": "node scripts/configure-keycloak.mjs"
+    "configure:keycloak": "node scripts/configure-keycloak.mjs",
+    "configure:theme": "node scripts/configure-theme.mjs",
+    "remove:mock-api": "node scripts/remove-mock-api.mjs"
   },
   "prettier": {
     "printWidth": 100,

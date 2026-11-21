@@ -1,0 +1,57 @@
+$duration: 0.5s;
+$easing: cubic-bezier(0.4, 0, 0.2, 1);
+
+.theme-toggle {
+  &__icon {
+    display: block;
+    width: 1.5rem;
+    height: 1.5rem;
+    overflow: visible;
+    transition: transform $duration $easing;
+  }
+
+  &__body,
+  &__cutout {
+    transition:
+      r $duration $easing,
+      cx $duration $easing,
+      cy $duration $easing;
+  }
+
+  &__rays {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition:
+      transform $duration $easing,
+      opacity $duration $easing;
+  }
+
+  // Dark: the disc grows and a cutout leaves a crescent; the rays fold away and the icon turns.
+  &--dark &__icon {
+    transform: rotate(-35deg);
+  }
+
+  &--dark &__body {
+    r: 8;
+  }
+
+  &--dark &__cutout {
+    cx: 17;
+    cy: 7;
+    r: 7.5;
+  }
+
+  &--dark &__rays {
+    opacity: 0;
+    transform: rotate(45deg) scale(0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle__icon,
+  .theme-toggle__body,
+  .theme-toggle__cutout,
+  .theme-toggle__rays {
+    transition: none;
+  }
+}

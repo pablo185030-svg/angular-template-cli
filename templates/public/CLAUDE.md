@@ -26,7 +26,7 @@ Run a single unit spec with `npx ng test --watch=false --include "src/app/**/hea
 - Styling: SCSS with BEM, `rem` for layout, mobile-first (`coto.breakpoint-up(...)`), colors only from `var(--mat-sys-*)`. Never define a color palette in this app.
 - Files and folders are kebab-case. Types live in `models/` folders, not in component or service files.
 - Unit tests next to the code (`*.spec.ts`). Select elements with `data-testid`, not CSS classes.
-- All code, comments and docs are written in English.
+- All code, comments and docs are written in English; user-visible UI text is in Spanish.
 
 ## Structure
 
@@ -35,13 +35,16 @@ src/app/
   core/       app-wide singletons: guards/ interceptors/ services/ models/
   shared/     layouts/main-layout (header + routed page + footer), components/, pages/not-found-page
   domains/    one folder per feature area: home/, about/ (pages/<name>-page/)
-  app.routes.ts          main layout with child routes '', 'about' and a not-found '**'
+  app.routes.ts          main layout with child routes '', 'acerca-de' and a not-found '**'
   app.routes.server.ts   SSR render mode per route
-src/environments/        environment.ts (dev) and environment.prod.ts (SSR allowed hosts)
+src/environments/        environment.ts (dev) and environment.prod.ts (SSR allowed hosts); both hold `theme.darkMode`
+scripts/configure-theme.mjs  turns dark mode support on or off (`npm run configure:theme`)
 e2e/                     Playwright specs
 ```
 
-Add a feature by creating `domains/<name>/pages/<name>-page/` and a lazy route in `app.routes.ts`.
+Add a feature by creating `domains/<name>/pages/<name>-page/` and a lazy route in `app.routes.ts`. Routes (URL paths) are in Spanish (`/acerca-de`); folders, files and `data-testid`s stay in English.
+
+`theme.darkMode` (default `false`): when true the header shows `ThemeToggle` and `App` creates the ui-kit `CotoThemeService` (starts light, persists the choice); when false the app is always light.
 
 ## SSR
 

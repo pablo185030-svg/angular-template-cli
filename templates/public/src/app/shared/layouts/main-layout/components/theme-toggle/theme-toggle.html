@@ -1,0 +1,36 @@
+<button
+  mat-icon-button
+  type="button"
+  class="theme-toggle"
+  data-testid="theme-toggle"
+  [class.theme-toggle--dark]="isDark()"
+  [attr.aria-label]="isDark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+  [attr.title]="isDark() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+  (click)="toggle()"
+>
+  <!-- One sun that morphs into a moon: a cutout circle slides over the disc and the rays fold in. -->
+  <svg class="theme-toggle__icon" viewBox="0 0 24 24" aria-hidden="true">
+    <mask id="theme-toggle-moon" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+      <rect x="0" y="0" width="24" height="24" fill="white" />
+      <circle class="theme-toggle__cutout" cx="30" cy="6" r="7" fill="black" />
+    </mask>
+    <circle
+      class="theme-toggle__body"
+      cx="12"
+      cy="12"
+      r="5"
+      fill="currentColor"
+      mask="url(#theme-toggle-moon)"
+    />
+    <g class="theme-toggle__rays" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="12" y1="1.5" x2="12" y2="4" />
+      <line x1="12" y1="20" x2="12" y2="22.5" />
+      <line x1="1.5" y1="12" x2="4" y2="12" />
+      <line x1="20" y1="12" x2="22.5" y2="12" />
+      <line x1="4.6" y1="4.6" x2="6.4" y2="6.4" />
+      <line x1="17.6" y1="17.6" x2="19.4" y2="19.4" />
+      <line x1="4.6" y1="19.4" x2="6.4" y2="17.6" />
+      <line x1="17.6" y1="6.4" x2="19.4" y2="4.6" />
+    </g>
+  </svg>
+</button>

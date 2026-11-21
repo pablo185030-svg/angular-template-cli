@@ -125,17 +125,18 @@ Every `@angular/*` entry in `package.json` is pinned to the same exact version (
 
 ## Main commands
 
-| Command             | Description                                                                        |
-| ------------------- | ---------------------------------------------------------------------------------- |
-| `npm start`         | Dev server at `http://localhost:4200` with hot reload                              |
-| `npm run build`     | Production build (browser + SSR server) to `dist/`                                 |
-| `npm run build:dev` | Development build                                                                  |
-| `npm run watch`     | Incremental build in development mode                                              |
-| `npm run serve:ssr` | Runs the built SSR server (`PORT`, default 4000); requires a prior `npm run build` |
-| `npm test`          | Unit tests with Vitest (watch mode)                                                |
-| `npm run lint`      | ESLint (`angular-eslint`) on `.ts` and `.html` under `src/`                        |
-| `npm run format`    | Prettier on `src/` and `e2e/`                                                      |
-| `npm run test:e2e`  | Playwright e2e; starts the dev server automatically                                |
+| Command                   | Description                                                                        |
+| ------------------------- | ---------------------------------------------------------------------------------- |
+| `npm start`               | Dev server at `http://localhost:4200` with hot reload                              |
+| `npm run build`           | Production build (browser + SSR server) to `dist/`                                 |
+| `npm run build:dev`       | Development build                                                                  |
+| `npm run watch`           | Incremental build in development mode                                              |
+| `npm run serve:ssr`       | Runs the built SSR server (`PORT`, default 4000); requires a prior `npm run build` |
+| `npm test`                | Unit tests with Vitest (watch mode)                                                |
+| `npm run lint`            | ESLint (`angular-eslint`) on `.ts` and `.html` under `src/`                        |
+| `npm run format`          | Prettier on `src/` and `e2e/`                                                      |
+| `npm run test:e2e`        | Playwright e2e; starts the dev server automatically                                |
+| `npm run configure:theme` | `-- --dark-mode` or `-- --no-dark-mode`: turns the light/dark toggle on or off     |
 
 Run one unit spec: `npx ng test --watch=false --include "src/app/**/header.spec.ts"`.
 
@@ -146,6 +147,8 @@ Run one unit spec: `npx ng test --watch=false --include "src/app/**/header.spec.
 ## Environments
 
 `src/environments/environment.ts` is used by `npm start`; `environment.prod.ts` replaces it in the production build (`fileReplacements` in `angular.json`). Add a new file and a build configuration if you need another environment.
+
+`theme.darkMode` (default `false`) is the dark mode setting: when `false` the site is always light and shows no toggle; when `true` (or after `npm run configure:theme -- --dark-mode`) the header shows a light/dark toggle, the site starts in light mode and the ui-kit's `CotoThemeService` remembers the choice. The dark styles are always included (`coto.dark-theme()` in `src/styles.scss`) and only apply with the `coto-dark-theme` class.
 
 ---
 
@@ -172,9 +175,9 @@ src/app/
   domains/      one folder per feature area
     home/pages/home-page/
     about/pages/about-page/
-  app.routes.ts          main layout with child routes '', 'about' and a not-found '**'
+  app.routes.ts          main layout with child routes '', 'acerca-de' and a not-found '**'
   app.routes.server.ts   SSR render mode per route
-src/environments/        environment.ts, environment.prod.ts
+src/environments/        environment.ts, environment.prod.ts (SSR hosts, theme.darkMode)
 src/server.ts            Express SSR server
 e2e/                     Playwright specs
 ```

@@ -16,13 +16,13 @@ export const routes: Routes = [
           import('@domains/home/pages/home-page/home-page').then((m) => m.HomePage),
       },
       {
-        path: 'about',
+        path: 'acerca-de',
         title: 'About',
         loadComponent: () =>
           import('@domains/about/pages/about-page/about-page').then((m) => m.AboutPage),
       },
       {
-        path: 'products',
+        path: 'productos',
         title: 'Products',
         loadComponent: () =>
           import('@domains/products/pages/products-list-page/products-list-page').then(
@@ -30,7 +30,7 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'products/new',
+        path: 'productos/nuevo',
         title: 'New product',
         loadComponent: () =>
           import('@domains/products/pages/product-form-page/product-form-page').then(
@@ -38,7 +38,7 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'products/:id/edit',
+        path: 'productos/:id/editar',
         title: 'Edit product',
         loadComponent: () =>
           import('@domains/products/pages/product-form-page/product-form-page').then(

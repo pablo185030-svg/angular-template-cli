@@ -104,12 +104,12 @@ describe('KeycloakAuthService', () => {
   it('restores the originally requested route after the Keycloak redirect', async () => {
     const oauth = new FakeOAuthService();
     oauth.validToken = true;
-    oauth.state = encodeURIComponent('/products/3/edit?tab=1');
+    oauth.state = encodeURIComponent('/productos/3/editar?tab=1');
     const { service, location } = setup(oauth);
 
     await service.init();
 
-    expect(location.replaceState).toHaveBeenCalledWith('/products/3/edit?tab=1');
+    expect(location.replaceState).toHaveBeenCalledWith('/productos/3/editar?tab=1');
   });
 
   it('does not touch the URL when there is no saved route', async () => {
@@ -126,9 +126,9 @@ describe('KeycloakAuthService', () => {
     const oauth = new FakeOAuthService();
     const { service } = setup(oauth);
 
-    service.login('/products');
+    service.login('/productos');
 
-    expect(oauth.codeFlowStates).toEqual([encodeURIComponent('/products')]);
+    expect(oauth.codeFlowStates).toEqual([encodeURIComponent('/productos')]);
   });
 
   it('ends the session on logout', () => {

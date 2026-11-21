@@ -14,7 +14,7 @@ export const routes: Routes = [
           import('@domains/home/pages/home-page/home-page').then((m) => m.HomePage),
       },
       {
-        path: 'about',
+        path: 'acerca-de',
         title: 'About',
         loadComponent: () =>
           import('@domains/about/pages/about-page/about-page').then((m) => m.AboutPage),

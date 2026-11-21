@@ -19,4 +19,8 @@
     font: var(--mat-sys-body-large);
     color: var(--mat-sys-on-surface-variant);
   }
+
+  &__link {
+    color: var(--mat-sys-primary);
+  }
 }

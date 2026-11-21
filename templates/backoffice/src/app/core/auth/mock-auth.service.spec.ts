@@ -6,7 +6,7 @@ describe('MockAuthService', () => {
 
     expect(service.isDemo).toBe(true);
     expect(service.isAuthenticated()).toBe(true);
-    expect(service.userName()).toBe('Demo User');
+    expect(service.userName()).toBe('Usuario demo');
     expect(service.getAccessToken()).toBe('mock-token');
   });
 

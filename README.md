@@ -25,12 +25,12 @@ npm install --prefix cli     # once
 npm run create               # guided wizard
 ```
 
-The wizard asks for the app type and the project name, copies the template into a folder **next to this repository** (a sibling, not inside it), renames it, and starts a fresh git repository on `main`. For a backoffice it also offers to set up Keycloak (URL, realm and client id); if you skip it, the backoffice starts in demo mode with a fake user, so it is fully visible without Keycloak, and you can connect it later with `npm run configure:keycloak`. The wizard texts are in Spanish. Then:
+The wizard asks for the app type and the project name, copies the template into a folder **next to this repository** (a sibling, not inside it), renames it, and starts a fresh git repository on `main`. For a backoffice it also offers to set up Keycloak (URL, realm and client id); if you skip it, the backoffice starts in demo mode with a fake user, so it is fully visible without Keycloak, and you can connect it later with `npm run configure:keycloak`. A backoffice also asks whether to **include the mock API**: a small local server that simulates the products API so the ABM works without a backend. If you decline, the ABM loads its sample products from a JSON file and keeps changes only in browser memory (lost on reload). Both app types ask whether to **support dark mode** (default no: light theme only); if yes, the header gets a light/dark toggle and the app starts in light. The wizard texts are in Spanish. Then:
 
 ```bash
 cd ../<project-name>
 npm install
-npm start                    # backoffice: also run `npm run mock:api` in a second terminal
+npm start                    # backoffice with the mock API: also run `npm run mock:api` in a second terminal
 ```
 
 Without a terminal (CI, scripts), pass everything as flags:
@@ -39,6 +39,7 @@ Without a terminal (CI, scripts), pass everything as flags:
 npm run create -- --type backoffice --name my-admin --yes
 npm run create -- --type backoffice --name my-admin --yes \
   --keycloak-url https://keycloak.mycompany.com --keycloak-realm my-realm
+npm run create -- --type backoffice --name my-admin --yes --no-mock-api --dark-mode
 ```
 
 | Flag                        | Meaning                                                                                  |
@@ -49,6 +50,8 @@ npm run create -- --type backoffice --name my-admin --yes \
 | `--keycloak-url <url>`      | Backoffice: Keycloak base URL (the part before `/realms`)                                |
 | `--keycloak-realm <realm>`  | Backoffice: realm                                                                        |
 | `--keycloak-client-id <id>` | Backoffice: client id (default: the project name)                                        |
+| `--no-mock-api`             | Backoffice: no mock API; the ABM uses a JSON file and keeps changes in memory            |
+| `--dark-mode`               | Support dark mode (toggle in the header; default: light only)                            |
 | `-y`, `--yes`               | No prompts, plain text output (needs `--type` and `--name`)                              |
 | `-h`, `--help`              | Show help                                                                                |
 
@@ -71,7 +74,7 @@ npm run verify          # full
 npm run verify:quick    # without Playwright
 ```
 
-`node scripts/verify-templates.mjs --template public --only lint,test` runs a subset. The script exits non-zero when any step fails.
+`node scripts/verify-templates.mjs --template public --only lint,test` runs a subset. A full run also generates a backoffice with `--no-mock-api --dark-mode` and verifies it (skip with `--skip-variant`). The script exits non-zero when any step fails.
 
 Each template has a `README.md` (user-facing docs, generated into every new project) and a `CLAUDE.md` (commands, structure and conventions for AI assistants); keep them in sync. The template name `coto-angular-template` is the placeholder the CLI replaces, so keep using it in the templates' files.
 

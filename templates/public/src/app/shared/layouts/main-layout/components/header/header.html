@@ -1,22 +1,25 @@
 <header class="header" data-testid="header">
-  <a class="header__brand" routerLink="/" aria-label="Home">
+  <a class="header__brand" routerLink="/" aria-label="Inicio">
     <img ngSrc="coto-logo.svg" alt="Coto" width="111" height="40" priority />
   </a>
-  <nav class="header__nav" aria-label="Main">
+  <nav class="header__nav" aria-label="Principal">
     <a
       mat-button
       routerLink="/"
       routerLinkActive="header__link--active"
       [routerLinkActiveOptions]="{ exact: true }"
       data-testid="nav-home"
-      >Home</a
+      >Inicio</a
     >
     <a
       mat-button
-      routerLink="/about"
+      routerLink="/acerca-de"
       routerLinkActive="header__link--active"
       data-testid="nav-about"
-      >About</a
+      >Acerca de</a
     >
+    @if (darkMode) {
+      <app-theme-toggle />
+    }
   </nav>
 </header>
