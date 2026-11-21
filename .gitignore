@@ -5,3 +5,6 @@ playwright-report/
 test-results/
 coverage/
 .DS_Store
+
+# Empty lockfile that npm creates at the repository root (it has no dependencies)
+/package-lock.json
