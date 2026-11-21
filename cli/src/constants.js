@@ -5,8 +5,8 @@ export const TEMPLATE_NAME = 'coto-angular-template';
 export const APP_TYPES = [
   {
     value: 'public',
-    label: 'Sitio web expuesto a internet',
-    hint: 'Sitio público con páginas de ejemplo: home y about',
+    label: 'Website',
+    hint: 'Sitio web público',
   },
   {
     value: 'backoffice',

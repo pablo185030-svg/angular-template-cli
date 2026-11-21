@@ -94,7 +94,7 @@ test('going back asks the reporter to redraw with the answers so far', async () 
   await resolveOptions({ flags: {}, interactive: true, prompts, defaultOutDir: LOC, redraw: (lines) => redraws.push(lines) });
 
   strictEqual(redraws.length, 1);
-  deepStrictEqual(redraws[0], ['Tipo: Sitio web expuesto a internet', 'Nombre: my-site', 'Carpeta: /a']);
+  deepStrictEqual(redraws[0], ['Tipo: Website', 'Nombre: my-site', 'Carpeta: /a']);
 });
 
 test('without a terminal nothing is asked and the result is unchanged', async () => {

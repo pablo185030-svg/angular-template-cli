@@ -3,7 +3,7 @@ import pc from 'picocolors';
 import { FRAME_COUNT, headerLines } from './mascot.js';
 import { createScreen } from './screen.js';
 
-const TITLE = 'COTO | Asistente para la creación de microservicio frontend | CoE Desarrollo';
+const TITLE = 'COTO - CoE Desarrollo | Asistente para la creación de microservicio frontend';
 const SUBTITLE = 'Generá un proyecto Angular nuevo a partir de un template';
 /** What the generated projects are built with, shown under the title. */
 const STACK = 'Stack: Angular 22 · Material Design 3 · @coto-dev/ui-kit · SCSS + BEM';
