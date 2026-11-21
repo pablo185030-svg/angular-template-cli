@@ -11,7 +11,7 @@ describe('Footer', () => {
       ?.textContent?.trim();
 
     expect(text).toBe(
-      `© ${new Date().getFullYear()} coto-angular-template. Todos los derechos reservados.`,
+      `© ${new Date().getFullYear()} COTO coto-angular-template. Todos los derechos reservados.`,
     );
   });
 });
