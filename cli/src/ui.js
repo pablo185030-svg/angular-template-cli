@@ -5,6 +5,8 @@ import { createScreen } from './screen.js';
 
 const TITLE = 'COTO | Asistente para la creación de microservicio frontend | CoE Desarrollo';
 const SUBTITLE = 'Generá un proyecto Angular nuevo a partir de un template';
+/** What the generated projects are built with, shown under the title. */
+const STACK = 'Stack: Angular 22 · Material Design 3 · @coto-dev/ui-kit · SCSS + BEM';
 const FRAME_MS = 120;
 const SPLASH_FRAMES = FRAME_COUNT;
 const SPINNER = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
@@ -134,7 +136,7 @@ export function createInteractiveReporter({
   const warnings = [];
   let frame = 0;
 
-  const header = () => headerLines({ frame, title: TITLE, subtitle: SUBTITLE, detail: cwd });
+  const header = () => headerLines({ frame, title: TITLE, subtitle: SUBTITLE, stack: STACK, detail: cwd });
 
   function drawSteps(tick) {
     screen.clear();
@@ -197,7 +199,7 @@ export function createInteractiveReporter({
     summary(project) {
       screen.leave();
       const { title, lines } = buildSummary(project);
-      out.write(`\n${headerLines({ frame: 0, title: TITLE, subtitle: SUBTITLE, detail: cwd }).join('\n')}\n\n`);
+      out.write(`\n${headerLines({ frame: 0, title: TITLE, subtitle: SUBTITLE, stack: STACK, detail: cwd }).join('\n')}\n\n`);
       warnings.forEach((warning) => clack.log.warn(warning));
       clack.note(lines.join('\n'), title);
       clack.outro(pc.green('¡A programar!'));
@@ -321,7 +323,7 @@ export function createPrompts({
   return {
     select: (options) => ask('select', options),
     text: (options) => ask('text', options),
-    confirm: (options) => ask('confirm', options),
+    confirm: (options) => ask('confirm', { active: 'Sí', inactive: 'No', ...options }),
     isCancel: (value) => clackApi.isCancel(value),
     isBack: (value) => value === BACK,
   };

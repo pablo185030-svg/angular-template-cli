@@ -180,3 +180,14 @@ test('Esc on a question with nothing before it asks the same question again', as
   strictEqual(await prompts.text({ message: 'q', back: false }), 'valor');
   strictEqual(calls.length, 2);
 });
+
+test('yes/no questions are shown in Spanish', async () => {
+  const stdin = new EventEmitter();
+  const { api, calls } = fakeClack(stdin, [{ key: 'return', answer: true }]);
+  const prompts = createPrompts({ stdin, columns: () => 80, clackApi: api });
+
+  await prompts.confirm({ message: 'q', back: false });
+
+  strictEqual(calls[0].active, 'Sí');
+  strictEqual(calls[0].inactive, 'No');
+});

@@ -64,11 +64,11 @@ export function mascotLines(frame = 0) {
 
 /**
  * Header: the mascot on the left, title and subtitle on the right.
- * @param {{ frame?: number, title: string, subtitle: string, detail?: string }} options
+ * @param {{ frame?: number, title: string, subtitle: string, stack?: string, detail?: string }} options
  * @returns {string[]}
  */
-export function headerLines({ frame = 0, title, subtitle, detail = '' }) {
+export function headerLines({ frame = 0, title, subtitle, stack = '', detail = '' }) {
   const mascot = mascotLines(frame);
-  const text = ['', `${pc.bold(title)}`, pc.dim(subtitle), pc.dim(detail)];
+  const text = ['', pc.bold(title), pc.dim(subtitle), pc.dim(stack), pc.dim(detail)];
   return mascot.map((line, index) => `  ${line}   ${text[index] ?? ''}`);
 }

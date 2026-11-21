@@ -31,6 +31,12 @@ test('the header puts the title next to the mascot', () => {
   match(text, /Sub/);
 });
 
+test('the header shows the stack line when given', () => {
+  const text = strip(headerLines({ title: 'T', subtitle: 'S', stack: 'Stack: Angular', detail: 'd' }).join('\n'));
+
+  match(text, /Stack: Angular/);
+});
+
 test('the screen enters and leaves the alternate buffer once and restores the cursor', () => {
   const writes = [];
   const proc = fakeProc();
