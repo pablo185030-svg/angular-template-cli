@@ -8,7 +8,8 @@
 //   node scripts/verify-templates.mjs --skip-variant        # without the generated backoffice variant
 //
 // A full run also generates a backoffice with the wizard's non-default answers
-// (`--no-mock-api --dark-mode`) and runs the same steps on it.
+// (`--no-mock-api --dark-mode`) and a public site converted to SSG and to SPA
+// (`--rendering ssg|spa`), and runs the same steps on each.
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -101,6 +102,31 @@ if (!values['skip-variant'] && fullRun && templates.includes('backoffice')) {
     if (!npm(STEPS[step], projectDir)) fail(`backoffice (--no-mock-api --dark-mode): ${step}`);
   }
   rmSync(outDir, { recursive: true, force: true });
+}
+
+// Public site converted to each rendering mode. The conversion edits package.json but not the
+// lockfile, so these projects use `npm install` instead of `npm ci`.
+if (!values['skip-variant'] && fullRun && templates.includes('public')) {
+  if (!existsSync(join(cliDir, 'node_modules'))) fail('variant: run `npm install --prefix cli` first');
+  for (const rendering of ['ssg', 'spa']) {
+    const outDir = mkdtempSync(join(tmpdir(), 'coto-verify-'));
+    const generated = spawnSync(
+      process.execPath,
+      [
+        join(cliDir, 'index.js'),
+        ...['--type', 'public', '--name', `verify-${rendering}`, '--yes', '--rendering', rendering],
+        ...['--out', outDir],
+      ],
+      { stdio: 'inherit' },
+    );
+    if (generated.status !== 0) fail(`public (--rendering ${rendering}): generation`);
+    const projectDir = join(outDir, `verify-${rendering}`);
+    for (const step of stepNames) {
+      const args = step === 'install' ? ['install', '--no-audit', '--no-fund'] : STEPS[step];
+      if (!npm(args, projectDir)) fail(`public (--rendering ${rendering}): ${step}`);
+    }
+    rmSync(outDir, { recursive: true, force: true });
+  }
 }
 
 console.log(`\nverify passed: ${templates.join(', ')}`);

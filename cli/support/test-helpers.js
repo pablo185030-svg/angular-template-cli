@@ -61,6 +61,8 @@ async function addProjectScripts(dir, type) {
 
 /** Prompts double: returns queued answers in order; `CANCEL` simulates Ctrl+C. */
 export const CANCEL = Symbol('cancel');
+/** Simulates Esc (go back). */
+export const BACK = Symbol('back');
 
 export function fakePrompts(answers) {
   const queue = [...answers];
@@ -80,5 +82,30 @@ export function fakePrompts(answers) {
       return queue.shift();
     },
     isCancel: (value) => value === CANCEL,
+    isBack: (value) => value === BACK,
   };
+}
+
+const RENDERING_FILES = [
+  'angular.json',
+  'package.json',
+  'Dockerfile',
+  'nginx.conf',
+  'src/main.server.ts',
+  'src/server.ts',
+  'src/app/app.config.ts',
+  'src/app/app.config.server.ts',
+  'src/app/app.routes.server.ts',
+  'scripts/configure-rendering.mjs',
+];
+
+/**
+ * Copies the real files the rendering script converts (and the script itself) from the public
+ * template into `directory`, overwriting what is there.
+ */
+export async function addRenderingFiles(directory) {
+  for (const file of RENDERING_FILES) {
+    await mkdir(dirname(join(directory, file)), { recursive: true });
+    await cp(join(REAL_TEMPLATES, 'public', file), join(directory, file));
+  }
 }

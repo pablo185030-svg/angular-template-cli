@@ -1,4 +1,4 @@
-import { APP_TYPES } from './constants.js';
+import { APP_TYPES, RENDERING_MODES } from './constants.js';
 
 const NAME_PATTERN = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
 
@@ -51,4 +51,26 @@ export function validateKeycloakName(value) {
     return 'Ingresá un valor sin espacios, comillas ni barras.';
   }
   return undefined;
+}
+
+/**
+ * Validates a git remote URL.
+ * @param {string | undefined} url
+ * @returns {string | undefined} An error message, or undefined when valid.
+ */
+export function validateRemoteUrl(url) {
+  if (!url || !/^\S+$/.test(url)) {
+    return 'Ingresá la URL del repositorio, sin espacios (ej.: git@github.com:mi-org/mi-app.git).';
+  }
+  return undefined;
+}
+
+/**
+ * Validates a rendering mode.
+ * @param {string | undefined} mode - The mode given by flag.
+ * @returns {string | undefined} An error message, or undefined when valid.
+ */
+export function validateRendering(mode) {
+  if (RENDERING_MODES.some((entry) => entry.value === mode)) return undefined;
+  return `Modo de renderizado desconocido "${mode}". Usá uno de: ${RENDERING_MODES.map((entry) => entry.value).join(', ')}.`;
 }

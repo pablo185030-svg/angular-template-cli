@@ -14,7 +14,8 @@
     "lint": "ng lint",
     "format": "prettier --write \"src/**/*.{ts,html,scss,json}\" \"e2e/**/*.ts\"",
     "prepare": "husky",
-    "configure:theme": "node scripts/configure-theme.mjs"
+    "configure:theme": "node scripts/configure-theme.mjs",
+    "configure:rendering": "node scripts/configure-rendering.mjs"
   },
   "prettier": {
     "printWidth": 100,

@@ -5,7 +5,7 @@ export const TEMPLATE_NAME = 'coto-angular-template';
 export const APP_TYPES = [
   {
     value: 'public',
-    label: 'Sitio web público',
+    label: 'Sitio web expuesto a internet',
     hint: 'Renderizado en servidor, páginas home y about',
   },
   {
@@ -25,3 +25,12 @@ export const EXCLUDED_NAMES = new Set([
   'test-results',
   'coverage',
 ]);
+
+/** Rendering modes of the public website. `ssr` is what the template ships. */
+export const RENDERING_MODES = [
+  { value: 'ssr', label: 'SSR', hint: 'Se renderiza en un servidor Node: buen SEO, requiere un runtime Node (recomendado)' },
+  { value: 'ssg', label: 'SSG', hint: 'Páginas prearmadas en el build: buen SEO y alcanza con un hosting estático (nginx)' },
+  { value: 'spa', label: 'SPA', hint: 'Solo cliente: el hosting más simple, pero sin SEO (los buscadores ven una página vacía)' },
+];
+
+export const DEFAULT_RENDERING = 'ssr';

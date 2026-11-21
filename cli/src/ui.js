@@ -1,13 +1,13 @@
 import * as clack from '@clack/prompts';
 import pc from 'picocolors';
+import { FRAME_COUNT, headerLines } from './mascot.js';
+import { createScreen } from './screen.js';
 
-const BANNER = [
-  '   ____ ___ _____ ___  ',
-  '  / ___/ _ \\_   _/ _ \\ ',
-  ' | |  | | | || || | | |',
-  ' | |__| |_| || || |_| |',
-  '  \\____\\___/ |_| \\___/ ',
-];
+const TITLE = 'COTO | Asistente para la creación de microservicio frontend | CoE Desarrollo';
+const SUBTITLE = 'Generá un proyecto Angular nuevo a partir de un template';
+const FRAME_MS = 120;
+const SPLASH_FRAMES = FRAME_COUNT;
+const SPINNER = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
 /**
  * Builds the summary shown when a project is ready.
@@ -22,8 +22,13 @@ export function buildSummary({
   keycloakConfigured = false,
   mockApi = true,
   darkMode = false,
+  rendering,
+  remote,
+  committed = false,
+  installed = false,
 }) {
-  const commands = [`cd ${cdPath}`, 'npm install'];
+  const commands = [`cd ${cdPath}`];
+  if (!installed) commands.push('npm install');
   if (type === 'backoffice' && mockApi) commands.push('npm run mock:api   # en una segunda terminal');
   commands.push('npm start');
 
@@ -36,6 +41,31 @@ export function buildSummary({
         ]
       : [];
 
+  const remoteLines = remote
+    ? [
+        `Repositorio remoto "origin" conectado: ${remote}`,
+        committed
+          ? 'No se subió nada. Para publicar el código: git push -u origin main'
+          : 'No se subió nada. Cuando hagas el primer commit: git push -u origin main',
+        '',
+      ]
+    : [];
+
+  const renderingLines =
+    type !== 'public' || !rendering
+      ? []
+      : rendering === 'ssr'
+        ? [
+            'Renderizado: SSR (servidor Node). Para pasar a SSG o SPA:',
+            'npm run configure:rendering -- --mode ssg   (o spa; solo funciona mientras siga en SSR)',
+            '',
+          ]
+        : [
+            `Renderizado: ${rendering.toUpperCase()}. El build queda en dist/${name}/browser y se sirve con nginx (ver Dockerfile).`,
+            'Para volver a SSR, regenerá el proyecto o usá git.',
+            '',
+          ];
+
   const themeLines = darkMode
     ? [
         'Modo oscuro habilitado: el header tiene un botón para alternar (arranca en claro).',
@@ -46,6 +76,15 @@ export function buildSummary({
         'Solo tema claro. Para habilitar el modo oscuro: npm run configure:theme -- --dark-mode',
         '',
       ];
+
+  const sampleLines =
+    type === 'backoffice'
+      ? [
+          'El ABM de productos es solo de prueba: un ejemplo para reemplazar o quitar,',
+          'no una funcionalidad real del backoffice.',
+          '',
+        ]
+      : [];
 
   const keycloakLines =
     type !== 'backoffice'
@@ -67,8 +106,11 @@ export function buildSummary({
       'Próximos pasos:',
       ...commands.map((command) => `  ${command}`),
       '',
+      ...remoteLines,
       ...keycloakLines,
+      ...sampleLines,
       ...mockApiLines,
+      ...renderingLines,
       ...themeLines,
       '@coto-dev/ui-kit se instala desde el registry privado configurado en .npmrc;',
       'tiene que ser accesible desde tu red al correr npm install.',
@@ -76,37 +118,106 @@ export function buildSummary({
   };
 }
 
-/** Interactive reporter: banner, spinners and a framed summary. */
-export function createInteractiveReporter() {
+/**
+ * Interactive reporter: full-screen terminal with an animated mascot header, prompts, a step list
+ * and, once the screen is left, the final summary (so it stays visible after the CLI exits).
+ * @param {{ screen?: ReturnType<typeof createScreen>, out?: { write: (text: string) => unknown }, sleep?: (ms: number) => Promise<void>, cwd?: string }} [deps]
+ *   Injectable for tests.
+ */
+export function createInteractiveReporter({
+  out = process.stdout,
+  screen = process.env.TERM === 'dumb' ? createNoScreen() : createScreen(out),
+  sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+  cwd = process.cwd(),
+} = {}) {
+  const steps = [];
+  const warnings = [];
+  let frame = 0;
+
+  const header = () => headerLines({ frame, title: TITLE, subtitle: SUBTITLE, detail: cwd });
+
+  function drawSteps(tick) {
+    screen.clear();
+    out.write(`\n${header().join('\n')}\n\n`);
+    const lines = steps.map(({ label, status }) => {
+      if (status === 'done') return `  ${pc.green('✔')} ${label}`;
+      if (status === 'warned') return `  ${pc.yellow('!')} ${label}`;
+      if (status === 'failed') return `  ${pc.red('✖')} ${pc.red(`${label}: falló`)}`;
+      return `  ${pc.cyan(SPINNER[tick % SPINNER.length])} ${label}`;
+    });
+    out.write(`${lines.join('\n')}\n`);
+  }
+
   return {
-    intro() {
-      console.log(pc.cyan(BANNER.join('\n')));
-      clack.intro(pc.bgCyan(pc.black(' Asistente Angular de Coto ')));
+    async intro() {
+      screen.enter();
+      screen.hideCursor();
+      for (frame = 0; frame < SPLASH_FRAMES; frame++) {
+        screen.clear();
+        out.write(`\n${header().join('\n')}\n`);
+        await sleep(FRAME_MS);
+      }
+      frame = 0;
+      screen.clear();
+      out.write(`\n${header().join('\n')}\n\n`);
+      screen.showCursor();
     },
     async runStep(label, action) {
-      const spinner = clack.spinner();
-      spinner.start(label);
+      const step = { label, status: 'running' };
+      steps.push(step);
+      let tick = 0;
+      screen.hideCursor();
+      drawSteps(tick);
+      const timer = setInterval(() => {
+        tick++;
+        frame = (frame + 1) % FRAME_COUNT;
+        drawSteps(tick);
+      }, FRAME_MS);
       try {
-        await action();
-        spinner.stop(pc.green(label));
+        const warning = await action();
+        step.status = warning ? 'warned' : 'done';
+        if (warning) warnings.push(warning);
       } catch (error) {
-        spinner.stop(pc.red(`${label}: falló`), 1);
+        step.status = 'failed';
         throw error;
+      } finally {
+        clearInterval(timer);
+        drawSteps(tick);
+        screen.showCursor();
       }
     },
+    /** Clears the screen and redraws the header with the answers so far (used when going back). */
+    redraw(answerLines = []) {
+      screen.clear();
+      frame = 0;
+      out.write(`\n${header().join('\n')}\n`);
+      if (answerLines.length > 0) out.write(`\n  ${pc.dim(answerLines.join(' · '))}\n`);
+      out.write('\n');
+    },
     summary(project) {
+      screen.leave();
       const { title, lines } = buildSummary(project);
+      out.write(`\n${headerLines({ frame: 0, title: TITLE, subtitle: SUBTITLE, detail: cwd }).join('\n')}\n\n`);
+      warnings.forEach((warning) => clack.log.warn(warning));
       clack.note(lines.join('\n'), title);
       clack.outro(pc.green('¡A programar!'));
     },
     cancelled() {
+      screen.leave();
       clack.cancel('Cancelado. No se escribió nada.');
     },
     error(message) {
+      screen.leave();
       clack.log.error(message);
       clack.outro(pc.red('La generación falló.'));
     },
   };
+}
+
+/** Screen stand-in for terminals without cursor control: everything is a no-op, output stays inline. */
+function createNoScreen() {
+  const noop = () => {};
+  return { enter: noop, leave: noop, clear: noop, hideCursor: noop, showCursor: noop, isActive: () => false };
 }
 
 /** Plain reporter for non-interactive runs: text lines only, no colors or animation. */
@@ -114,13 +225,13 @@ export function createPlainReporter(write = (line) => console.log(line)) {
   let step = 0;
   return {
     intro() {
-      write('Asistente Angular de Coto');
+      write(TITLE);
     },
     async runStep(label, action) {
       step++;
       try {
-        await action();
-        write(`[${step}] ${label}... listo`);
+        const warning = await action();
+        write(warning ? `[${step}] ${label}... AVISO: ${warning}` : `[${step}] ${label}... listo`);
       } catch (error) {
         write(`[${step}] ${label}... FALLÓ`);
         throw error;
@@ -140,10 +251,81 @@ export function createPlainReporter(write = (line) => console.log(line)) {
   };
 }
 
-/** Real prompts, wrapping @clack/prompts. */
-export const clackPrompts = {
-  select: (options) => clack.select(options),
-  text: (options) => clack.text(options),
-  confirm: (options) => clack.confirm(options),
-  isCancel: (value) => clack.isCancel(value),
-};
+/** Returned by the real prompts when the user presses Esc (go back). Ctrl+C returns clack's cancel. */
+export const BACK = Symbol('prompts:back');
+
+const HINT_BACK = 'Esc: volver · Ctrl+C: salir';
+const HINT_FIRST = 'Ctrl+C: salir';
+
+/**
+ * Wraps text to `width` columns without splitting words. Existing line breaks are kept.
+ * @param {string} text
+ * @param {number} width
+ * @returns {string}
+ */
+export function wrapText(text, width) {
+  const limit = Math.max(20, width);
+  return text
+    .split('\n')
+    .map((paragraph) => {
+      const lines = [];
+      let line = '';
+      for (const word of paragraph.split(' ')) {
+        if (line && line.length + 1 + word.length > limit) {
+          lines.push(line);
+          line = word;
+        } else {
+          line = line ? `${line} ${word}` : word;
+        }
+      }
+      lines.push(line);
+      return lines.join('\n');
+    })
+    .join('\n');
+}
+
+/**
+ * Prompts built on @clack/prompts that tell Esc from Ctrl+C (clack reports both as a cancel):
+ * Esc returns `BACK`, Ctrl+C returns clack's cancel. Messages are wrapped to the terminal width
+ * and followed by a hint with the keys.
+ * @param {{ stdin?: { on: Function, off: Function }, columns?: () => number }} [deps] - Injectable for tests.
+ */
+export function createPrompts({
+  stdin = process.stdin,
+  columns = () => process.stdout.columns || 80,
+  clackApi = clack,
+} = {}) {
+  async function ask(method, { back = false, message, ...options }) {
+    const hint = pc.dim(back ? HINT_BACK : HINT_FIRST);
+    for (;;) {
+      let lastKey;
+      const onKeypress = (_text, key) => {
+        lastKey = key?.name;
+      };
+      stdin.on('keypress', onKeypress);
+      let answer;
+      try {
+        answer = await clackApi[method]({
+          ...options,
+          message: `${wrapText(message, columns() - 6)}\n${hint}`,
+        });
+      } finally {
+        stdin.off('keypress', onKeypress);
+      }
+      if (!(clackApi.isCancel(answer) && lastKey === 'escape')) return answer;
+      // Esc: go back, or ask the same question again when there is nothing to go back to.
+      if (back) return BACK;
+    }
+  }
+
+  return {
+    select: (options) => ask('select', options),
+    text: (options) => ask('text', options),
+    confirm: (options) => ask('confirm', options),
+    isCancel: (value) => clackApi.isCancel(value),
+    isBack: (value) => value === BACK,
+  };
+}
+
+/** Real prompts. */
+export const clackPrompts = createPrompts();

@@ -136,6 +136,7 @@ Every `@angular/*` entry in `package.json` is pinned to the same exact version (
 | `npm run lint`            | ESLint (`angular-eslint`) on `.ts` and `.html` under `src/`                        |
 | `npm run format`          | Prettier on `src/` and `e2e/`                                                      |
 | `npm run test:e2e`        | Playwright e2e; starts the dev server automatically                                |
+| `npm run configure:rendering` | `-- --mode ssg` or `-- --mode spa`: converts the SSR project (see [Rendering mode](#rendering-mode)) |
 | `npm run configure:theme` | `-- --dark-mode` or `-- --no-dark-mode`: turns the light/dark toggle on or off     |
 
 Run one unit spec: `npx ng test --watch=false --include "src/app/**/header.spec.ts"`.
@@ -259,5 +260,5 @@ Playwright starts the dev server itself (`playwright.config.ts`). Prefer accessi
 
 ## Deploy
 
-- `Dockerfile` runs the built SSR server (`npm run build` first): `docker build -t coto-angular-template . && docker run -p 4000:4000 coto-angular-template`.
+- (SSR) `Dockerfile` runs the built SSR server (`npm run build` first): `docker build -t coto-angular-template . && docker run -p 4000:4000 coto-angular-template`.
 - `nginx.conf` is an optional reverse proxy that serves the static assets from disk and forwards everything else to the Node server. It is a complete `server{}` block, to be placed at `/etc/nginx/conf.d/default.conf`.

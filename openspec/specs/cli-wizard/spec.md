@@ -75,11 +75,11 @@ The generated project SHALL NOT include the template repository's git history, b
 - **AND** it contains no `node_modules` or build output directories
 
 ### Requirement: Next steps guidance
-After generation the CLI SHALL print the commands needed to install dependencies and start the project, and SHALL mention that `@coto-dev/ui-kit` is installed from the private registry configured in the generated project's `.npmrc`, which must be reachable from the user's network.
+After generation the CLI SHALL print the commands still needed to start the project (leaving out installation when it already succeeded, and including the push command when a remote was set), and SHALL mention that `@coto-dev/ui-kit` is installed from the private registry configured in the generated project's `.npmrc`, which must be reachable from the user's network.
 
 #### Scenario: Success message
 - **WHEN** generation completes successfully
-- **THEN** the CLI prints the install and start commands for the generated project
+- **THEN** the CLI prints the start commands, and the install command when dependencies were not installed
 - **AND** it prints a note about configuring registry access for `@coto-dev/ui-kit`
 
 ### Requirement: Spanish user-facing text
@@ -90,12 +90,24 @@ All text the CLI shows to the user (prompts, step names, errors, help and summar
 - **THEN** the usage text is shown in Spanish
 
 ### Requirement: Polished interactive experience
-In an interactive terminal the CLI SHALL present a branded welcome banner, guided prompts with a selectable list for the app type, inline validation of the project name, a progress indicator for each generation step, and a styled final summary.
+In an interactive terminal the CLI SHALL open full screen (alternate screen buffer) and restore the terminal when it ends, whatever the reason. It SHALL present a branded header with an animated pixel mascot, guided prompts with a selectable list for the app type, inline validation of the project name, a progress indicator for each generation step, and a styled final summary. The final summary SHALL remain visible in the terminal after the CLI exits.
 
 #### Scenario: Guided flow
 - **WHEN** the user runs the CLI in an interactive terminal without flags
-- **THEN** a welcome banner is shown followed by the app type selection and the project name prompt
+- **THEN** the screen switches to full screen and a header with the mascot is shown, followed by the app type selection and the project name prompt
 - **AND** each generation step shows progress and a success or failure state
+
+#### Scenario: Animated mascot
+- **WHEN** the CLI starts and while the generation steps run
+- **THEN** the mascot is animated (for example blinking and moving its legs)
+
+#### Scenario: Terminal restored
+- **WHEN** the CLI finishes, fails, is cancelled or receives Ctrl+C
+- **THEN** the terminal leaves full screen, the cursor is visible again and the previous terminal content is back
+
+#### Scenario: Summary kept
+- **WHEN** generation completes
+- **THEN** the final summary with the next steps is printed in the normal terminal after leaving full screen
 
 #### Scenario: Inline validation
 - **WHEN** the user types an invalid project name at the prompt
@@ -147,15 +159,154 @@ For both app types, the wizard SHALL ask whether the project should support dark
 - **THEN** the generated project supports both themes, starts in light mode and shows a theme toggle
 
 ### Requirement: Defaults without a terminal
-Without a terminal or with `--yes`, the wizard SHALL NOT ask the mock API and dark mode questions and SHALL use their defaults (mock API included, light only) unless the flags say otherwise.
+Without a terminal or with `--yes`, the wizard SHALL NOT ask the mock API, dark mode, output directory, git remote, initial commit and install questions and SHALL use their defaults (mock API included, light only, default location, no remote, no initial commit, no installation) unless the flags say otherwise.
 
 #### Scenario: Non-interactive generation
 - **WHEN** the wizard runs with `--type backoffice --name my-app --yes`
 - **THEN** the project includes the mock API and supports only the light theme
+- **AND** the repository has no remote and no commits, and no dependencies are installed
+
+#### Scenario: Flags without a terminal
+- **WHEN** the wizard runs with `--yes` and `--remote <url> --install`
+- **THEN** the remote is set and dependencies are installed without any question
 
 ### Requirement: Mock API clarified as a mock
-The wizard's mock API question SHALL state that it is only a mock and not a real API.
+The wizard's mock API question SHALL state that it is only a mock and not a real API, and that the products ABM it supports is only a sample for testing. For a backoffice, the final summary SHALL also state that the products ABM is only a sample.
 
 #### Scenario: Explanation
 - **WHEN** the wizard asks whether to include the mock API
 - **THEN** the question says it is only a mock, not a real API, that simulates the products API with sample data
+- **AND** it says the products ABM is only a sample for testing
+
+#### Scenario: Summary note
+- **WHEN** a backoffice is generated
+- **THEN** the final summary says the products ABM is only a sample that can be removed or replaced
+
+### Requirement: Output directory question
+In an interactive terminal, when `--out` is not given, the wizard SHALL ask where to create the project, with the folder that contains the template repository as the default. The project is created in a directory named after the project inside the chosen location.
+
+#### Scenario: Default location
+- **WHEN** the user accepts the default at the location prompt
+- **THEN** the project directory is created next to the template repository
+
+#### Scenario: Custom location
+- **WHEN** the user enters another directory, or passes `--out`
+- **THEN** the project directory is created inside it and no location question is asked when the flag was given
+
+### Requirement: Git remote question
+The wizard SHALL ask whether the user already has a git repository for the project and, if so, its URL, and SHALL register it as the `origin` remote of the generated repository. The `--remote <url>` flag SHALL answer both questions. The CLI MUST NOT push to the remote; when a remote was set, the final summary SHALL show the push command.
+
+#### Scenario: Remote provided
+- **WHEN** the user says they have a repository and enters a URL, or passes `--remote <url>`
+- **THEN** the generated repository has an `origin` remote with that URL
+- **AND** nothing is pushed
+- **AND** the summary shows `git push -u origin main`
+
+#### Scenario: No remote
+- **WHEN** the user says they do not have a repository
+- **THEN** no remote is configured and the summary does not mention pushing
+
+#### Scenario: Empty URL
+- **WHEN** the URL is empty or contains spaces
+- **THEN** the prompt rejects it and lets the user correct it
+
+### Requirement: Initial commit question
+The wizard SHALL ask whether to create an initial commit in the generated repository, defaulting to yes. The `--no-commit` flag SHALL answer it negatively.
+
+#### Scenario: Commit created
+- **WHEN** the user accepts the initial commit
+- **THEN** the generated repository has one commit on `main` with all generated files
+
+#### Scenario: Commit declined
+- **WHEN** the user declines, or passes `--no-commit`
+- **THEN** the repository is initialized with no commits
+
+#### Scenario: Commit fails
+- **WHEN** git cannot create the commit (for example, no user configured)
+- **THEN** the CLI reports the problem, keeps the generated project and the rest of the generation completes
+
+### Requirement: Install dependencies question
+The wizard SHALL ask whether to install dependencies now, defaulting to no, warning that it needs access to the private registry that serves `@coto-dev/ui-kit`. The `--install` and `--no-install` flags SHALL answer it. A failed installation MUST NOT abort the CLI nor delete the generated project.
+
+#### Scenario: Install accepted
+- **WHEN** the user accepts, or passes `--install`
+- **THEN** the CLI runs `npm install` in the generated project as a reported step
+- **AND** the summary does not list `npm install` as a next step
+
+#### Scenario: Install fails
+- **WHEN** `npm install` fails
+- **THEN** the error is shown, the project is kept, the CLI finishes
+- **AND** the summary lists `npm install` as a next step
+
+#### Scenario: Install declined
+- **WHEN** the user declines, or passes `--no-install`
+- **THEN** nothing is installed and the summary lists `npm install` as a next step
+
+### Requirement: Rendering mode for the public website
+When the app type is the public website, the wizard SHALL ask how the site is rendered, offering SSR (server-side rendering), SSG (static prerendering, no Node server) and SPA (client only), explaining each in Spanish and warning that SPA loses SEO. The default SHALL be SSR. The `--rendering <ssr|ssg|spa>` flag SHALL answer the question, SHALL be validated against those values, and SHALL be rejected for the backoffice. The question SHALL NOT be asked for the backoffice.
+
+#### Scenario: SSR by default
+- **WHEN** the user generates a public website and accepts the default
+- **THEN** the project is the unchanged server-side rendered template
+
+#### Scenario: Choose SSG or SPA
+- **WHEN** the user picks SSG or SPA, or passes `--rendering ssg` or `--rendering spa`
+- **THEN** the project is converted to that mode as a reported generation step
+
+#### Scenario: Invalid or misplaced flag
+- **WHEN** `--rendering` has another value, or is used with the backoffice
+- **THEN** the CLI exits with a non-zero status and writes nothing
+
+#### Scenario: Not asked for the backoffice
+- **WHEN** the user generates a backoffice
+- **THEN** the wizard does not ask about the rendering mode
+
+### Requirement: Rendering mode default without a terminal
+Without a terminal or with `--yes`, the wizard SHALL NOT ask the rendering mode question and SHALL use SSR unless `--rendering` says otherwise.
+
+#### Scenario: Non-interactive public site
+- **WHEN** the wizard runs with `--type public --name my-site --yes`
+- **THEN** the project keeps server-side rendering
+
+### Requirement: Rendering mode in the summary
+For a public website, the final summary SHALL state the chosen rendering mode. When the mode is SSR it SHALL also show how to convert it later with `npm run configure:rendering`; when it is SSG or SPA it SHALL say that going back to SSR means regenerating the project or using git.
+
+#### Scenario: Summary note
+- **WHEN** a public website is generated
+- **THEN** the summary names the rendering mode
+- **AND** for SSR it shows the command to convert it later, and for SSG or SPA it explains how to go back
+
+### Requirement: Back navigation in the guided flow
+In an interactive terminal the wizard SHALL let the user press Esc to return to the previous question and change its answer, and SHALL keep Ctrl+C as the way to exit. Going back SHALL skip questions that were not asked (answered by a flag or not applicable to the chosen app type) and SHALL offer the previous answer as the initial value. Pressing Esc on the first question SHALL leave the wizard on that question. The wizard SHALL tell the user which keys go back and which exit.
+
+#### Scenario: Go back and change an answer
+- **WHEN** the user answers the project name, then the location, and presses Esc on the next question
+- **THEN** the location question is shown again with the previous answer as its initial value
+- **AND** changing it and continuing uses the new value
+
+#### Scenario: Back skips questions that were not asked
+- **WHEN** the user generates a public website and presses Esc on the first question after the dark mode question
+- **THEN** the dark mode question is shown, not the Keycloak or mock API questions
+
+#### Scenario: Back over flag-provided answers
+- **WHEN** the project name was given as a flag and the user presses Esc on the first asked question
+- **THEN** the wizard stays on that question
+
+#### Scenario: Ctrl+C still exits
+- **WHEN** the user presses Ctrl+C on any question, including after going back
+- **THEN** the CLI exits with a cancellation message and status 130 and writes nothing
+
+#### Scenario: Keys hint
+- **WHEN** a question is shown in the guided flow
+- **THEN** a hint says that Esc goes back and Ctrl+C exits
+
+#### Scenario: No change without a terminal
+- **WHEN** the wizard runs without a terminal or with `--yes`
+- **THEN** no question is asked and the resulting options are the same as before this requirement
+
+### Requirement: Readable questions
+In an interactive terminal the wizard SHALL wrap every question to the terminal width so that no part of its text is cut off, keeping the text of the question itself unchanged.
+
+#### Scenario: Long question
+- **WHEN** a question is longer than the terminal width
+- **THEN** it is shown over several lines and all of its text is visible

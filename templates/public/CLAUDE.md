@@ -39,6 +39,7 @@ src/app/
   app.routes.server.ts   SSR render mode per route
 src/environments/        environment.ts (dev) and environment.prod.ts (SSR allowed hosts); both hold `theme.darkMode`
 scripts/configure-theme.mjs  turns dark mode support on or off (`npm run configure:theme`)
+scripts/configure-rendering.mjs  converts the SSR project to SSG or SPA (`npm run configure:rendering -- --mode ssg|spa`); one-way, SSR only
 e2e/                     Playwright specs
 ```
 
@@ -47,5 +48,7 @@ Add a feature by creating `domains/<name>/pages/<name>-page/` and a lazy route i
 `theme.darkMode` (default `false`): when true the header shows `ThemeToggle` and `App` creates the ui-kit `CotoThemeService` (starts light, persists the choice); when false the app is always light.
 
 ## SSR
+
+The template ships as SSR; `scripts/configure-rendering.mjs` (run by the wizard, or by hand) converts a copy to SSG or SPA and rewrites `Dockerfile` and `nginx.conf` for static hosting. Keep the template itself SSR and keep the script's expectations (`outputMode: "server"`, `ssr.entry`, the server files) in sync with `angular.json` and the source files; `cli/test/configure-rendering.test.js` runs the script on the real template files and `npm run verify` builds both conversions.
 
 `src/server.ts` is the Express entry point. `@angular/ssr` rejects unknown hosts: add the public hostname to `ssr.allowedHosts` in `src/environments/environment.prod.ts`. `README.md` has the user-facing docs (keep it in sync with this file). `Dockerfile` runs the built server; `nginx.conf` is an optional reverse proxy that serves static assets and forwards the rest to Node.

@@ -102,6 +102,51 @@ function defaultRunGit(args, cwd) {
 }
 
 /**
+ * Registers the remote repository as `origin`. Nothing is pushed.
+ * @param {string} directory - Generated project directory.
+ * @param {string} url - Remote repository URL.
+ * @param {(args: string[], cwd: string) => void} [runGit] - Git runner, injectable for tests.
+ */
+export function addRemote(directory, url, runGit = defaultRunGit) {
+  runGit(['remote', 'add', 'origin', url], directory);
+}
+
+/**
+ * Commits every generated file.
+ * @param {string} directory - Generated project directory.
+ * @param {(args: string[], cwd: string) => void} [runGit] - Git runner, injectable for tests.
+ */
+export function createInitialCommit(directory, runGit = defaultRunGit) {
+  runGit(['add', '-A'], directory);
+  runGit(['commit', '-m', 'chore: initial commit'], directory);
+}
+
+/**
+ * Installs the project's dependencies. Husky is disabled so it does not touch git config.
+ * @param {string} directory - Generated project directory.
+ * @param {(args: string[], cwd: string) => void} [runNpm] - npm runner, injectable for tests.
+ */
+export function installDependencies(directory, runNpm = defaultRunNpm) {
+  runNpm(['install'], directory);
+}
+
+function defaultRunNpm(args, cwd) {
+  const windows = process.platform === 'win32';
+  execFileSync(windows ? 'npm.cmd' : 'npm', args, {
+    cwd,
+    stdio: 'pipe',
+    shell: windows,
+    env: { ...process.env, HUSKY: '0' },
+  });
+}
+
+/** Last meaningful line of a failed command's output, for the warning shown to the user. */
+function failureDetail(error) {
+  const text = `${error.stderr ?? ''}`.trim() || error.message;
+  return text.split('\n').filter(Boolean).slice(-3).join(' | ');
+}
+
+/**
  * Writes the Keycloak settings into a generated backoffice by running the project's own
  * `scripts/configure-keycloak.mjs`, the same script behind `npm run configure:keycloak`.
  * @param {string} directory - Generated project directory.
@@ -140,6 +185,17 @@ export function enableDarkMode(directory, runNode = defaultRunNode) {
 }
 
 /**
+ * Converts the public website from SSR to SSG or SPA by running the project's own
+ * `scripts/configure-rendering.mjs`, the same script behind `npm run configure:rendering`.
+ * @param {string} directory - Generated project directory.
+ * @param {'ssg' | 'spa'} mode
+ * @param {(args: string[], cwd: string) => void} [runNode] - Node runner, injectable for tests.
+ */
+export function configureRendering(directory, mode, runNode = defaultRunNode) {
+  runNode(['scripts/configure-rendering.mjs', '--mode', mode], directory);
+}
+
+/**
  * Generates a project: checks the target, copies the template, renames it, verifies the
  * rename and initializes git. Each step is reported through `runStep`.
  * @param {object} options
@@ -147,13 +203,22 @@ export function enableDarkMode(directory, runNode = defaultRunNode) {
  * @param {string} options.targetDir - Where to create the project.
  * @param {string} options.projectName - The user's project name.
  * @param {(label: string, action: () => Promise<void> | void) => Promise<void>} options.runStep
- *   Runs one step, showing progress. Must rethrow when the action fails.
+ *   Runs one step, showing progress. Must rethrow when the action fails. An action may return a
+ *   string: a warning for a step that did not fail the generation.
  * @param {(args: string[], cwd: string) => void} [options.runGit] - Git runner, injectable for tests.
  * @param {{ url: string, realm: string, clientId: string }} [options.keycloak] - Keycloak settings
  *   to write into a backoffice; omitted to leave the project in demo mode.
  * @param {boolean} [options.mockApi] - Backoffice only: false removes the mock API (default true).
  * @param {boolean} [options.darkMode] - True enables dark mode support (default false: light only).
+ * @param {'ssr' | 'ssg' | 'spa'} [options.rendering] - Public website only; ssg and spa convert the
+ *   template (default ssr: left as it is).
  * @param {(args: string[], cwd: string) => void} [options.runNode] - Node runner, injectable for tests.
+ * @param {string} [options.remote] - Git remote URL registered as `origin` (never pushed).
+ * @param {boolean} [options.commit] - Creates an initial commit (default false).
+ * @param {boolean} [options.install] - Runs `npm install` (default false).
+ * @param {(args: string[], cwd: string) => void} [options.runNpm] - npm runner, injectable for tests.
+ * @returns {Promise<{ committed: boolean, installed: boolean }>} What was actually done. Commit and
+ *   install failures are not fatal: their step reports a warning and the project is kept.
  */
 export async function generateProject({
   templateDir,
@@ -164,7 +229,12 @@ export async function generateProject({
   keycloak,
   mockApi = true,
   darkMode = false,
+  rendering = 'ssr',
   runNode,
+  remote,
+  commit = false,
+  install = false,
+  runNpm,
 }) {
   const templateExists = await stat(templateDir).then(
     (info) => info.isDirectory(),
@@ -189,5 +259,38 @@ export async function generateProject({
   if (darkMode) {
     await runStep('Habilitando el modo oscuro', () => enableDarkMode(targetDir, runNode));
   }
+  if (rendering !== 'ssr') {
+    await runStep(`Configurando el renderizado (${rendering.toUpperCase()})`, () =>
+      configureRendering(targetDir, rendering, runNode),
+    );
+  }
   await runStep('Inicializando el repositorio git', () => initGit(targetDir, runGit));
+  if (remote) {
+    await runStep('Conectando el repositorio remoto (origin)', () => addRemote(targetDir, remote, runGit));
+  }
+
+  let installed = false;
+  if (install) {
+    await runStep('Instalando dependencias (puede tardar)', () => {
+      try {
+        installDependencies(targetDir, runNpm);
+        installed = true;
+      } catch (error) {
+        return `No se pudieron instalar las dependencias; corré npm install más tarde. ${failureDetail(error)}`;
+      }
+    });
+  }
+
+  let committed = false;
+  if (commit) {
+    await runStep('Creando el commit inicial', () => {
+      try {
+        createInitialCommit(targetDir, runGit);
+        committed = true;
+      } catch (error) {
+        return `No se pudo crear el commit inicial (¿git tiene user.name y user.email configurados?). ${failureDetail(error)}`;
+      }
+    });
+  }
+  return { committed, installed };
 }

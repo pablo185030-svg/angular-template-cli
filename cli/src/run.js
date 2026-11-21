@@ -25,6 +25,11 @@ Opciones:
   --no-mock-api               Backoffice: sin la API mock; el ABM usa un JSON con datos de ejemplo
                               y guarda los cambios solo en la memoria del navegador
   --dark-mode                 Soportar modo oscuro (botón en el header; por defecto solo tema claro)
+  --rendering <ssr|ssg|spa>   Sitio web: modo de renderizado (por defecto ssr; spa no tiene SEO)
+  --remote <url>              Conectar un repositorio git existente como "origin" (no se sube nada)
+  --no-commit                 No crear el commit inicial (con -y o sin terminal tampoco se crea)
+  --install                   Instalar las dependencias al terminar (npm install)
+  --no-install                No instalar las dependencias (es el valor por defecto)
   -y, --yes                   Sin preguntas; salida en texto plano (requiere --type y --name)
   -h, --help                  Muestra esta ayuda
 `;
@@ -53,6 +58,7 @@ export async function run(argv, deps = {}) {
     reporterFactory,
     runGit,
     runNode,
+    runNpm,
     write = (line) => console.log(line),
   } = deps;
 
@@ -69,6 +75,11 @@ export async function run(argv, deps = {}) {
         'keycloak-client-id': { type: 'string' },
         'no-mock-api': { type: 'boolean' },
         'dark-mode': { type: 'boolean' },
+        rendering: { type: 'string' },
+        remote: { type: 'string' },
+        'no-commit': { type: 'boolean' },
+        install: { type: 'boolean' },
+        'no-install': { type: 'boolean' },
         yes: { type: 'boolean', short: 'y' },
         help: { type: 'boolean', short: 'h' },
       },
@@ -83,15 +94,20 @@ export async function run(argv, deps = {}) {
     return 0;
   }
 
+  if (values.install && values['no-install']) {
+    write(`Error: --install y --no-install no se pueden usar juntas.\n\n${HELP}`);
+    return 1;
+  }
+
   const interactive = isTTY && !values.yes;
   const reporter =
     reporterFactory?.(interactive) ??
     (interactive ? createInteractiveReporter() : createPlainReporter(write));
 
-  reporter.intro();
+  await reporter.intro();
 
   try {
-    const { type, name, keycloak, mockApi, darkMode } = await resolveOptions({
+    const { type, name, keycloak, mockApi, darkMode, rendering, outDir, remote, commit, install } = await resolveOptions({
       flags: {
         type: values.type,
         name: values.name,
@@ -100,13 +116,20 @@ export async function run(argv, deps = {}) {
         keycloakClientId: values['keycloak-client-id'],
         mockApi: values['no-mock-api'] ? false : undefined,
         darkMode: values['dark-mode'] ? true : undefined,
+        rendering: values.rendering,
+        outDir: values.out,
+        remote: values.remote,
+        commit: values['no-commit'] ? false : undefined,
+        install: values.install ? true : values['no-install'] ? false : undefined,
       },
       interactive,
       prompts,
+      defaultOutDir,
+      redraw: reporter.redraw,
     });
-    const targetDir = values.out ? resolve(cwd, values.out, name) : resolve(defaultOutDir, name);
+    const targetDir = resolve(cwd, outDir ?? defaultOutDir, name);
 
-    await generateProject({
+    const { committed, installed } = await generateProject({
       templateDir: join(templatesDir, type),
       targetDir,
       projectName: name,
@@ -115,7 +138,12 @@ export async function run(argv, deps = {}) {
       keycloak,
       mockApi,
       darkMode,
+      rendering,
+      remote,
+      commit,
+      install,
       runNode,
+      runNpm,
     });
     reporter.summary({
       name,
@@ -125,6 +153,10 @@ export async function run(argv, deps = {}) {
       keycloakConfigured: Boolean(keycloak),
       mockApi,
       darkMode,
+      rendering,
+      remote,
+      committed,
+      installed,
     });
     return 0;
   } catch (error) {

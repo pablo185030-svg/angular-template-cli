@@ -49,7 +49,7 @@ test('does not prompt without a terminal and fails when flags are missing', asyn
 
 test('guided flow with prompts generates the chosen template', async () => {
   const { cwd, templatesDir, write } = await setup();
-  const prompts = fakePrompts(['backoffice', 'admin-panel']);
+  const prompts = fakePrompts(['backoffice', 'admin-panel', cwd, false, true, false, false, true, false]);
 
   const code = await run([], {
     templatesDir, cwd, write, prompts, isTTY: true,
