@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { VersionService } from '@shared/version/version.service';
 
 @Component({
   selector: 'app-footer',
@@ -7,5 +8,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Footer {
+  protected readonly version = inject(VersionService).getVersion();
   protected readonly year = new Date().getFullYear();
 }

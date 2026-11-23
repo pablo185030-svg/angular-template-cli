@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CotoThemeService } from '@coto-dev/ui-kit';
 import { environment } from '@env/environment';
+import { VersionService } from '@shared/version/version.service';
 
 @Component({
   selector: 'app-root',
@@ -11,6 +12,9 @@ import { environment } from '@env/environment';
 })
 export class App {
   constructor() {
+    const versionService = inject(VersionService);
+    afterNextRender(() => versionService.logBannerVersion());
+
     // The service applies the stored theme when it is created. When dark mode is not enabled it
     // is never created, so the app is always light, even if a dark choice was stored.
     if (environment.theme.darkMode) inject(CotoThemeService);
