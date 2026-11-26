@@ -16,6 +16,16 @@
     (click)="onLinkClick(prefix)"
     >Productos</a
   >
+  @if (auth.hasPermission('manage-roles')) {
+    <a
+      mat-button
+      routerLink="/roles"
+      routerLinkActive="header__link--active"
+      [attr.data-testid]="prefix + 'nav-roles'"
+      (click)="onLinkClick(prefix)"
+      >Roles</a
+    >
+  }
   <a
     mat-button
     routerLink="/acerca-de"
@@ -39,19 +49,27 @@
       Modo demo
     </span>
   }
-  <span class="header__user-name" [attr.data-testid]="prefix + 'user-name'">{{
-    auth.userName()
-  }}</span>
-  @if (!auth.isDemo) {
-    <button
-      mat-stroked-button
-      type="button"
-      [attr.data-testid]="prefix + 'logout'"
-      (click)="logout()"
-    >
-      Cerrar sesión
-    </button>
-  }
+  <div class="header__account">
+    <span class="header__avatar" aria-hidden="true">{{ initials() }}</span>
+    <div class="header__identity">
+      <span class="header__user-name" [attr.data-testid]="prefix + 'user-name'">{{
+        auth.userName()
+      }}</span>
+      @if (auth.roleName()) {
+        <span class="header__role" [attr.data-testid]="prefix + 'role-badge'">{{
+          auth.roleName()
+        }}</span>
+      }
+    </div>
+  </div>
+  <button
+    mat-stroked-button
+    type="button"
+    [attr.data-testid]="prefix + 'logout'"
+    (click)="logout()"
+  >
+    Cerrar sesión
+  </button>
 </ng-template>
 
 <header class="header" data-testid="header">

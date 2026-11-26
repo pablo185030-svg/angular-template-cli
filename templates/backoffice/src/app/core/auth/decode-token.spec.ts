@@ -6,7 +6,13 @@ function encode(value: unknown): string {
 
 describe('decodeToken', () => {
   it('reads the claims of an unsigned JWT-shaped token', () => {
-    const claims = { sub: 'demo-user', name: 'Usuario demo', roles: ['admin'], exp: 123 };
+    const claims = {
+      sub: 'demo-user',
+      name: 'Usuario demo',
+      role: 'admin',
+      permissions: ['read'],
+      exp: 123,
+    };
 
     expect(decodeToken(`${encode({ alg: 'none' })}.${encode(claims)}.`)).toEqual(claims);
   });

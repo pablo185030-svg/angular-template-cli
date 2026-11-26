@@ -2,6 +2,7 @@ import { DOCUMENT, NgOptimizedImage, NgTemplateOutlet, isPlatformBrowser } from 
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   Injector,
   DestroyRef,
   PLATFORM_ID,
@@ -48,6 +49,16 @@ export class Header {
   protected readonly auth = inject(AuthService);
   protected readonly darkMode = environment.theme.darkMode;
   protected readonly menuOpen = signal(false);
+  /** Up to two initials of the user name, shown in the avatar. */
+  protected readonly initials = computed(() =>
+    this.auth
+      .userName()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0].toUpperCase())
+      .join(''),
+  );
 
   constructor() {
     // The drawer is hidden by CSS on wide screens; also reset its state so the scroll lock goes away.

@@ -1,74 +1,136 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { environment } from '@env/environment';
 import { AuthService } from './auth.service';
-import { decodeToken } from './decode-token';
+import { decodeToken, encodeToken } from './decode-token';
+import { SignInResult } from './models/sign-in-result.model';
 import { TokenClaims } from './models/token-claims.model';
 
-const LOCAL_TOKEN = 'mock-token';
-const LOCAL_USER_NAME = 'Usuario demo';
-const TOKEN_REQUEST_TIMEOUT_MS = 2000;
+const REQUEST_TIMEOUT_MS = 5000;
+const TOKEN_TTL_SECONDS = 8 * 60 * 60;
+const INVALID_CREDENTIALS = 'Usuario o contraseña incorrectos.';
+const FAILED = 'No se pudo iniciar sesión. Intentá de nuevo.';
+
+interface SeedUser {
+  username: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  roleId: number;
+  id: number;
+}
+
+interface SeedRole {
+  id: number;
+  name: string;
+  permissions: TokenClaims['permissions'];
+}
 
 /**
- * Signs in a fake user without contacting Keycloak. Used in demo mode (the default until Keycloak
- * is configured, see `npm run configure:keycloak`) and by the e2e configuration.
+ * Demo-mode authentication without Keycloak (the default until Keycloak is configured, see
+ * `npm run configure:keycloak`, and the e2e configuration). Nobody is signed in at start: the
+ * app shows its own login screen and `signIn()` checks the seeded users.
  *
- * `init()` asks the mock API for a fake token (`POST {apiBaseUrl}/auth/token`) so the demo
- * exercises the real token path. When the products data source is JSON, or the mock API does not
- * answer, the service keeps a local fake token instead and the app still works. The token is held
- * in memory only.
+ * With the mock API as data source the credentials are checked by `POST {apiBaseUrl}/auth/login`
+ * and the token comes from it. With the JSON data source (no server) they are checked in the
+ * browser against `mock/users.json` and a local unsigned token is built. The token is held in
+ * memory only, so a reload signs the user out.
  */
 @Injectable()
 export class MockAuthService extends AuthService {
-  private readonly authenticated = signal(true);
-  private readonly token = signal(LOCAL_TOKEN);
+  private readonly router = inject(Router);
+  private readonly token = signal<string | null>(null);
   private readonly claims = signal<TokenClaims | null>(null);
 
   readonly isDemo = true;
-  readonly isAuthenticated = this.authenticated.asReadonly();
-  readonly userName = computed(() =>
-    this.authenticated() ? (this.claims()?.name ?? LOCAL_USER_NAME) : '',
-  );
+  readonly hasLoginPage = true;
+  readonly isAuthenticated = computed(() => this.claims() !== null);
+  readonly userName = computed(() => this.claims()?.name ?? '');
+  readonly roleName = computed(() => this.claims()?.role ?? '');
+  readonly permissions = computed(() => this.claims()?.permissions ?? []);
 
   /** @inheritdoc */
   async init(): Promise<void> {
-    // The JSON data source means there is no mock API to ask.
-    if (environment.api.mode === 'json') return;
+    // Nothing to restore: the session lives in memory only.
+  }
 
+  /** @inheritdoc */
+  login(targetUrl?: string): void {
+    const returnUrl = targetUrl && targetUrl !== '/' ? targetUrl : undefined;
+    void this.router.navigate(['/login'], { queryParams: returnUrl ? { returnUrl } : {} });
+  }
+
+  /** @inheritdoc */
+  override async signIn(username: string, password: string): Promise<SignInResult> {
     try {
-      // `fetch` and not `HttpClient`: the interceptor asks this service for the token.
-      const response = await fetch(`${environment.apiBaseUrl}/auth/token`, {
-        method: 'POST',
-        signal: AbortSignal.timeout(TOKEN_REQUEST_TIMEOUT_MS),
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const token =
+        environment.api.mode === 'json'
+          ? await this.localToken(username, password)
+          : await this.apiToken(username, password);
+      if (token === null) return { ok: false, message: INVALID_CREDENTIALS };
 
-      const body = await response.json();
-      const accessToken = body?.access_token;
-      const claims = typeof accessToken === 'string' ? decodeToken(accessToken) : null;
-      if (!claims) throw new Error('The response has no valid access token');
+      const claims = decodeToken(token);
+      if (!claims) return { ok: false, message: FAILED };
 
-      this.token.set(accessToken);
+      this.token.set(token);
       this.claims.set(claims);
+      return { ok: true };
     } catch (error) {
-      console.warn(
-        'Demo mode: could not get a token from the mock API, using a local fake token.',
-        error,
-      );
+      console.warn('Demo mode: sign-in failed.', error);
+      return { ok: false, message: FAILED };
     }
   }
 
   /** @inheritdoc */
-  login(): void {
-    this.authenticated.set(true);
-  }
-
-  /** @inheritdoc */
   logout(): void {
-    // Demo mode has no session to end: the fake user stays signed in.
+    this.token.set(null);
+    this.claims.set(null);
+    void this.router.navigate(['/login']);
   }
 
   /** @inheritdoc */
   getAccessToken(): string | null {
-    return this.authenticated() ? this.token() : null;
+    return this.token();
+  }
+
+  /** Asks the mock API for a token. Returns null for wrong credentials. */
+  private async apiToken(username: string, password: string): Promise<string | null> {
+    // `fetch` and not `HttpClient`: the interceptor asks this service for the token.
+    const response = await fetch(`${environment.apiBaseUrl}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+    if (response.status === 401) return null;
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const accessToken = (await response.json())?.access_token;
+    if (typeof accessToken !== 'string') throw new Error('The response has no access token');
+    return accessToken;
+  }
+
+  /** Checks the seeded users in the browser and builds a local token. Null for wrong credentials. */
+  private async localToken(username: string, password: string): Promise<string | null> {
+    const load = async <T>(file: string): Promise<T[]> => {
+      const response = await fetch(`mock/${file}.json`, {
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    };
+    const [users, roles] = await Promise.all([load<SeedUser>('users'), load<SeedRole>('roles')]);
+
+    const user = users.find((u) => u.username === username && u.password === password);
+    const role = user && roles.find((r) => r.id === user.roleId);
+    if (!user || !role) return null;
+
+    return encodeToken({
+      sub: String(user.id),
+      name: `${user.firstName} ${user.lastName}`,
+      role: role.name,
+      permissions: role.permissions,
+      exp: Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS,
+    });
   }
 }

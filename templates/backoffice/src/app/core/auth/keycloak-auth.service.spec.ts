@@ -9,6 +9,7 @@ class FakeOAuthService {
   state: string | undefined;
   validToken = false;
   claims: Record<string, string> = {};
+  token = 'real-token';
   readonly codeFlowStates: string[] = [];
   logOutCalls = 0;
   silentRefreshCalls = 0;
@@ -29,7 +30,7 @@ class FakeOAuthService {
     return this.claims;
   }
   getAccessToken(): string {
-    return 'real-token';
+    return this.token;
   }
   initCodeFlow(state: string): void {
     this.codeFlowStates.push(state);
@@ -138,5 +139,27 @@ describe('KeycloakAuthService', () => {
     service.logout();
 
     expect(oauth.logOutCalls).toBe(1);
+  });
+
+  it('takes the permissions from the access token realm roles', async () => {
+    const oauth = new FakeOAuthService();
+    oauth.validToken = true;
+    oauth.token = `h.${btoa(JSON.stringify({ realm_access: { roles: ['escritura'] } }))}.s`;
+    const { service } = setup(oauth);
+
+    await service.init();
+
+    expect(service.permissions()).toEqual(['read', 'write']);
+    expect(service.hasPermission('write')).toBe(true);
+    expect(service.hasPermission('manage-roles')).toBe(false);
+  });
+
+  it('has no permissions and no login page when signed out', async () => {
+    const { service } = setup(new FakeOAuthService());
+
+    await service.init();
+
+    expect(service.permissions()).toEqual([]);
+    expect(service.hasLoginPage).toBe(false);
   });
 });

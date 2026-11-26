@@ -1,0 +1,15 @@
+[
+  {
+    "id": 1,
+    "name": "admin",
+    "description": "Acceso total y administración de roles",
+    "permissions": ["read", "write", "manage-roles"]
+  },
+  {
+    "id": 2,
+    "name": "escritura",
+    "description": "Puede ver, crear, editar y eliminar",
+    "permissions": ["read", "write"]
+  },
+  { "id": 3, "name": "lectura", "description": "Solo puede ver", "permissions": ["read"] }
+]

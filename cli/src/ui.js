@@ -111,7 +111,7 @@ export function buildSummary({
             '',
           ]
         : [
-            'Keycloak sin configurar: el backoffice arranca en modo demo (usuario ficticio).',
+            'Keycloak sin configurar: el backoffice arranca en modo demo con login de prueba (admin / 1234; también escritura y lectura).',
             'Para conectarlo después: npm run configure:keycloak',
             '',
           ];

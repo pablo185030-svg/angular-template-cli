@@ -1,6 +1,6 @@
 # coto-angular-template (backoffice)
 
-Private web app template: Angular 22 SPA, zoneless, styled with `@coto-dev/ui-kit`, authenticated with Keycloak, with a products CRUD (ABM) example.
+Private web app template: Angular 22 SPA, zoneless, styled with `@coto-dev/ui-kit`, authenticated with Keycloak, with role-based access, a roles ABM and a products CRUD (ABM) example.
 
 ## Commands
 
@@ -33,23 +33,25 @@ Run a single unit spec with `npx ng test --watch=false --include "src/app/**/hea
 ```
 src/app/
   core/
-    auth/          AuthService contract, KeycloakAuthService, MockAuthService (demo), testing/FakeAuthService
-    guards/        auth.guard.ts
+    auth/          AuthService contract, KeycloakAuthService, MockAuthService (demo, login form), models/ (Permission, claims), testing/FakeAuthService
+    guards/        auth.guard.ts, permission.guard.ts, login-page.guard.ts
     interceptors/  auth.interceptor.ts
     services/ models/
   shared/          layouts/main-layout (header with hamburger drawer, user + logout, page, footer), components/confirm-dialog, pages/not-found-page
   domains/
     home/ about/   example pages
     products/      CRUD example: models/, services/, pages/products-list-page, pages/product-form-page
-  app.routes.ts    every route sits behind authGuard
-mock/server.mjs   in-memory products API (GET/POST/PUT/DELETE /api/products); absent when generated with --no-mock-api
-public/mock/products.json   sample products shared by the mock API and `JsonProductsService`
+    login/         login screen (demo mode)
+    roles/         roles ABM: models/, services/ (http + json), pages/roles-list-page, pages/role-form-page
+  app.routes.ts    every route but /login sits behind authGuard; products and roles routes also use permissionGuard
+mock/server.mjs   in-memory API: /api/products, /api/roles, POST /api/auth/login; absent when generated with --no-mock-api
+public/mock/   products.json, roles.json, users.json: seeds shared by the mock API and the JSON services
 scripts/          configure-keycloak, configure-theme, remove-mock-api
 scripts/configure-keycloak.mjs   writes Keycloak settings into the environment files
 README.md         user-facing docs in Spanish (default); README.en.md is the English copy. Keep both in sync with this file
 ```
 
-Add a feature by creating `domains/<name>/` and a lazy route in `app.routes.ts`. Routes (URL paths) are in Spanish (`/acerca-de`, `/productos`, `/productos/nuevo`, `/productos/:id/editar`); folders, files and `data-testid`s stay in English, and so does the API (`/api/products`).
+Add a feature by creating `domains/<name>/` and a lazy route in `app.routes.ts`. Routes (URL paths) are in Spanish (`/acerca-de`, `/productos`, `/productos/nuevo`, `/productos/:id/editar`, `/roles`, `/roles/nuevo`, `/roles/:id/editar`; `/login` too); folders, files and `data-testid`s stay in English, and so does the API (`/api/products`).
 
 ## Authentication (Keycloak)
 
@@ -77,7 +79,7 @@ Per environment, in `src/environments/environment*.ts`:
 
 ### Demo mode (no Keycloak)
 
-`environment.ts` ships with `auth.mode: 'mock'`: `MockAuthService` signs in a fake "Usuario demo", the header shows a "Modo demo" badge and hides logout, so the app is fully usable without a Keycloak server. `environment.e2e.ts` is always `mock`, so `npm run test:e2e` needs no Keycloak. Never set `mock` in a deployed environment (`environment.prod.ts` is `keycloak`). In demo mode `MockAuthService.init()` asks the mock API for a fake token (`POST /api/auth/token`, unsigned JWT with `name`, `roles`, `exp`), keeps it in memory only and takes the user name from its claims; with `api.mode: 'json'`, or if the request fails, it keeps a local fake token (and warns in the console). Unit tests use `FakeAuthService` from `core/auth/testing/`.
+`environment.ts` ships with `auth.mode: 'mock'`: nobody is signed in at start, `authGuard` sends users to `/login` (outside the layout) and `MockAuthService.signIn()` checks the seeded users (`admin`, `escritura`, `lectura`, password `1234`; see Roles below). The header shows a "Modo demo" badge, the user (initials avatar, name, role badge from `AuthService.roleName`) and logout, so the app is usable without a Keycloak server. `environment.e2e.ts` is always `mock`, so `npm run test:e2e` needs no Keycloak. Never set `mock` in a deployed environment (`environment.prod.ts` is `keycloak`). Sign-in goes to `POST /api/auth/login` (unsigned JWT with `name`, `role`, `permissions`, `exp`); with `api.mode: 'json'` it is checked in the browser against `public/mock/users.json`. The token lives in memory only, so a reload or logout returns to `/login`. Unit tests use `FakeAuthService` from `core/auth/testing/`. e2e specs sign in with `signIn()` from `e2e/support/auth.ts`: a page load drops the session, so navigate with in-app links after signing in. Keycloak permissions come from a `permissions` claim or the default realm role names (`core/auth/keycloak-permissions.ts`).
 
 ### Connect Keycloak later
 
@@ -85,9 +87,13 @@ Run `npm run configure:keycloak` (asks for URL, realm and client id, or pass `--
 
 ## Mock API and the CRUD example
 
-`npm run mock:api` is a mock, not a real API: it serves `/api/products` from memory (data resets on restart), issues the fake demo token at `POST /api/auth/token` and answers `401` to `/api/products` requests without an `Authorization: Bearer` header (the token is never verified; `/health` stays open); `proxy.conf.json` forwards `/api` from the dev server to it. To use a real backend, point the proxy (dev) or the nginx `/api/` location (deployed) at it and delete `mock/` when no longer needed.
+`npm run mock:api` is a mock, not a real API: it serves `/api/products` from memory (data resets on restart), serves `/api/roles` and logs users in at `POST /api/auth/login`, and answers `401` to `/api/products` and `/api/roles` requests without an `Authorization: Bearer` header and `403` when the token lacks the permission (the token is trusted, never verified; `/health` and the login stay open); `proxy.conf.json` forwards `/api` from the dev server to it. To use a real backend, point the proxy (dev) or the nginx `/api/` location (deployed) at it and delete `mock/` when no longer needed.
 
 `ProductsService` is a contract; `environment.api.mode` picks `HttpProductsService` (`'http'`) or `JsonProductsService` (`'json'`: loads `public/mock/products.json`, create/update/delete live in browser memory). `npm run remove:mock-api` switches dev and e2e to `json` and deletes the mock server, the proxy and their config; production stays `http`.
+
+## Roles and permissions
+
+A `Role` is `{ id, name, description, permissions }` with `Permission = 'read' | 'write' | 'manage-roles'` (`core/auth/models/permission.model.ts`, Spanish labels included). Seeds: `admin` (all), `escritura` (`read`, `write`), `lectura` (`read`); users `admin` (`admin@coto.com.ar`, employee number 1234), `escritura`, `lectura`, all with password `1234` (plain text, demo data only). Guards, UI and the mock API check permissions, never role names. `admin` cannot be edited or deleted, and a role with users cannot be deleted (HTTP 409 with a Spanish `message`, also thrown by `JsonRolesService`). There is no users ABM. `RolesService` follows `api.mode` like `ProductsService`.
 
 ## Dark mode
 

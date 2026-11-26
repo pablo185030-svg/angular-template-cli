@@ -1,11 +1,12 @@
 import { expect, test } from '@playwright/test';
+import { signIn } from './support/auth';
 
 test('products CRUD: list, create, edit and delete', async ({ page }) => {
   const name = `E2E Galletitas ${Date.now()}`;
   const renamed = `${name} XL`;
 
   // List: seeded products come from the mock API.
-  await page.goto('/productos');
+  await signIn(page, '/productos');
   await expect(page.getByTestId('products-table')).toBeVisible();
   await expect(page.getByTestId('product-row').first()).toBeVisible();
 
@@ -40,7 +41,7 @@ test('products CRUD: list, create, edit and delete', async ({ page }) => {
 test('product form shows a validation message and does not save an empty name', async ({
   page,
 }) => {
-  await page.goto('/productos/nuevo');
+  await signIn(page, '/productos/nuevo');
   await page.getByTestId('product-save').click();
 
   await expect(page.getByText('Ingresá un nombre')).toBeVisible();
@@ -48,9 +49,9 @@ test('product form shows a validation message and does not save an empty name', 
 });
 
 test('the signed-in user name and the layout are shown', async ({ page }) => {
-  await page.goto('/');
+  await signIn(page, '/');
 
-  await expect(page.getByTestId('user-name')).toHaveText('Usuario demo');
+  await expect(page.getByTestId('user-name')).toHaveText('Admin Coto');
   await expect(page.getByTestId('demo-badge')).toBeVisible();
   await expect(page.getByTestId('header')).toBeVisible();
   await expect(page.getByTestId('footer')).toBeVisible();

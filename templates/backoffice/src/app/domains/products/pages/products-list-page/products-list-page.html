@@ -1,7 +1,9 @@
 <section class="products-list-page" data-testid="products-list-page">
   <header class="products-list-page__header">
     <h1 class="products-list-page__title">Productos</h1>
-    <a mat-flat-button routerLink="/productos/nuevo" data-testid="new-product">Nuevo producto</a>
+    @if (canWrite()) {
+      <a mat-flat-button routerLink="/productos/nuevo" data-testid="new-product">Nuevo producto</a>
+    }
   </header>
 
   @if (error()) {
@@ -60,8 +62,8 @@
           </button>
         </td>
       </ng-container>
-      <tr mat-header-row *matHeaderRowDef="columns"></tr>
-      <tr mat-row *matRowDef="let row; columns: columns" data-testid="product-row"></tr>
+      <tr mat-header-row *matHeaderRowDef="columns()"></tr>
+      <tr mat-row *matRowDef="let row; columns: columns()" data-testid="product-row"></tr>
     </table>
   }
 </section>

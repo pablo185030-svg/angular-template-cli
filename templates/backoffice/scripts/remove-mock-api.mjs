@@ -58,12 +58,14 @@ export async function removeMockApi(projectDir) {
 
   await rm(join(projectDir, 'mock'), { recursive: true, force: true });
   await rm(join(projectDir, 'proxy.conf.json'), { force: true });
+  // These specs call the mock API directly, so they cannot run without it.
+  await rm(join(projectDir, 'e2e', 'mock-api-auth.spec.ts'), { force: true });
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   removeMockApi(ROOT)
     .then(() => {
-      console.log('Mock API removed. The products example now loads public/mock/products.json');
+      console.log('Mock API removed. The products and roles examples now load public/mock/*.json');
       console.log('and keeps changes in browser memory. To use a real backend, set');
       console.log("api.mode to 'http' in the environment files and point /api at it.");
     })

@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "username": "admin",
+    "password": "1234",
+    "email": "admin@coto.com.ar",
+    "firstName": "Admin",
+    "lastName": "Coto",
+    "employeeNumber": "1234",
+    "roleId": 1
+  },
+  {
+    "id": 2,
+    "username": "escritura",
+    "password": "1234",
+    "email": "escritura@coto.com.ar",
+    "firstName": "Esteban",
+    "lastName": "Escritura",
+    "employeeNumber": "1235",
+    "roleId": 2
+  },
+  {
+    "id": 3,
+    "username": "lectura",
+    "password": "1234",
+    "email": "lectura@coto.com.ar",
+    "firstName": "Laura",
+    "lastName": "Lectura",
+    "employeeNumber": "1236",
+    "roleId": 3
+  }
+]

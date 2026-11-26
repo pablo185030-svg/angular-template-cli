@@ -41,9 +41,42 @@ $drawer-easing: cubic-bezier(0.4, 0, 0.2, 1);
     font: var(--mat-sys-label-small);
   }
 
+  &__account {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  &__avatar {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: var(--mat-sys-primary);
+    color: var(--mat-sys-on-primary);
+    font: var(--mat-sys-label-large);
+  }
+
+  &__identity {
+    display: grid;
+    justify-items: start;
+    gap: 0.125rem;
+  }
+
   &__user-name {
     font: var(--mat-sys-label-large);
     overflow-wrap: anywhere;
+  }
+
+  &__role {
+    padding: 0 0.5rem;
+    border-radius: var(--mat-sys-corner-full, 9999px);
+    background: var(--mat-sys-secondary-container);
+    color: var(--mat-sys-on-secondary-container);
+    font: var(--mat-sys-label-small);
+    text-transform: capitalize;
   }
 
   // Stays above the drawer so it can turn into the close button.

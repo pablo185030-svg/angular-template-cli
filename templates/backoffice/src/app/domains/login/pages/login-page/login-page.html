@@ -1,0 +1,71 @@
+<main class="login-page" data-testid="login-page">
+  <section class="login-page__card">
+    <img class="login-page__logo" src="coto-logo.svg" alt="Coto" width="111" height="40" />
+    <h1 class="login-page__title">Iniciar sesión</h1>
+
+    <form
+      class="login-page__form"
+      [formRoot]="loginForm"
+      (submit)="onSubmit()"
+      data-testid="login-form"
+    >
+      <mat-form-field appearance="fill">
+        <mat-label>Usuario</mat-label>
+        <input
+          matInput
+          type="text"
+          autocomplete="username"
+          data-testid="login-username"
+          [formField]="loginForm.username"
+        />
+        @if (loginForm.username().invalid() && loginForm.username().touched()) {
+          <mat-error>{{ loginForm.username().errors()[0]?.message }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Contraseña</mat-label>
+        <input
+          matInput
+          type="password"
+          autocomplete="current-password"
+          data-testid="login-password"
+          [formField]="loginForm.password"
+        />
+        @if (loginForm.password().invalid() && loginForm.password().touched()) {
+          <mat-error>{{ loginForm.password().errors()[0]?.message }}</mat-error>
+        }
+      </mat-form-field>
+
+      @if (error()) {
+        <p class="login-page__error" role="alert" data-testid="login-error">{{ error() }}</p>
+      }
+
+      <button mat-flat-button type="submit" [disabled]="isSigning()" data-testid="login-submit">
+        Ingresar
+      </button>
+    </form>
+
+    <section class="login-page__hint" data-testid="login-hint" aria-label="Usuarios de prueba">
+      <h2 class="login-page__hint-title">Usuarios de prueba</h2>
+      <p class="login-page__hint-note">Solo para entornos locales</p>
+      <ul class="login-page__hint-list">
+        <li class="login-page__hint-item">
+          <span class="login-page__hint-role">Admin · todos los permisos</span>
+          <span>Usuario: <strong>admin</strong></span>
+          <span>Contraseña: <strong>1234</strong></span>
+        </li>
+        <li class="login-page__hint-item">
+          <span class="login-page__hint-role">Escritura · lectura y escritura</span>
+          <span>Usuario: <strong>escritura</strong></span>
+          <span>Contraseña: <strong>1234</strong></span>
+        </li>
+        <li class="login-page__hint-item">
+          <span class="login-page__hint-role">Lectura · solo lectura</span>
+          <span>Usuario: <strong>lectura</strong></span>
+          <span>Contraseña: <strong>1234</strong></span>
+        </li>
+      </ul>
+    </section>
+  </section>
+</main>

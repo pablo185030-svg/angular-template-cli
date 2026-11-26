@@ -11,7 +11,7 @@ export const APP_TYPES = [
   {
     value: 'backoffice',
     label: 'Backoffice',
-    hint: 'SPA privada con login Keycloak y un ejemplo de ABM',
+    hint: 'SPA privada con login Keycloak, roles y un ejemplo de ABM',
   },
 ];
 

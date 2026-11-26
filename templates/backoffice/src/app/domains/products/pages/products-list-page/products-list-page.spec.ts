@@ -2,6 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
+import { AuthService } from '@core/auth/auth.service';
+import { Permission } from '@core/auth/models/permission.model';
+import { FakeAuthService } from '@core/auth/testing/fake-auth.service';
 import { Product } from '../../models/product.model';
 import { ProductsService } from '../../services/products.service';
 import { ProductsListPage } from './products-list-page';
@@ -16,7 +19,10 @@ describe('ProductsListPage', () => {
     list?: Observable<Product[]>;
     remove?: Observable<void>;
     confirmed?: boolean;
+    permissions?: Permission[];
   }) {
+    const auth = new FakeAuthService();
+    auth.grants.set(options.permissions ?? ['read', 'write']);
     const service = {
       list: vi.fn(() => options.list ?? of(PRODUCTS)),
       remove: vi.fn(() => options.remove ?? of(undefined)),
@@ -25,6 +31,7 @@ describe('ProductsListPage', () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
+        { provide: AuthService, useValue: auth },
         { provide: ProductsService, useValue: service },
         { provide: MatDialog, useValue: dialog },
       ],
@@ -105,5 +112,22 @@ describe('ProductsListPage', () => {
     expect(element.querySelector('[data-testid="products-error"]')?.textContent).toContain(
       'No se pudo eliminar el producto.',
     );
+  });
+
+  it('hides the new, edit and delete actions from a user without write permission', () => {
+    const { element, rows } = setup({ permissions: ['read'] });
+
+    expect(rows().length).toBe(2);
+    expect(element.querySelector('[data-testid="new-product"]')).toBeNull();
+    expect(element.querySelector('[data-testid="edit-product-1"]')).toBeNull();
+    expect(element.querySelector('[data-testid="delete-product-1"]')).toBeNull();
+  });
+
+  it('shows the new, edit and delete actions to a user with write permission', () => {
+    const { element } = setup({ permissions: ['read', 'write'] });
+
+    expect(element.querySelector('[data-testid="new-product"]')).not.toBeNull();
+    expect(element.querySelector('[data-testid="edit-product-1"]')).not.toBeNull();
+    expect(element.querySelector('[data-testid="delete-product-1"]')).not.toBeNull();
   });
 });

@@ -1,0 +1,144 @@
+@use '@coto-dev/ui-kit/styles' as coto;
+
+:host {
+  display: block;
+}
+
+.roles-list-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  max-width: 64rem;
+  margin: 0 auto;
+
+  &__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  &__title {
+    margin: 0;
+    font: var(--mat-sys-headline-medium);
+  }
+
+  // Mobile: every product is a card (the table markup is kept, only its display changes).
+  &__table {
+    display: block;
+    width: 100%;
+    background: transparent;
+
+    // Angular Material renders the row groups itself, so they carry no encapsulation attribute.
+    ::ng-deep thead,
+    ::ng-deep tbody {
+      display: block;
+    }
+
+    tr.mat-mdc-header-row {
+      display: none;
+    }
+
+    tr.mat-mdc-row {
+      display: block;
+      height: auto;
+      margin-bottom: 0.75rem;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--mat-sys-outline-variant);
+      border-radius: var(--mat-sys-corner-medium, 0.75rem);
+      background: var(--mat-sys-surface-container-low);
+    }
+
+    td.mat-mdc-cell {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      height: auto;
+      min-height: 2.5rem;
+      padding: 0;
+      border-bottom: 0;
+      overflow-wrap: anywhere;
+
+      &[data-label]::before {
+        content: attr(data-label);
+        flex: none;
+        color: var(--mat-sys-on-surface-variant);
+        font: var(--mat-sys-label-large);
+      }
+    }
+
+    td.roles-list-page__name {
+      font: var(--mat-sys-title-medium);
+    }
+  }
+
+  @include coto.breakpoint-up(tablet-portrait) {
+    &__table {
+      display: table;
+      background: revert;
+
+      ::ng-deep thead {
+        display: table-header-group;
+      }
+
+      ::ng-deep tbody {
+        display: table-row-group;
+      }
+
+      tr.mat-mdc-header-row {
+        display: table-row;
+      }
+
+      tr.mat-mdc-row {
+        display: table-row;
+        height: 3.25rem;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+      }
+
+      td.mat-mdc-cell {
+        display: table-cell;
+        height: 3.25rem;
+        min-height: 0;
+        padding: 0 1rem;
+        border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+        &[data-label]::before {
+          content: none;
+        }
+      }
+
+      td.roles-list-page__name {
+        font: revert;
+      }
+    }
+  }
+
+  &__actions {
+    text-align: end;
+    white-space: nowrap;
+  }
+
+  &__table td.roles-list-page__actions {
+    justify-content: flex-end;
+    padding-top: 0.25rem;
+  }
+
+  &__error {
+    margin: 0;
+    color: var(--mat-sys-error);
+  }
+
+  &__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}

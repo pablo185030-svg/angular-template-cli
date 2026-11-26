@@ -20,6 +20,7 @@
 - [Comandos principales](#main-commands)
 - [Entornos](#environments)
 - [Autenticación (Keycloak)](#authentication)
+- [Roles y permisos](#roles)
 - [API mock y el ejemplo de ABM](#mock-api)
 - [Modo oscuro](#dark-mode)
 - [Estructura del proyecto](#project-structure)
@@ -35,9 +36,9 @@
 
 ## ¿Qué es?
 
-Un starter de backoffice (app web privada): una SPA Angular 22 (componentes standalone, signals, zoneless) con un layout principal (header y footer), páginas de inicio y "acerca de", autenticación con Keycloak y un ejemplo de ABM de productos que funciona contra una API mock. Está pensado para copiarse, renombrarse y crecer hasta convertirse en una app real.
+Un starter de backoffice (app web privada): una SPA Angular 22 (componentes standalone, signals, zoneless) con un layout principal (header y footer), páginas de inicio y "acerca de", autenticación con Keycloak, acceso por roles, un ABM de roles y un ejemplo de ABM de productos que funcionan contra una API mock. Está pensado para copiarse, renombrarse y crecer hasta convertirse en una app real.
 
-**Funciona sin Keycloak.** Hasta que lo configures, la app arranca en **modo demo**: un usuario ficticio ya autenticado y una insignia "Modo demo" en el header. Ver [Autenticación](#authentication).
+**Funciona sin Keycloak.** Hasta que lo configures, la app arranca en **modo demo**: una pantalla de login con usuarios de ejemplo (`admin` / `1234`) y una insignia "Modo demo" en el header. Ver [Autenticación](#authentication).
 
 El tema y la UI compartida (paleta M3, tipografía, breakpoints, componentes) vienen de `@coto-dev/ui-kit`, una librería interna de sistema de diseño que se instala desde el registro privado Nexus; ver [Dependencias](#dependencies).
 
@@ -54,7 +55,7 @@ npm run mock:api     # terminal 1: API mock en http://localhost:5000
 npm start            # terminal 2: app en http://localhost:4200
 ```
 
-La app abre directo en el layout con un usuario demo. Para iniciar sesión con credenciales reales, ejecutá `npm run configure:keycloak`; ver [Autenticación](#authentication).
+La app abre en la pantalla de login: ingresá con `admin` / `1234` (ver [Roles y permisos](#roles)). Para usar Keycloak, ejecutá `npm run configure:keycloak`; ver [Autenticación](#authentication).
 
 ---
 
@@ -177,7 +178,7 @@ La app autentica usuarios con el flujo OIDC Authorization Code y PKCE (`angular-
 
 ### Modo demo (por defecto)
 
-Con `auth.mode: 'mock'`, `MockAuthService` inicia sesión con un "Usuario demo" ficticio, así podés ver y trabajar toda la app sin un servidor Keycloak. El header muestra una insignia **Modo demo** y oculta el botón de logout. Al arrancar, pide un token ficticio a la API mock (`POST /api/auth/token`), lo guarda solo en memoria y toma el nombre de usuario de sus claims; si usás la fuente de datos JSON o la API mock no responde, usa un token local y avisa con un `console.warn`. **Nunca uses `mock` en un entorno desplegado.**
+Con `auth.mode: 'mock'` nadie inicia sesión al arrancar: `authGuard` envía al usuario a la pantalla de login (`/login`, sin header) y `MockAuthService.signIn()` verifica los usuarios de ejemplo. Con la API mock, las credenciales van a `POST /api/auth/login`, que devuelve un token ficticio sin firmar; con la fuente de datos JSON (sin servidor) se verifican en el navegador contra `public/mock/users.json` y se arma un token local. El token se guarda solo en memoria, así que recargar o cerrar sesión vuelve al login. El header muestra la insignia **Modo demo**, el usuario (avatar con iniciales, nombre y un badge con su rol) y el botón de logout. Las contraseñas de ejemplo están en texto plano en un JSON: son datos de demo. **Nunca uses `mock` en un entorno desplegado.**
 
 ### Conectar Keycloak
 
@@ -209,7 +210,17 @@ Antes de desplegar, agregá tu URL de producción a los redirect URIs y web orig
 
 ### Tests
 
-Los tests unitarios usan `FakeAuthService` de `src/app/core/auth/testing/`. La configuración de build `e2e` siempre usa el usuario demo, así que `npm run test:e2e` no necesita Keycloak.
+Los tests unitarios usan `FakeAuthService` de `src/app/core/auth/testing/`. La configuración de build `e2e` siempre usa el modo demo, así que `npm run test:e2e` no necesita Keycloak; los specs inician sesión con `signIn()` de `e2e/support/auth.ts` (cargar la página descarta la sesión en memoria). Con Keycloak, los permisos salen de un claim `permissions` del access token o, si falta, de los roles del realm con los nombres de los roles por defecto (`admin`, `escritura`, `lectura`); adaptá `core/auth/keycloak-permissions.ts` a tu realm.
+
+---
+
+<a id="roles"></a>
+
+## Roles y permisos
+
+Un rol tiene un nombre, una descripción y un conjunto de permisos: `read` (ver), `write` (crear, editar y eliminar productos) y `manage-roles` (el ABM de roles en `/roles`). Los roles de ejemplo son `admin` (todo), `escritura` (`read` + `write`) y `lectura` (`read`). En modo demo existen estos usuarios (contraseña `1234` para todos): `admin` (`admin@coto.com.ar`, legajo 1234), `escritura` y `lectura`.
+
+Los permisos se hacen cumplir con `permissionGuard(permission)` en las rutas, ocultando acciones en la UI (`AuthService.hasPermission()`) y en la API mock (`403`). El rol `admin` no se puede editar ni eliminar, y un rol asignado a un usuario no se puede eliminar. No hay ABM de usuarios: los usuarios son datos de ejemplo. Los cambios en los roles se aplican en el próximo inicio de sesión del usuario. La UI de roles vive en `src/app/domains/roles/`.
 
 ---
 
@@ -227,10 +238,10 @@ Los tests unitarios usan `FakeAuthService` de `src/app/core/auth/testing/`. La c
 | `PUT`    | `/api/products/:id` | Actualizar  |
 | `DELETE` | `/api/products/:id` | Eliminar    |
 
-La API mock también emite el token ficticio del modo demo con `POST /api/auth/token` (un JWT sin firmar con `name`, `roles` y `exp`) y responde `401` a `/api/products` si falta el header `Authorization: Bearer <token>`; el token no se verifica. `/health` y el endpoint del token son públicos. Para llamarla con `curl`, pedí primero un token:
+La API mock también sirve `/api/roles` (listar, obtener, crear, actualizar, eliminar) y autentica usuarios con `POST /api/auth/login` (`{ username, password }`, un JWT sin firmar con `name`, `role`, `permissions` y `exp`). Responde `401` a `/api/products` y `/api/roles` si falta el header `Authorization: Bearer <token>` y `403` si el token no tiene el permiso (`read`, `write` o `manage-roles`); el token se acepta sin verificar. `/health` y el login son públicos. Para llamarla con `curl`, pedí primero un token:
 
 ```bash
-TOKEN=$(curl -s -X POST localhost:5000/api/auth/token | node -pe 'JSON.parse(require("fs").readFileSync(0)).access_token')
+TOKEN=$(curl -s -X POST localhost:5000/api/auth/login -H 'Content-Type: application/json' -d '{"username":"admin","password":"1234"}' | node -pe 'JSON.parse(require("fs").readFileSync(0)).access_token')
 curl -H "Authorization: Bearer $TOKEN" localhost:5000/api/products
 ```
 
@@ -263,7 +274,7 @@ La UI de ejemplo vive en `src/app/domains/products/`: un listado (`mat-table`), 
 src/app/
   core/
     auth/          contrato AuthService, KeycloakAuthService, MockAuthService, testing/FakeAuthService
-    guards/        auth.guard.ts
+    guards/        auth.guard.ts, permission.guard.ts, login-page.guard.ts
     interceptors/  auth.interceptor.ts
     services/ models/
   shared/
@@ -272,10 +283,13 @@ src/app/
   domains/
     home/ about/                páginas de ejemplo
     products/                   ejemplo de ABM: models/ services/ (http + json) pages/
-  app.routes.ts                 todas las rutas están detrás de authGuard
+    login/                      pantalla de login (modo demo)
+    roles/                      ABM de roles: models/ services/ (http + json) pages/
+  app.routes.ts                 todas las rutas salvo /login están detrás de authGuard
 src/environments/               environment.ts, environment.prod.ts, environment.e2e.ts
-mock/server.mjs                 API de productos en memoria (se elimina sin la API mock)
+mock/server.mjs                 API de productos, roles y login en memoria (se elimina sin la API mock)
 public/mock/products.json       productos de ejemplo compartidos por la API mock y la fuente JSON
+public/mock/roles.json, users.json  roles y usuarios de ejemplo, compartidos igual
 scripts/configure-keycloak.mjs  escribe la configuración de Keycloak en los archivos de entorno
 scripts/configure-theme.mjs     activa o desactiva el soporte de modo oscuro
 scripts/remove-mock-api.mjs     elimina la API mock y pasa a la fuente de datos JSON
@@ -353,7 +367,7 @@ npx playwright install chromium   # solo la primera vez
 npm run test:e2e
 ```
 
-Playwright levanta la API mock y la app con la configuración `e2e` (usuario demo, sin Keycloak). Preferí locators accesibles (`getByRole`, `getByLabel`), y después `getByTestId`. `e2e/products.spec.ts` cubre listado, alta, edición y borrado, además de la validación del formulario. El mock guarda el estado en memoria, así que los specs se ejecutan de a uno.
+Playwright levanta la API mock y la app con la configuración `e2e` (modo demo, sin Keycloak). Preferí locators accesibles (`getByRole`, `getByLabel`), y después `getByTestId`. `e2e/products.spec.ts` cubre listado, alta, edición y borrado, además de la validación del formulario. El mock guarda el estado en memoria, así que los specs se ejecutan de a uno.
 
 ---
 

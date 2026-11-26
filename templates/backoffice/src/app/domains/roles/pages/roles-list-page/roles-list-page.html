@@ -1,0 +1,65 @@
+<section class="roles-list-page" data-testid="roles-list-page">
+  <header class="roles-list-page__header">
+    <h1 class="roles-list-page__title">Roles</h1>
+    <a mat-flat-button routerLink="/roles/nuevo" data-testid="new-role">Nuevo rol</a>
+  </header>
+
+  @if (error()) {
+    <p class="roles-list-page__error" role="alert" data-testid="roles-error">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <p data-testid="roles-loading">Cargando…</p>
+  } @else if (items().length === 0 && !error()) {
+    <p data-testid="roles-empty">Todavía no hay roles.</p>
+  } @else if (items().length > 0) {
+    <table
+      mat-table
+      [dataSource]="items()"
+      class="roles-list-page__table"
+      data-testid="roles-table"
+    >
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Nombre</th>
+        <td mat-cell *matCellDef="let role" class="roles-list-page__name">{{ role.name }}</td>
+      </ng-container>
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef>Descripción</th>
+        <td mat-cell *matCellDef="let role" data-label="Descripción">{{ role.description }}</td>
+      </ng-container>
+      <ng-container matColumnDef="permissions">
+        <th mat-header-cell *matHeaderCellDef>Permisos</th>
+        <td mat-cell *matCellDef="let role" data-label="Permisos">
+          {{ describe(role.permissions) }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>
+          <span class="roles-list-page__sr">Acciones</span>
+        </th>
+        <td mat-cell *matCellDef="let role" class="roles-list-page__actions">
+          <a
+            mat-button
+            [routerLink]="['/roles', role.id, 'editar']"
+            [attr.data-testid]="'edit-role-' + role.id"
+            [attr.aria-label]="(role.name === 'admin' ? 'Ver ' : 'Editar ') + role.name"
+            >{{ role.name === 'admin' ? 'Ver' : 'Editar' }}</a
+          >
+          @if (canDelete(role)) {
+            <button
+              mat-button
+              type="button"
+              [attr.data-testid]="'delete-role-' + role.id"
+              [attr.aria-label]="'Eliminar ' + role.name"
+              (click)="confirmDelete(role)"
+            >
+              Eliminar
+            </button>
+          }
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="columns"></tr>
+      <tr mat-row *matRowDef="let row; columns: columns" data-testid="role-row"></tr>
+    </table>
+  }
+</section>

@@ -1,14 +1,19 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { AuthService } from '@core/auth/auth.service';
 import { FakeAuthService } from '@core/auth/testing/fake-auth.service';
+import { Permission } from '@core/auth/models/permission.model';
 import { routes } from './app.routes';
 
 describe('app routes', () => {
-  function configure(signedIn: boolean) {
+  function configure(
+    signedIn: boolean,
+    permissions: Permission[] = ['read', 'write', 'manage-roles'],
+  ) {
     const auth = new FakeAuthService();
     auth.authenticated.set(signedIn);
+    auth.grants.set(permissions);
     TestBed.configureTestingModule({
       providers: [{ provide: AuthService, useValue: auth }, provideRouter(routes)],
     });
@@ -54,5 +59,34 @@ describe('app routes', () => {
         '[data-testid="about-page"]',
       ) ?? null,
     ).toBeNull();
+  });
+
+  it('shows the login page without the layout when signed out', async () => {
+    configure(false);
+
+    const harness = await RouterTestingHarness.create('/login');
+    const element = harness.routeNativeElement as HTMLElement;
+
+    expect(element.querySelector('[data-testid="login-page"]')).not.toBeNull();
+    expect(element.querySelector('[data-testid="header"]')).toBeNull();
+  });
+
+  it('redirects a signed-in user from the login page to the home page', async () => {
+    configure(true);
+
+    const harness = await RouterTestingHarness.create('/login');
+
+    expect(TestBed.inject(Router).url).toBe('/');
+    expect(
+      (harness.routeNativeElement as HTMLElement).querySelector('[data-testid="home-page"]'),
+    ).not.toBeNull();
+  });
+
+  it('redirects a read-only user from the create product route to the home page', async () => {
+    configure(true, ['read']);
+
+    await RouterTestingHarness.create('/productos/nuevo');
+
+    expect(TestBed.inject(Router).url).toBe('/');
   });
 });
