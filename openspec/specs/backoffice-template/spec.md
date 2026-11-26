@@ -126,7 +126,7 @@ The backoffice template SHALL include a products example (ABM) offering a list, 
 - **THEN** the product is removed from the list
 
 ### Requirement: README
-The backoffice template SHALL include a README that explains what it is, how to start it, its stack, commands, environments, authentication (demo mode and how to connect Keycloak), the mock API, project structure and deployment.
+The backoffice template SHALL include a Spanish README (`README.md`, the default) and an English copy (`README.en.md`), each linking to the other, that explain what it is, how to start it, its stack, commands, environments, authentication (demo mode and how to connect Keycloak), the mock API, project structure and deployment.
 
 #### Scenario: README present
 - **WHEN** a project is generated from the backoffice template
@@ -210,7 +210,7 @@ The backoffice template SHALL show the version declared in its `package.json` in
 
 #### Scenario: Version in the footer
 - **WHEN** any page is displayed
-- **THEN** the footer shows the `package.json` version next to the copyright text
+- **THEN** the footer shows a single line "<year> COTO - <app name>. Versión <version>" with the `package.json` version
 
 #### Scenario: Console banner
 - **WHEN** the app finishes its first render in the browser

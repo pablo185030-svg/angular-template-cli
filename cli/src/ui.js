@@ -1,4 +1,5 @@
 import * as clack from '@clack/prompts';
+import { MULTISELECT_INSTRUCTIONS, SELECT_INSTRUCTIONS } from '@clack/prompts';
 import pc from 'picocolors';
 import { FRAME_COUNT, headerLines } from './mascot.js';
 import { createScreen } from './screen.js';
@@ -9,6 +10,16 @@ const SUBTITLE = 'Generá un proyecto Angular nuevo a partir de un template';
 const STACK = 'Stack: Angular 22 · Material Design 3 · @coto-dev/ui-kit · SCSS + BEM';
 const FRAME_MS = 120;
 const SPLASH_FRAMES = FRAME_COUNT;
+/** clack's key hints are in English and exported as mutable arrays: translate them in place. */
+SELECT_INSTRUCTIONS.splice(0, SELECT_INSTRUCTIONS.length, `${pc.dim('↑/↓')} para navegar`, `${pc.dim('Enter:')} confirmar`);
+MULTISELECT_INSTRUCTIONS.splice(
+  0,
+  MULTISELECT_INSTRUCTIONS.length,
+  `${pc.dim('↑/↓')} para navegar`,
+  `${pc.dim('Espacio:')} seleccionar`,
+  `${pc.dim('Enter:')} confirmar`,
+);
+
 const SPINNER = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
 /**
@@ -200,18 +211,18 @@ export function createInteractiveReporter({
       screen.leave();
       const { title, lines } = buildSummary(project);
       out.write(`\n${headerLines({ frame: 0, title: TITLE, subtitle: SUBTITLE, stack: STACK, detail: cwd }).join('\n')}\n\n`);
-      warnings.forEach((warning) => clack.log.warn(warning));
-      clack.note(lines.join('\n'), title);
-      clack.outro(pc.green('¡A programar!'));
+      warnings.forEach((warning) => clack.log.warn(warning, { output: out }));
+      clack.note(lines.join('\n'), title, { output: out });
+      clack.outro(pc.green('¡A programar!'), { output: out });
     },
     cancelled() {
       screen.leave();
-      clack.cancel('Cancelado. No se escribió nada.');
+      clack.cancel('Cancelado. No se escribió nada.', { output: out });
     },
     error(message) {
       screen.leave();
-      clack.log.error(message);
-      clack.outro(pc.red('La generación falló.'));
+      clack.log.error(message, { output: out });
+      clack.outro(pc.red('La generación falló.'), { output: out });
     },
   };
 }

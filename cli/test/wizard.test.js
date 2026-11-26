@@ -145,9 +145,9 @@ test('backoffice: the mock API question explains what it is and defaults to yes'
   strictEqual(question.initialValue, true);
   match(question.message, /API mock/);
   match(question.message, /sin backend/);
-  match(question.message, /solo un mock, no una API real/);
-  match(question.message, /JSON/);
-  match(question.message, /memoria del navegador/);
+  match(question.message, /servidor local/);
+  match(question.message, /products\.json/);
+  match(question.message, /se pierden al recargar/);
 });
 
 test('backoffice: declining the mock API is reported as mockApi false', async () => {

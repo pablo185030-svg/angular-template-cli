@@ -1,6 +1,6 @@
 {
   "name": "coto-angular-wizard",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "Wizard that generates a new Angular project from a Coto template.",

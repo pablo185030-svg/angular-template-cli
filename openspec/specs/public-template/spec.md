@@ -74,7 +74,7 @@ The public template SHALL provide a home page at `/` and an about page at `/acer
 - **THEN** the description names "Coto UI Kit" as a link to the ui-kit repository that opens in a new tab
 
 ### Requirement: README
-The public template SHALL include a README that explains what it is, how to start it, its stack, commands, environments, server-side rendering settings, project structure and deployment.
+The public template SHALL include a Spanish README (`README.md`, the default) and an English copy (`README.en.md`), each linking to the other, that explain what it is, how to start it, its stack, commands, environments, server-side rendering settings, project structure and deployment.
 
 #### Scenario: README present
 - **WHEN** a project is generated from the public template
@@ -154,7 +154,7 @@ The public template SHALL show the version declared in its `package.json` in the
 
 #### Scenario: Version in the footer
 - **WHEN** any page is displayed
-- **THEN** the footer shows the `package.json` version next to the copyright text
+- **THEN** the footer shows a single line "<year> COTO - <app name>. Versión <version>" with the `package.json` version
 
 #### Scenario: Console banner
 - **WHEN** the app finishes its first render in the browser

@@ -3,16 +3,17 @@ import { VersionService } from '@shared/version/version.service';
 import { Footer } from './footer';
 
 describe('Footer', () => {
-  it('shows the current year and the project name', () => {
+  it('shows the current year, the project name and the version in one line', () => {
     const fixture = TestBed.createComponent(Footer);
     fixture.detectChanges();
 
     const text = (fixture.nativeElement as HTMLElement)
       .querySelector('.footer__text')
-      ?.textContent?.trim();
+      ?.textContent?.replace(/\s+/g, ' ')
+      .trim();
 
     expect(text).toBe(
-      `© ${new Date().getFullYear()} COTO coto-angular-template. Todos los derechos reservados.`,
+      `${new Date().getFullYear()} COTO - coto-angular-template. Versión ${TestBed.inject(VersionService).getVersion()}`,
     );
   });
 
@@ -24,6 +25,6 @@ describe('Footer', () => {
       .querySelector('[data-testid="footer-version"]')
       ?.textContent?.trim();
 
-    expect(text).toBe(`v${TestBed.inject(VersionService).getVersion()}`);
+    expect(text).toBe(`Versión ${TestBed.inject(VersionService).getVersion()}`);
   });
 });

@@ -6,45 +6,47 @@
 
 ![Vitest](https://img.shields.io/badge/Vitest-4.0-6E9F18?style=flat&logo=vitest) ![Playwright](https://img.shields.io/badge/Playwright-1.61-2EAD33?style=flat&logo=playwright) ![ESLint](https://img.shields.io/badge/ESLint-enabled-4B32C3?style=flat&logo=eslint) ![Prettier](https://img.shields.io/badge/Prettier-enabled-F7B93E?style=flat&logo=prettier)
 
-## Table of Contents
+> 🌐 **Español** · [English](README.en.md)
 
-- [What is it?](#what-is-it)
-- [Quick start](#quick-start)
+## Tabla de contenidos
+
+- [¿Qué es?](#what-is-it)
+- [Inicio rápido](#quick-start)
 - [Stack](#stack)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Dependencies](#dependencies)
-- [Troubleshooting](#troubleshooting)
-- [Main commands](#main-commands)
-- [Environments](#environments)
-- [Server-side rendering](#server-side-rendering)
-- [Project structure](#project-structure)
-- [Path aliases](#path-aliases)
+- [Requisitos](#requirements)
+- [Instalación](#installation)
+- [Dependencias](#dependencies)
+- [Solución de problemas](#troubleshooting)
+- [Comandos principales](#main-commands)
+- [Entornos](#environments)
+- [Renderizado del lado del servidor](#server-side-rendering)
+- [Estructura del proyecto](#project-structure)
+- [Alias de rutas](#path-aliases)
 - [Breakpoints](#breakpoints)
-- [Unit tests](#unit-tests)
-- [E2E tests with Playwright](#e2e-tests-with-playwright)
+- [Tests unitarios](#unit-tests)
+- [Tests E2E con Playwright](#e2e-tests-with-playwright)
 - [Deploy](#deploy)
 
 ---
 
 <a id="what-is-it"></a>
 
-## What is it?
+## ¿Qué es?
 
-A public website starter: an Angular 22 app (standalone components, signals, zoneless, SSR) with a main layout (header and footer), a home page, an about page and a not-found page. It is meant to be copied, renamed and grown into a real site.
+Un starter de sitio web público: una app Angular 22 (componentes standalone, signals, zoneless, SSR) con un layout principal (header y footer), una página de inicio, una página "acerca de" y una página de no encontrado. Está pensado para copiarse, renombrarse y crecer hasta convertirse en un sitio real.
 
-Theming and shared UI (M3 palette, typography, breakpoints, components) come from `@coto-dev/ui-kit`, an internal design-system library installed from the private Nexus registry — see [Dependencies](#dependencies).
+El tema y la UI compartida (paleta M3, tipografía, breakpoints, componentes) vienen de `@coto-dev/ui-kit`, una librería interna de sistema de diseño que se instala desde el registro privado Nexus; ver [Dependencias](#dependencies).
 
 ---
 
 <a id="quick-start"></a>
 
-## Quick start
+## Inicio rápido
 
 ```bash
 nvm use            # Node 24
 npm install
-npm start          # app on http://localhost:4200
+npm start          # app en http://localhost:4200
 ```
 
 ---
@@ -53,147 +55,147 @@ npm start          # app on http://localhost:4200
 
 ## Stack
 
-| Layer           | Technology                                         |
-| --------------- | -------------------------------------------------- |
-| Framework       | Angular 22 (standalone, signals, zoneless, OnPush) |
-| UI / Theming    | Angular Material 22 + `@coto-dev/ui-kit` (M3)      |
-| Styles          | SCSS, BEM, mobile-first, CSS custom properties     |
-| SSR             | `@angular/ssr` + Express                           |
-| Unit tests      | Vitest (via `@angular/build:unit-test`)            |
-| E2E tests       | Playwright                                         |
-| Package manager | npm                                                |
-| Node            | 24 (see `.nvmrc`)                                  |
+| Capa               | Tecnología                                         |
+| ------------------ | -------------------------------------------------- |
+| Framework          | Angular 22 (standalone, signals, zoneless, OnPush) |
+| UI / Tema          | Angular Material 22 + `@coto-dev/ui-kit` (M3)      |
+| Estilos            | SCSS, BEM, mobile-first, CSS custom properties     |
+| SSR                | `@angular/ssr` + Express                           |
+| Tests unitarios    | Vitest (vía `@angular/build:unit-test`)            |
+| Tests E2E          | Playwright                                         |
+| Gestor de paquetes | npm                                                |
+| Node               | 24 (ver `.nvmrc`)                                  |
 
 ---
 
 <a id="requirements"></a>
 
-## Requirements
+## Requisitos
 
-- Node 24 (see `.nvmrc`; recommended: use `nvm` → `nvm use`).
-- npm — ships bundled with Node.
-- Network access to the private Nexus registry that serves `@coto-dev/ui-kit`.
+- Node 24 (ver `.nvmrc`; recomendado usar `nvm` → `nvm use`).
+- npm: viene incluido con Node.
+- Acceso de red al registro privado Nexus que sirve `@coto-dev/ui-kit`.
 
 ---
 
 <a id="installation"></a>
 
-## Installation
+## Instalación
 
 ```bash
 nvm use
 npm install
 ```
 
-`prepare` installs the Husky pre-commit hook, which runs `lint-staged` (ESLint + Prettier on staged files). It needs the project to be a git repository.
+`prepare` instala el hook de pre-commit de Husky, que ejecuta `lint-staged` (ESLint + Prettier sobre los archivos en staging). Requiere que el proyecto sea un repositorio git.
 
 ---
 
 <a id="dependencies"></a>
 
-## Dependencies
+## Dependencias
 
-The project commits a single lockfile, `package-lock.json`, so install with `npm ci` in CI.
+El proyecto versiona un único lockfile, `package-lock.json`, así que en CI instalá con `npm ci`.
 
-### Why every Angular package is pinned to the same exact version
+### Por qué todos los paquetes de Angular están fijados a la misma versión exacta
 
-Every `@angular/*` entry in `package.json` is pinned to the same exact version (no `^`). Angular's packages declare exact peer dependencies on each other, so they must move together; a mix of pinned and ranged entries fails with `ERESOLVE` the next time the tree is resolved after Angular publishes a patch. To upgrade, change the version on every `@angular/*` entry at once and run `npm install`. Don't use an `overrides` block for them.
+Cada entrada `@angular/*` de `package.json` está fijada a la misma versión exacta (sin `^`). Los paquetes de Angular declaran dependencias peer exactas entre sí, por lo que deben avanzar juntos; mezclar versiones fijas y con rango falla con `ERESOLVE` la próxima vez que se resuelva el árbol tras un parche de Angular. Para actualizar, cambiá la versión de todas las entradas `@angular/*` a la vez y ejecutá `npm install`. No uses un bloque `overrides` para ellas.
 
-### `@coto-dev/ui-kit`: installed from the private Nexus registry
+### `@coto-dev/ui-kit`: se instala desde el registro privado Nexus
 
-- `.npmrc` scopes `@coto-dev` to the private registry, so the registry must be reachable from your network when you run `npm install`. It contains no credentials.
-- To bump the library, edit its range in `package.json` and run `npm install`. Don't consume it as a git dependency or a local tarball.
-- Before using one of its components, check its API in `node_modules/@coto-dev/ui-kit/types/*.d.ts`.
-- The app never defines its own color palette: `src/styles.scss` calls `coto.theme()` once and everything reads `var(--mat-sys-*)`.
+- `.npmrc` apunta el scope `@coto-dev` al registro privado, así que el registro debe estar accesible desde tu red al ejecutar `npm install`. No contiene credenciales.
+- Para actualizar la librería, editá su rango en `package.json` y ejecutá `npm install`. No la consumas como dependencia git ni como tarball local.
+- Antes de usar uno de sus componentes, revisá su API en `node_modules/@coto-dev/ui-kit/types/*.d.ts`.
+- La app nunca define su propia paleta de colores: `src/styles.scss` llama a `coto.theme()` una sola vez y todo lee `var(--mat-sys-*)`.
 
 ---
 
 <a id="troubleshooting"></a>
 
-## Troubleshooting
+## Solución de problemas
 
-| Symptom                                         | Likely cause and fix                                                                                           |
-| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `npm install` cannot resolve `@coto-dev/ui-kit` | The Nexus registry is unreachable (VPN / corporate network). Check `.npmrc` and your connection.               |
-| `ERESOLVE` after changing Angular versions      | Some `@angular/*` entry has a different version or a `^`. Pin them all to the same exact version.              |
-| `NG0203` / injection errors in unit tests       | A second copy of `@angular/*` was resolved. `vitest.config.ts` already dedupes them; reinstall `node_modules`. |
-| SSR responds with a host error                  | Add the hostname to `ssr.allowedHosts` — see [Server-side rendering](#server-side-rendering).                  |
+| Síntoma                                            | Causa probable y solución                                                                                     |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `npm install` no puede resolver `@coto-dev/ui-kit` | El registro Nexus no es accesible (VPN / red corporativa). Revisá `.npmrc` y tu conexión.                     |
+| `ERESOLVE` tras cambiar versiones de Angular       | Alguna entrada `@angular/*` tiene otra versión o un `^`. Fijalas todas a la misma versión exacta.             |
+| `NG0203` / errores de inyección en tests unitarios | Se resolvió una segunda copia de `@angular/*`. `vitest.config.ts` ya las deduplica; reinstalá `node_modules`. |
+| SSR responde con un error de host                  | Agregá el hostname a `ssr.allowedHosts`; ver [Renderizado del lado del servidor](#server-side-rendering).     |
 
 ---
 
 <a id="main-commands"></a>
 
-## Main commands
+## Comandos principales
 
-| Command                   | Description                                                                        |
-| ------------------------- | ---------------------------------------------------------------------------------- |
-| `npm start`               | Dev server at `http://localhost:4200` with hot reload                              |
-| `npm run build`           | Production build (browser + SSR server) to `dist/`                                 |
-| `npm run build:dev`       | Development build                                                                  |
-| `npm run watch`           | Incremental build in development mode                                              |
-| `npm run serve:ssr`       | Runs the built SSR server (`PORT`, default 4000); requires a prior `npm run build` |
-| `npm test`                | Unit tests with Vitest (watch mode)                                                |
-| `npm run lint`            | ESLint (`angular-eslint`) on `.ts` and `.html` under `src/`                        |
-| `npm run format`          | Prettier on `src/` and `e2e/`                                                      |
-| `npm run test:e2e`        | Playwright e2e; starts the dev server automatically                                |
-| `npm run configure:rendering` | `-- --mode ssg` or `-- --mode spa`: converts the SSR project (see [Rendering mode](#rendering-mode)) |
-| `npm run configure:theme` | `-- --dark-mode` or `-- --no-dark-mode`: turns the light/dark toggle on or off     |
+| Comando                       | Descripción                                                                                      |
+| ----------------------------- | ------------------------------------------------------------------------------------------------ |
+| `npm start`                   | Servidor de desarrollo en `http://localhost:4200` con hot reload                                 |
+| `npm run build`               | Build de producción (navegador + servidor SSR) en `dist/`                                        |
+| `npm run build:dev`           | Build de desarrollo                                                                              |
+| `npm run watch`               | Build incremental en modo desarrollo                                                             |
+| `npm run serve:ssr`           | Ejecuta el servidor SSR compilado (`PORT`, por defecto 4000); requiere un `npm run build` previo |
+| `npm test`                    | Tests unitarios con Vitest (modo watch)                                                          |
+| `npm run lint`                | ESLint (`angular-eslint`) sobre `.ts` y `.html` en `src/`                                        |
+| `npm run format`              | Prettier sobre `src/` y `e2e/`                                                                   |
+| `npm run test:e2e`            | E2E con Playwright; levanta el servidor de desarrollo automáticamente                            |
+| `npm run configure:rendering` | `-- --mode ssg` o `-- --mode spa`: convierte el proyecto SSR a otro modo de renderizado          |
+| `npm run configure:theme`     | `-- --dark-mode` o `-- --no-dark-mode`: activa o desactiva el botón de tema claro/oscuro         |
 
-Run one unit spec: `npx ng test --watch=false --include "src/app/**/header.spec.ts"`.
+Ejecutar un solo spec unitario: `npx ng test --watch=false --include "src/app/**/header.spec.ts"`.
 
 ---
 
 <a id="environments"></a>
 
-## Environments
+## Entornos
 
-`src/environments/environment.ts` is used by `npm start`; `environment.prod.ts` replaces it in the production build (`fileReplacements` in `angular.json`). Add a new file and a build configuration if you need another environment.
+`src/environments/environment.ts` lo usa `npm start`; `environment.prod.ts` lo reemplaza en el build de producción (`fileReplacements` en `angular.json`). Agregá un archivo nuevo y una configuración de build si necesitás otro entorno.
 
-`theme.darkMode` (default `false`) is the dark mode setting: when `false` the site is always light and shows no toggle; when `true` (or after `npm run configure:theme -- --dark-mode`) the header shows a light/dark toggle, the site starts in light mode and the ui-kit's `CotoThemeService` remembers the choice. The dark styles are always included (`coto.dark-theme()` in `src/styles.scss`) and only apply with the `coto-dark-theme` class.
+`theme.darkMode` (por defecto `false`) es la configuración del modo oscuro: con `false` el sitio es siempre claro y no muestra el botón; con `true` (o tras `npm run configure:theme -- --dark-mode`) el header muestra un botón claro/oscuro, el sitio arranca en modo claro y el `CotoThemeService` del ui-kit recuerda la elección. Los estilos oscuros siempre están incluidos (`coto.dark-theme()` en `src/styles.scss`) y solo se aplican con la clase `coto-dark-theme`.
 
 ---
 
 <a id="server-side-rendering"></a>
 
-## Server-side rendering
+## Renderizado del lado del servidor
 
-`src/server.ts` is the Express entry point; `src/app/app.routes.server.ts` sets the render mode per route (everything is server-rendered by default).
+`src/server.ts` es el punto de entrada de Express; `src/app/app.routes.server.ts` define el modo de renderizado por ruta (por defecto todo se renderiza en el servidor).
 
-`@angular/ssr` rejects every `Host` header by default, to prevent host-header injection. **Add your public hostname(s) to `ssr.allowedHosts`** in `src/environments/environment.prod.ts` before deploying. `/health` answers `200 ok` without rendering, for liveness probes.
+`@angular/ssr` rechaza por defecto cualquier header `Host`, para evitar la inyección de host. **Agregá tus hostnames públicos a `ssr.allowedHosts`** en `src/environments/environment.prod.ts` antes de desplegar. `/health` responde `200 ok` sin renderizar, para probes de liveness.
 
 ---
 
 <a id="project-structure"></a>
 
-## Project structure
+## Estructura del proyecto
 
 ```
 src/app/
-  core/         app-wide singletons: guards/ interceptors/ services/ models/
-  shared/       reusable across domains
-    layouts/main-layout/   header + routed page + footer
+  core/         singletons de toda la app: guards/ interceptors/ services/ models/
+  shared/       reutilizable entre dominios
+    layouts/main-layout/   header + página enrutada + footer
     pages/not-found-page/
-  domains/      one folder per feature area
+  domains/      una carpeta por área funcional
     home/pages/home-page/
     about/pages/about-page/
-  app.routes.ts          main layout with child routes '', 'acerca-de' and a not-found '**'
-  app.routes.server.ts   SSR render mode per route
-src/environments/        environment.ts, environment.prod.ts (SSR hosts, theme.darkMode)
-src/server.ts            Express SSR server
-e2e/                     Playwright specs
+  app.routes.ts          layout principal con rutas hijas '', 'acerca-de' y un not-found '**'
+  app.routes.server.ts   modo de renderizado SSR por ruta
+src/environments/        environment.ts, environment.prod.ts (hosts SSR, theme.darkMode)
+src/server.ts            servidor SSR con Express
+e2e/                     specs de Playwright
 ```
 
-To add a feature, create `domains/<name>/pages/<name>-page/` and a lazy route in `app.routes.ts`. Files and folders are kebab-case; types live in `models/` folders.
+Para agregar una funcionalidad, creá `domains/<nombre>/pages/<nombre>-page/` y una ruta lazy en `app.routes.ts`. Los archivos y carpetas van en kebab-case; los tipos viven en carpetas `models/`.
 
 ---
 
 <a id="path-aliases"></a>
 
-## Path aliases
+## Alias de rutas
 
-`tsconfig.json` defines path aliases so imports don't depend on long relative paths:
+`tsconfig.json` define alias de rutas para que los imports no dependan de rutas relativas largas:
 
-| Alias        | Path                 | Example                                                                 |
+| Alias        | Ruta                 | Ejemplo                                                                 |
 | ------------ | -------------------- | ----------------------------------------------------------------------- |
 | `@app/*`     | `src/app/*`          | `import { routes } from '@app/app.routes';`                             |
 | `@core/*`    | `src/app/core/*`     | `import { authGuard } from '@core/guards/auth.guard';`                  |
@@ -201,7 +203,7 @@ To add a feature, create `domains/<name>/pages/<name>-page/` and a lazy route in
 | `@domains/*` | `src/app/domains/*`  | `import { HomePage } from '@domains/home/pages/home-page/home-page';`   |
 | `@env/*`     | `src/environments/*` | `import { environment } from '@env/environment';`                       |
 
-They work in the dev server, the build and the unit tests with no extra configuration.
+Funcionan en el servidor de desarrollo, el build y los tests unitarios sin configuración extra.
 
 ---
 
@@ -209,24 +211,23 @@ They work in the dev server, the build and the unit tests with no extra configur
 
 ## Breakpoints
 
-Breakpoints come from `@coto-dev/ui-kit`, so SCSS and TypeScript share the same thresholds. The design system is **mobile-first**: write base styles for the smallest screen and layer overrides upward.
+Los breakpoints vienen de `@coto-dev/ui-kit`, así que SCSS y TypeScript comparten los mismos umbrales. El sistema de diseño es **mobile-first**: escribí los estilos base para la pantalla más chica y agregá las variantes hacia arriba.
 
+**Header responsive.** Desde `tablet-portrait` (768px) el header muestra la navegación en línea. Por debajo, un botón hamburguesa (`menu-toggle`) abre un drawer animado con los mismos links (y el botón de tema si el modo oscuro está activo). El drawer se cierra al hacer clic en el fondo, con Escape o al activar un link, atrapa el foco mientras está abierto y respeta `prefers-reduced-motion`. Para agregar un link, editá el template compartido `links` en `header.html`: alimenta tanto la navegación en línea como el drawer.
 
-**Responsive header.** From `tablet-portrait` (768px) up the header shows the navigation inline. Below it, a hamburger button (`menu-toggle`) opens an animated drawer with the same links (and the theme toggle when dark mode is on). The drawer closes on backdrop click, Escape or link activation, traps the focus while open, and respects `prefers-reduced-motion`. To add a link, edit the shared `links` template in `header.html`: it feeds both the inline navigation and the drawer.
-
-| Breakpoint name    | Min width |
-| ------------------ | --------- |
-| `mobile`           | 320px     |
-| `tablet-portrait`  | 768px     |
-| `tablet-landscape` | 1024px    |
-| `desktop-small`    | 1366px    |
-| `desktop-large`    | 1920px    |
+| Nombre del breakpoint | Ancho mínimo |
+| --------------------- | ------------ |
+| `mobile`              | 320px        |
+| `tablet-portrait`     | 768px        |
+| `tablet-landscape`    | 1024px       |
+| `desktop-small`       | 1366px       |
+| `desktop-large`       | 1920px       |
 
 ```scss
 @use '@coto-dev/ui-kit/styles' as coto;
 
 .card {
-  padding: 1rem; // mobile (base, no query)
+  padding: 1rem; // mobile (base, sin query)
 
   @include coto.breakpoint-up(tablet-landscape) {
     padding: 2rem;
@@ -234,28 +235,28 @@ Breakpoints come from `@coto-dev/ui-kit`, so SCSS and TypeScript share the same 
 }
 ```
 
-From TypeScript use the `COTO_BREAKPOINTS` constant (e.g. with `BreakpointObserver`).
+Desde TypeScript usá la constante `COTO_BREAKPOINTS` (por ejemplo con `BreakpointObserver`).
 
 ---
 
 <a id="unit-tests"></a>
 
-## Unit tests
+## Tests unitarios
 
-Vitest through Angular's `@angular/build:unit-test` builder. Specs live next to the code as `*.spec.ts` and need no registration. Select elements with `data-testid`, not CSS classes. Run everything with `npm test`, or one spec with `--include` (see [Main commands](#main-commands)).
+Vitest a través del builder `@angular/build:unit-test` de Angular. Los specs viven junto al código como `*.spec.ts` y no requieren registro. Seleccioná elementos con `data-testid`, no con clases CSS. Ejecutá todo con `npm test`, o un solo spec con `--include` (ver [Comandos principales](#main-commands)).
 
 ---
 
 <a id="e2e-tests-with-playwright"></a>
 
-## E2E tests with Playwright
+## Tests E2E con Playwright
 
 ```bash
-npx playwright install chromium   # first time only
+npx playwright install chromium   # solo la primera vez
 npm run test:e2e
 ```
 
-Playwright starts the dev server itself (`playwright.config.ts`). Prefer accessible locators (`getByRole`, `getByLabel`), then `getByTestId`. The example in `e2e/home.spec.ts` visits the home page, navigates to about and checks the layout.
+Playwright levanta el servidor de desarrollo por sí mismo (`playwright.config.ts`). Preferí locators accesibles (`getByRole`, `getByLabel`), y después `getByTestId`. El ejemplo en `e2e/home.spec.ts` visita la home, navega a "acerca de" y verifica el layout.
 
 ---
 
@@ -263,5 +264,5 @@ Playwright starts the dev server itself (`playwright.config.ts`). Prefer accessi
 
 ## Deploy
 
-- (SSR) `Dockerfile` runs the built SSR server (`npm run build` first): `docker build -t coto-angular-template . && docker run -p 4000:4000 coto-angular-template`.
-- `nginx.conf` is an optional reverse proxy that serves the static assets from disk and forwards everything else to the Node server. It is a complete `server{}` block, to be placed at `/etc/nginx/conf.d/default.conf`.
+- (SSR) El `Dockerfile` ejecuta el servidor SSR compilado (antes `npm run build`): `docker build -t coto-angular-template . && docker run -p 4000:4000 coto-angular-template`.
+- `nginx.conf` es un reverse proxy opcional que sirve los assets estáticos desde disco y reenvía todo lo demás al servidor Node. Es un bloque `server{}` completo, para colocar en `/etc/nginx/conf.d/default.conf`.

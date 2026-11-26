@@ -1,39 +1,76 @@
 # angular-template-cli
 
-Two ready-to-run Angular 22 project templates for Coto apps, styled with `@coto-dev/ui-kit`, and a CLI wizard that generates a new project from either one.
+![Angular](https://img.shields.io/badge/Angular-22-DD0031?style=flat&logo=angular) ![Node](https://img.shields.io/badge/Node-24-339933?style=flat&logo=node.js)
 
-| Template               | What it is                                                                                 |
-| ---------------------- | ------------------------------------------------------------------------------------------ |
-| `templates/public`     | Public website. Server-side rendered, main layout (header + footer), home and about pages. |
-| `templates/backoffice` | Private web app. SPA, Keycloak login, same layout and pages, plus a products CRUD example. |
+> 🌐 **Español** · [English](README.en.md)
 
-Both are zoneless, standalone-component apps with ESLint, Prettier, Vitest, Husky + lint-staged, a Dockerfile and nginx config, and Playwright e2e examples. Each template is a normal Angular project that builds and tests on its own.
+Dos templates de proyecto Angular 22 listos para usar en apps de Coto, con estilos de `@coto-dev/ui-kit`, y un wizard por CLI que genera un proyecto nuevo a partir de cualquiera de ellos.
 
-## Requirements
+| Template               | Qué es                                                                                                              |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `templates/public`     | Sitio web público. Renderizado en el servidor, layout principal (header + footer), páginas de inicio y "acerca de". |
+| `templates/backoffice` | App web privada. SPA, login con Keycloak, mismo layout y páginas, más un ejemplo de ABM de productos.               |
 
-- Node.js 24 (see `.nvmrc` in each template) and npm.
-- Network access to the private Nexus registry that serves `@coto-dev/ui-kit`. Each template ships an `.npmrc` that points the `@coto-dev` scope to it; no credentials are needed.
+Ambos son apps zoneless con componentes standalone, con ESLint, Prettier, Vitest, Husky + lint-staged, un Dockerfile y configuración de nginx, y ejemplos de e2e con Playwright. Cada template es un proyecto Angular normal que compila y se testea por sí solo.
 
-## Create a project
+## Tabla de contenidos
 
-This repository is not published: clone it and run the wizard from the clone.
+- [Requisitos](#requirements)
+- [Crear un proyecto](#create-a-project)
+- [Desarrollar los templates](#develop-the-templates)
+- [Estructura del repositorio](#repository-layout)
+
+---
+
+<a id="requirements"></a>
+
+## Requisitos
+
+- Node.js 24 (ver `.nvmrc` en cada template) y npm.
+- Acceso de red al registro privado Nexus que sirve `@coto-dev/ui-kit`. Cada template trae un `.npmrc` que apunta el scope `@coto-dev` a ese registro; no hacen falta credenciales.
+
+<a id="create-a-project"></a>
+
+## Crear un proyecto
+
+Este repositorio no está publicado: clonalo y ejecutá el wizard desde el clon.
 
 ```bash
-git clone <this-repo-url> angular-template-cli
+git clone <url-de-este-repo> angular-template-cli
 cd angular-template-cli
-npm install --prefix cli     # once
-npm run create               # guided wizard
+npm install --prefix cli     # una sola vez
+npm run create               # wizard guiado
 ```
 
-The wizard asks for the app type and the project name, copies the template into a folder **next to this repository** (a sibling, not inside it), renames it, and starts a fresh git repository on `main`. It also asks **where to create the project** (default: next to this repository), whether you **already have a git repository** (it is connected as `origin`; nothing is pushed, the summary shows the `git push` command), whether to make an **initial commit** (default yes) and whether to **install the dependencies now** (default no; needs access to the private `@coto-dev/ui-kit` registry, and a failed install does not abort or delete the project). For a backoffice it also offers to set up Keycloak (URL, realm and client id); if you skip it, the backoffice starts in demo mode with a fake user, so it is fully visible without Keycloak, and you can connect it later with `npm run configure:keycloak`. A backoffice also asks whether to **include the mock API**: a small local server that simulates the products API so the ABM works without a backend. If you decline, the ABM loads its sample products from a JSON file and keeps changes only in browser memory (lost on reload). A public site also asks its **rendering mode**: SSR (default, Node server), SSG (prerendered static pages) or SPA (client only, no SEO); it is applied by `npm run configure:rendering` inside the generated project. Both app types ask whether to **support dark mode** (default no: light theme only); if yes, the header gets a light/dark toggle and the app starts in light. The wizard texts are in Spanish. In the guided flow press **Esc to go back** to the previous question and change an answer, or **Ctrl+C to exit** (nothing is written). Then:
+El wizard copia el template en una carpeta **junto a este repositorio** (hermana, no dentro), la renombra e inicia un repositorio git nuevo en `main`. Te va preguntando:
+
+**Para todos los proyectos**
+
+- **Tipo de app y nombre** del proyecto.
+- **Dónde crearlo** (por defecto, junto a este repositorio).
+- **Repositorio git existente**: si ya tenés uno, se conecta como `origin`. No se hace push; el resumen muestra el comando `git push`.
+- **Commit inicial** (por defecto, sí).
+- **Instalar dependencias ahora** (por defecto, no). Requiere acceso al registro privado de `@coto-dev/ui-kit`; si falla, el proyecto no se aborta ni se borra.
+- **Modo oscuro** (por defecto, no: solo tema claro). Si lo activás, el header suma un botón claro/oscuro y la app arranca en claro.
+
+**Solo backoffice**
+
+- **Keycloak** (URL, realm y client id). Si lo salteás, arranca en modo demo con un usuario ficticio y lo conectás después con `npm run configure:keycloak`.
+- **API mock**: un servidor local que simula la API de productos para que el ABM funcione sin backend. Si no la incluís, el ABM carga los productos de un archivo JSON y los cambios se pierden al recargar.
+
+**Solo sitio público**
+
+- **Modo de renderizado**: SSR (por defecto, servidor Node), SSG (páginas estáticas prerenderizadas) o SPA (solo cliente, sin SEO). Se aplica con `npm run configure:rendering` dentro del proyecto generado.
+
+Los textos del wizard están en español. Presioná **Esc para volver** a la pregunta anterior o **Ctrl+C para salir** (no se escribe nada). Después:
 
 ```bash
-cd ../<project-name>
+cd ../<nombre-del-proyecto>
 npm install
-npm start                    # backoffice with the mock API: also run `npm run mock:api` in a second terminal
+npm start                    # backoffice con API mock: ejecutá también `npm run mock:api` en una segunda terminal
 ```
 
-Without a terminal (CI, scripts), pass everything as flags:
+Sin terminal (CI, scripts), pasá todo como flags:
 
 ```bash
 npm run create -- --type backoffice --name my-admin --yes
@@ -42,28 +79,30 @@ npm run create -- --type backoffice --name my-admin --yes \
 npm run create -- --type backoffice --name my-admin --yes --no-mock-api --dark-mode
 ```
 
-| Flag                        | Meaning                                                                                  |
-| --------------------------- | ---------------------------------------------------------------------------------------- |
-| `--type public\|backoffice` | Kind of app                                                                              |
-| `--name <name>`             | Project name: lowercase letters, numbers and single hyphens                              |
-| `--out <dir>`               | Parent directory for the new project (default: the folder that contains this repository) |
-| `--keycloak-url <url>`      | Backoffice: Keycloak base URL (the part before `/realms`)                                |
-| `--keycloak-realm <realm>`  | Backoffice: realm                                                                        |
-| `--keycloak-client-id <id>` | Backoffice: client id (default: the project name)                                        |
-| `--no-mock-api`             | Backoffice: no mock API; the ABM uses a JSON file and keeps changes in memory            |
-| `--dark-mode`               | Support dark mode (toggle in the header; default: light only)                            |
-| `--rendering <ssr\|ssg\|spa>` | Public site: rendering mode (default `ssr`; `spa` has no SEO)                           |
-| `--remote <url>`            | Connect an existing git repository as `origin` (never pushes)                            |
-| `--no-commit`               | Skip the initial commit (without a terminal there is no commit by default)               |
-| `--install` / `--no-install` | Run `npm install` after generating (default: no)                                        |
-| `-y`, `--yes`               | No prompts, plain text output (needs `--type` and `--name`)                              |
-| `-h`, `--help`              | Show help                                                                                |
+| Flag                          | Significado                                                                                 |
+| ----------------------------- | ------------------------------------------------------------------------------------------- |
+| `--type public\|backoffice`   | Tipo de app                                                                                 |
+| `--name <nombre>`             | Nombre del proyecto: minúsculas, números y guiones simples                                  |
+| `--out <dir>`                 | Directorio padre del proyecto nuevo (por defecto: la carpeta que contiene este repositorio) |
+| `--keycloak-url <url>`        | Backoffice: URL base de Keycloak (la parte antes de `/realms`)                              |
+| `--keycloak-realm <realm>`    | Backoffice: realm                                                                           |
+| `--keycloak-client-id <id>`   | Backoffice: client id (por defecto, el nombre del proyecto)                                 |
+| `--no-mock-api`               | Backoffice: sin API mock; el ABM usa un archivo JSON y guarda los cambios en memoria        |
+| `--dark-mode`                 | Soportar modo oscuro (botón en el header; por defecto: solo claro)                          |
+| `--rendering <ssr\|ssg\|spa>` | Sitio público: modo de renderizado (por defecto `ssr`; `spa` no tiene SEO)                  |
+| `--remote <url>`              | Conectar un repositorio git existente como `origin` (nunca hace push)                       |
+| `--no-commit`                 | Omitir el commit inicial (sin terminal no hay commit por defecto)                           |
+| `--install` / `--no-install`  | Ejecutar `npm install` tras generar (por defecto: no)                                       |
+| `-y`, `--yes`                 | Sin preguntas, salida en texto plano (requiere `--type` y `--name`)                         |
+| `-h`, `--help`                | Mostrar la ayuda                                                                            |
 
-The CLI refuses to write into a non-empty directory.
+El CLI se niega a escribir en un directorio que no esté vacío.
 
-## Develop the templates
+<a id="develop-the-templates"></a>
 
-Install a template's dependencies with husky disabled, so it does not touch this repository's git config:
+## Desarrollar los templates
+
+Instalá las dependencias de un template con husky deshabilitado, para que no modifique la configuración git de este repositorio:
 
 ```bash
 cd templates/backoffice
@@ -71,24 +110,26 @@ HUSKY=0 npm install
 npm start
 ```
 
-Verify everything (install, lint, unit tests, build and e2e for each template, plus the CLI tests):
+Verificá todo (instalación, lint, tests unitarios, build y e2e de cada template, más los tests del CLI):
 
 ```bash
-npm run verify          # full
-npm run verify:quick    # without Playwright
+npm run verify          # completo
+npm run verify:quick    # sin Playwright
 ```
 
-`node scripts/verify-templates.mjs --template public --only lint,test` runs a subset. A full run also generates a backoffice with `--no-mock-api --dark-mode` and verifies it (skip with `--skip-variant`). The script exits non-zero when any step fails.
+`node scripts/verify-templates.mjs --template public --only lint,test` ejecuta un subconjunto. Una corrida completa también genera un backoffice con `--no-mock-api --dark-mode` y lo verifica (se omite con `--skip-variant`). El script termina con código distinto de cero si falla algún paso.
 
-Each template has a `README.md` (user-facing docs, generated into every new project) and a `CLAUDE.md` (commands, structure and conventions for AI assistants); keep them in sync. The template name `coto-angular-template` is the placeholder the CLI replaces, so keep using it in the templates' files.
+Cada template tiene un `README.md` (español, por defecto) y un `README.en.md` (copia en inglés), ambos se generan en cada proyecto nuevo, y un `CLAUDE.md` (comandos, estructura y convenciones para asistentes de IA); mantenelos sincronizados. El nombre `coto-angular-template` es el placeholder que reemplaza el CLI, así que seguí usándolo en los archivos de los templates.
 
-## Repository layout
+<a id="repository-layout"></a>
+
+## Estructura del repositorio
 
 ```
-cli/            wizard (Node, ESM) and its tests
+cli/            wizard (Node, ESM) y sus tests
 templates/
-  public/       public website template
-  backoffice/   backoffice template
+  public/       template de sitio web público
+  backoffice/   template de backoffice
 scripts/        verify-templates.mjs
-openspec/       specs and change proposals (this project is built with OpenSpec)
+openspec/       specs y propuestas de cambio (este proyecto se construye con OpenSpec)
 ```

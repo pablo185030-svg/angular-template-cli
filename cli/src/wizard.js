@@ -157,9 +157,9 @@ export async function resolveOptions({ flags, interactive, prompts, defaultOutDi
       fallback: true,
       initial: true,
       message:
-        '¿Querés incluir la API mock? Es solo un mock, no una API real: un pequeño servidor local (npm run mock:api) que simula la API de productos con datos de ejemplo para que el ABM funcione sin backend. ' +
-        'Ojo: el ABM de productos es solo de prueba, un ejemplo para que lo reemplaces por tus propias pantallas. ' +
-        'Si no la incluís, el ABM carga los productos desde un archivo JSON (public/mock/products.json) y los cambios solo se guardan en la memoria del navegador: se pierden al recargar.',
+        '¿Querés incluir la API mock? Es un servidor local (npm run mock:api) que simula la API de productos con datos de ejemplo, para que el ABM funcione sin backend. ' +
+        'El ABM es solo un ejemplo para que lo reemplaces por tus pantallas. ' +
+        'Si no la incluís, los productos se cargan desde public/mock/products.json y los cambios se pierden al recargar.',
     }),
     confirmStep('darkMode', {
       flagValue: () => flags.darkMode,

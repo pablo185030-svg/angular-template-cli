@@ -1,6 +1,6 @@
 {
   "name": "angular-template-cli",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "Angular project templates for Coto apps, with a CLI wizard to generate new projects.",

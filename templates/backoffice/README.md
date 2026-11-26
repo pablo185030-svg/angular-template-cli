@@ -6,53 +6,55 @@
 
 ![Vitest](https://img.shields.io/badge/Vitest-4.0-6E9F18?style=flat&logo=vitest) ![Playwright](https://img.shields.io/badge/Playwright-1.61-2EAD33?style=flat&logo=playwright) ![ESLint](https://img.shields.io/badge/ESLint-enabled-4B32C3?style=flat&logo=eslint) ![Prettier](https://img.shields.io/badge/Prettier-enabled-F7B93E?style=flat&logo=prettier)
 
-## Table of Contents
+> 🌐 **Español** · [English](README.en.md)
 
-- [What is it?](#what-is-it)
-- [Quick start](#quick-start)
+## Tabla de contenidos
+
+- [¿Qué es?](#what-is-it)
+- [Inicio rápido](#quick-start)
 - [Stack](#stack)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Dependencies](#dependencies)
-- [Troubleshooting](#troubleshooting)
-- [Main commands](#main-commands)
-- [Environments](#environments)
-- [Authentication (Keycloak)](#authentication)
-- [Mock API and the CRUD example](#mock-api)
-- [Dark mode](#dark-mode)
-- [Project structure](#project-structure)
-- [Path aliases](#path-aliases)
+- [Requisitos](#requirements)
+- [Instalación](#installation)
+- [Dependencias](#dependencies)
+- [Solución de problemas](#troubleshooting)
+- [Comandos principales](#main-commands)
+- [Entornos](#environments)
+- [Autenticación (Keycloak)](#authentication)
+- [API mock y el ejemplo de ABM](#mock-api)
+- [Modo oscuro](#dark-mode)
+- [Estructura del proyecto](#project-structure)
+- [Alias de rutas](#path-aliases)
 - [Breakpoints](#breakpoints)
-- [Unit tests](#unit-tests)
-- [E2E tests with Playwright](#e2e-tests-with-playwright)
+- [Tests unitarios](#unit-tests)
+- [Tests E2E con Playwright](#e2e-tests-with-playwright)
 - [Deploy](#deploy)
 
 ---
 
 <a id="what-is-it"></a>
 
-## What is it?
+## ¿Qué es?
 
-A backoffice (private web app) starter: an Angular 22 SPA (standalone components, signals, zoneless) with a main layout (header and footer), home and about pages, Keycloak authentication, and a products CRUD (ABM) example that runs against a mock API. It is meant to be copied, renamed and grown into a real app.
+Un starter de backoffice (app web privada): una SPA Angular 22 (componentes standalone, signals, zoneless) con un layout principal (header y footer), páginas de inicio y "acerca de", autenticación con Keycloak y un ejemplo de ABM de productos que funciona contra una API mock. Está pensado para copiarse, renombrarse y crecer hasta convertirse en una app real.
 
-Theming and shared UI (M3 palette, typography, breakpoints, components) come from `@coto-dev/ui-kit`, an internal design-system library installed from the private Nexus registry — see [Dependencies](#dependencies).
+**Funciona sin Keycloak.** Hasta que lo configures, la app arranca en **modo demo**: un usuario ficticio ya autenticado y una insignia "Modo demo" en el header. Ver [Autenticación](#authentication).
 
-**It runs without Keycloak.** Until you configure it, the app starts in **demo mode**: a fake signed-in user and a "Modo demo" badge in the header. See [Authentication](#authentication).
+El tema y la UI compartida (paleta M3, tipografía, breakpoints, componentes) vienen de `@coto-dev/ui-kit`, una librería interna de sistema de diseño que se instala desde el registro privado Nexus; ver [Dependencias](#dependencies).
 
 ---
 
 <a id="quick-start"></a>
 
-## Quick start
+## Inicio rápido
 
 ```bash
 nvm use              # Node 24
 npm install
-npm run mock:api     # terminal 1 — mock API on http://localhost:5000
-npm start            # terminal 2 — app on http://localhost:4200
+npm run mock:api     # terminal 1: API mock en http://localhost:5000
+npm start            # terminal 2: app en http://localhost:4200
 ```
 
-The app opens straight into the layout with a demo user. To sign in with real credentials, run `npm run configure:keycloak` — see [Authentication](#authentication).
+La app abre directo en el layout con un usuario demo. Para iniciar sesión con credenciales reales, ejecutá `npm run configure:keycloak`; ver [Autenticación](#authentication).
 
 ---
 
@@ -60,231 +62,230 @@ The app opens straight into the layout with a demo user. To sign in with real cr
 
 ## Stack
 
-| Layer           | Technology                                                 |
-| --------------- | ---------------------------------------------------------- |
-| Framework       | Angular 22 (standalone, signals, zoneless, OnPush)         |
-| UI / Theming    | Angular Material 22 + `@coto-dev/ui-kit` (M3)              |
-| Styles          | SCSS, BEM, mobile-first, CSS custom properties             |
-| Authentication  | Keycloak (OIDC code flow + PKCE) via `angular-oauth2-oidc` |
-| Forms           | Signal Forms (`@angular/forms/signals`)                    |
-| Unit tests      | Vitest (via `@angular/build:unit-test`)                    |
-| E2E tests       | Playwright                                                 |
-| Package manager | npm                                                        |
-| Node            | 24 (see `.nvmrc`)                                          |
+| Capa               | Tecnología                                                 |
+| ------------------ | ---------------------------------------------------------- |
+| Framework          | Angular 22 (standalone, signals, zoneless, OnPush)         |
+| UI / Tema          | Angular Material 22 + `@coto-dev/ui-kit` (M3)              |
+| Estilos            | SCSS, BEM, mobile-first, CSS custom properties             |
+| Autenticación      | Keycloak (OIDC code flow + PKCE) vía `angular-oauth2-oidc` |
+| Formularios        | Signal Forms (`@angular/forms/signals`)                    |
+| Tests unitarios    | Vitest (vía `@angular/build:unit-test`)                    |
+| Tests E2E          | Playwright                                                 |
+| Gestor de paquetes | npm                                                        |
+| Node               | 24 (ver `.nvmrc`)                                          |
 
 ---
 
 <a id="requirements"></a>
 
-## Requirements
+## Requisitos
 
-- Node 24 (see `.nvmrc`; recommended: use `nvm` → `nvm use`).
-- npm — ships bundled with Node.
-- Network access to the private Nexus registry that serves `@coto-dev/ui-kit`.
+- Node 24 (ver `.nvmrc`; recomendado usar `nvm` → `nvm use`).
+- npm: viene incluido con Node.
+- Acceso de red al registro privado Nexus que sirve `@coto-dev/ui-kit`.
 
 ---
 
 <a id="installation"></a>
 
-## Installation
+## Instalación
 
 ```bash
 nvm use
 npm install
 ```
 
-`prepare` installs the Husky pre-commit hook, which runs `lint-staged` (ESLint + Prettier on staged files). It needs the project to be a git repository.
+`prepare` instala el hook de pre-commit de Husky, que ejecuta `lint-staged` (ESLint + Prettier sobre los archivos en staging). Requiere que el proyecto sea un repositorio git.
 
 ---
 
 <a id="dependencies"></a>
 
-## Dependencies
+## Dependencias
 
-The project commits a single lockfile, `package-lock.json`, so install with `npm ci` in CI.
+El proyecto versiona un único lockfile, `package-lock.json`, así que en CI instalá con `npm ci`.
 
-### Why every Angular package is pinned to the same exact version
+### Por qué todos los paquetes de Angular están fijados a la misma versión exacta
 
-Every `@angular/*` entry in `package.json` is pinned to the same exact version (no `^`). Angular's packages declare exact peer dependencies on each other, so they must move together; a mix of pinned and ranged entries fails with `ERESOLVE` the next time the tree is resolved after Angular publishes a patch. To upgrade, change the version on every `@angular/*` entry at once and run `npm install`. Don't use an `overrides` block for them.
+Cada entrada `@angular/*` de `package.json` está fijada a la misma versión exacta (sin `^`). Los paquetes de Angular declaran dependencias peer exactas entre sí, por lo que deben avanzar juntos; mezclar versiones fijas y con rango falla con `ERESOLVE` la próxima vez que se resuelva el árbol tras un parche de Angular. Para actualizar, cambiá la versión de todas las entradas `@angular/*` a la vez y ejecutá `npm install`. No uses un bloque `overrides` para ellas.
 
-### `@coto-dev/ui-kit`: installed from the private Nexus registry
+### `@coto-dev/ui-kit`: se instala desde el registro privado Nexus
 
-- `.npmrc` scopes `@coto-dev` to the private registry, so the registry must be reachable from your network when you run `npm install`. It contains no credentials.
-- To bump the library, edit its range in `package.json` and run `npm install`. Don't consume it as a git dependency or a local tarball.
-- Before using one of its components, check its API in `node_modules/@coto-dev/ui-kit/types/*.d.ts`.
-- The app never defines its own color palette: `src/styles.scss` calls `coto.theme()` once and everything reads `var(--mat-sys-*)`.
+- `.npmrc` apunta el scope `@coto-dev` al registro privado, así que el registro debe estar accesible desde tu red al ejecutar `npm install`. No contiene credenciales.
+- Para actualizar la librería, editá su rango en `package.json` y ejecutá `npm install`. No la consumas como dependencia git ni como tarball local.
+- Antes de usar uno de sus componentes, revisá su API en `node_modules/@coto-dev/ui-kit/types/*.d.ts`.
+- La app nunca define su propia paleta de colores: `src/styles.scss` llama a `coto.theme()` una sola vez y todo lee `var(--mat-sys-*)`.
 
 ---
 
 <a id="troubleshooting"></a>
 
-## Troubleshooting
+## Solución de problemas
 
-| Symptom                                              | Likely cause and fix                                                                                            |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `npm install` cannot resolve `@coto-dev/ui-kit`      | The Nexus registry is unreachable (VPN / corporate network). Check `.npmrc` and your connection.                |
-| `ERESOLVE` after changing Angular versions           | Some `@angular/*` entry has a different version or a `^`. Pin them all to the same exact version.               |
-| `NG0203` / injection errors in unit tests            | A second copy of `@angular/*` was resolved. `vitest.config.ts` already dedupes them; reinstall `node_modules`.  |
-| The page is blank after `npm run configure:keycloak` | The Keycloak URL, realm or client id is wrong or unreachable. Check the browser console and re-run the command. |
+| Síntoma                                                     | Causa probable y solución                                                                                                                   |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm install` no puede resolver `@coto-dev/ui-kit`          | El registro Nexus no es accesible (VPN / red corporativa). Revisá `.npmrc` y tu conexión.                                                   |
+| `ERESOLVE` tras cambiar versiones de Angular                | Alguna entrada `@angular/*` tiene otra versión o un `^`. Fijalas todas a la misma versión exacta.                                           |
+| `NG0203` / errores de inyección en tests unitarios          | Se resolvió una segunda copia de `@angular/*`. `vitest.config.ts` ya las deduplica; reinstalá `node_modules`.                               |
+| La página queda en blanco tras `npm run configure:keycloak` | La URL, el realm o el client id de Keycloak es incorrecto o no es accesible. Revisá la consola del navegador y volvé a ejecutar el comando. |
 
 ---
 
 <a id="main-commands"></a>
 
-## Main commands
+## Comandos principales
 
-| Command                      | Description                                                                            |
-| ---------------------------- | -------------------------------------------------------------------------------------- |
-| `npm start`                  | Dev server at `http://localhost:4200` with hot reload (proxies `/api` to the mock API) |
-| `npm run mock:api`           | Mock products API on `http://localhost:5000` — see [Mock API](#mock-api)               |
-| `npm run configure:keycloak` | Sets your Keycloak settings and switches local development to Keycloak                 |
-| `npm run configure:theme`    | `-- --dark-mode` or `-- --no-dark-mode`: turns the light/dark toggle on or off         |
-| `npm run remove:mock-api`    | Removes the mock API and switches the ABM to the JSON data source (see Mock API)       |
-| `npm run build`              | Production build to `dist/`                                                            |
-| `npm run build:dev`          | Development build                                                                      |
-| `npm run watch`              | Incremental build in development mode                                                  |
-| `npm test`                   | Unit tests with Vitest (watch mode)                                                    |
-| `npm run lint`               | ESLint (`angular-eslint`) on `.ts` and `.html` under `src/`                            |
-| `npm run format`             | Prettier on `src/` and `e2e/`                                                          |
-| `npm run test:e2e`           | Playwright e2e; starts the mock API and the app (`e2e` configuration) automatically    |
-| `npm run start:e2e`          | Dev server with the `e2e` configuration (demo auth) — used by Playwright               |
+| Comando                      | Descripción                                                                                      |
+| ---------------------------- | ------------------------------------------------------------------------------------------------ |
+| `npm start`                  | Servidor de desarrollo en `http://localhost:4200` con hot reload (redirige `/api` a la API mock) |
+| `npm run mock:api`           | API mock de productos en `http://localhost:5000`; ver [API mock](#mock-api)                      |
+| `npm run configure:keycloak` | Define tu configuración de Keycloak y pasa el desarrollo local a Keycloak                        |
+| `npm run configure:theme`    | `-- --dark-mode` o `-- --no-dark-mode`: activa o desactiva el botón de tema claro/oscuro         |
+| `npm run remove:mock-api`    | Elimina la API mock y pasa el ABM a la fuente de datos JSON (ver API mock)                       |
+| `npm run build`              | Build de producción en `dist/`                                                                   |
+| `npm run build:dev`          | Build de desarrollo                                                                              |
+| `npm run watch`              | Build incremental en modo desarrollo                                                             |
+| `npm test`                   | Tests unitarios con Vitest (modo watch)                                                          |
+| `npm run lint`               | ESLint (`angular-eslint`) sobre `.ts` y `.html` en `src/`                                        |
+| `npm run format`             | Prettier sobre `src/` y `e2e/`                                                                   |
+| `npm run test:e2e`           | E2E con Playwright; levanta la API mock y la app (configuración `e2e`) automáticamente           |
+| `npm run start:e2e`          | Servidor de desarrollo con la configuración `e2e` (auth demo); lo usa Playwright                 |
 
-Run one unit spec: `npx ng test --watch=false --include "src/app/**/header.spec.ts"`.
+Ejecutar un solo spec unitario: `npx ng test --watch=false --include "src/app/**/header.spec.ts"`.
 
 ---
 
 <a id="environments"></a>
 
-## Environments
+## Entornos
 
-| File                                   | Used by                          | `auth.mode`                                                 |
-| -------------------------------------- | -------------------------------- | ----------------------------------------------------------- |
-| `src/environments/environment.ts`      | `npm start`, `npm run build:dev` | `mock` (demo) until you configure Keycloak, then `keycloak` |
-| `src/environments/environment.prod.ts` | `npm run build` (production)     | `keycloak`                                                  |
-| `src/environments/environment.e2e.ts`  | `npm run start:e2e`, Playwright  | `mock`, always                                              |
+| Archivo                                | Lo usa                           | `auth.mode`                                                   |
+| -------------------------------------- | -------------------------------- | ------------------------------------------------------------- |
+| `src/environments/environment.ts`      | `npm start`, `npm run build:dev` | `mock` (demo) hasta que configures Keycloak, luego `keycloak` |
+| `src/environments/environment.prod.ts` | `npm run build` (producción)     | `keycloak`                                                    |
+| `src/environments/environment.e2e.ts`  | `npm run start:e2e`, Playwright  | `mock`, siempre                                               |
 
-`apiBaseUrl` (default `/api`) is the prefix that receives the access token; see [Authentication](#authentication).
-
-Two more settings live in every environment file: `api.mode` (`http` or `json`, see [Mock API](#mock-api)) and `theme.darkMode` (see [Dark mode](#dark-mode)).
+`apiBaseUrl` (por defecto `/api`) es el prefijo que recibe el access token; ver [Autenticación](#authentication). Cada archivo de entorno tiene además dos configuraciones: `api.mode` (`http` o `json`, ver [API mock](#mock-api)) y `theme.darkMode` (ver [Modo oscuro](#dark-mode)).
 
 ---
 
 <a id="authentication"></a>
 
-## Authentication (Keycloak)
+## Autenticación (Keycloak)
 
-The app signs users in with the OIDC Authorization Code flow and PKCE (`angular-oauth2-oidc`). `authGuard` protects every route: an unauthenticated user is sent to the Keycloak login and returns to the page they asked for. `authInterceptor` adds `Authorization: Bearer <token>` to requests whose URL is `apiBaseUrl` or below it, and to no other origin.
+La app autentica usuarios con el flujo OIDC Authorization Code y PKCE (`angular-oauth2-oidc`). `authGuard` protege todas las rutas: un usuario no autenticado es enviado al login de Keycloak y vuelve a la página que pidió. `authInterceptor` agrega `Authorization: Bearer <token>` a las requests cuya URL es `apiBaseUrl` o está por debajo, y a ningún otro origen.
 
-### Demo mode (default)
+### Modo demo (por defecto)
 
-With `auth.mode: 'mock'`, `MockAuthService` signs in a fake "Usuario demo", so you can see and work on the whole app without a Keycloak server. The header shows a **Modo demo** badge and hides the logout button. **Never use `mock` in a deployed environment.**
+Con `auth.mode: 'mock'`, `MockAuthService` inicia sesión con un "Usuario demo" ficticio, así podés ver y trabajar toda la app sin un servidor Keycloak. El header muestra una insignia **Modo demo** y oculta el botón de logout. **Nunca uses `mock` en un entorno desplegado.**
 
-### Connect Keycloak
+### Conectar Keycloak
 
-You need three values from your Keycloak admin:
+Necesitás tres valores de quien administre tu Keycloak:
 
-| Setting   | Meaning                                      | Example                          |
-| --------- | -------------------------------------------- | -------------------------------- |
-| URL       | Keycloak base URL, the part before `/realms` | `https://keycloak.mycompany.com` |
-| Realm     | Realm name                                   | `my-realm`                       |
-| Client id | Client id (defaults to the project name)     | `coto-angular-template`          |
+| Dato      | Significado                                       | Ejemplo                          |
+| --------- | ------------------------------------------------- | -------------------------------- |
+| URL       | URL base de Keycloak, la parte antes de `/realms` | `https://keycloak.mycompany.com` |
+| Realm     | Nombre del realm                                  | `my-realm`                       |
+| Client id | Client id (por defecto, el nombre del proyecto)   | `coto-angular-template`          |
 
-The project generator can set them for you. Later, run:
+El generador de proyectos puede configurarlos por vos. Más adelante, ejecutá:
 
 ```bash
-npm run configure:keycloak                      # asks for each value
+npm run configure:keycloak                      # pregunta cada valor
 npm run configure:keycloak -- --url https://keycloak.mycompany.com --realm my-realm --client-id my-app
 ```
 
-This writes the values into `src/environments/environment.ts` and `environment.prod.ts` and switches local development to `auth.mode: 'keycloak'`. You can also edit those files by hand. To go back to demo mode, set `mode: 'mock'` in `environment.ts`.
+Esto escribe los valores en `src/environments/environment.ts` y `environment.prod.ts` y pasa el desarrollo local a `auth.mode: 'keycloak'`. También podés editar esos archivos a mano. Para volver al modo demo, poné `mode: 'mock'` en `environment.ts`.
 
-### Keycloak client setup
+### Configuración del client en Keycloak
 
-1. In the Keycloak admin console, create (or pick) a realm.
-2. Create a client with the id above: client authentication **off** (public client), standard flow **on**, PKCE method `S256`.
+1. En la consola de administración de Keycloak, creá (o elegí) un realm.
+2. Creá un client con el id de arriba: client authentication **desactivado** (client público), standard flow **activado**, método PKCE `S256`.
 3. Valid redirect URIs: `http://localhost:4200/*`. Web origins: `http://localhost:4200`.
-4. Create a user in the realm and run `npm start`.
+4. Creá un usuario en el realm y ejecutá `npm start`.
 
-Before deploying, add your production URL to the client's redirect URIs and web origins.
+Antes de desplegar, agregá tu URL de producción a los redirect URIs y web origins del client.
 
 ### Tests
 
-Unit tests use `FakeAuthService` from `src/app/core/auth/testing/`. The `e2e` build configuration always uses the demo user, so `npm run test:e2e` needs no Keycloak.
+Los tests unitarios usan `FakeAuthService` de `src/app/core/auth/testing/`. La configuración de build `e2e` siempre usa el usuario demo, así que `npm run test:e2e` no necesita Keycloak.
 
 ---
 
 <a id="mock-api"></a>
 
-## Mock API and the CRUD example
+## API mock y el ejemplo de ABM
 
-`npm run mock:api` starts a **mock**, not a real API: a small server (`mock/server.mjs`) that simulates the products API with sample data, so the ABM works without a backend. It serves an in-memory products API on `http://localhost:5000`; data resets on restart. In development, `proxy.conf.json` forwards `/api` from the dev server to it.
+`npm run mock:api` levanta una **API mock**, no una API real: un pequeño servidor (`mock/server.mjs`) que simula la API de productos con datos de ejemplo, para que el ABM funcione sin backend. Sirve una API de productos en memoria en `http://localhost:5000`; los datos se reinician al reiniciar el servidor. En desarrollo, `proxy.conf.json` le reenvía `/api` desde el servidor de desarrollo.
 
-| Method   | Path                | Description |
+| Método   | Ruta                | Descripción |
 | -------- | ------------------- | ----------- |
-| `GET`    | `/api/products`     | List        |
-| `GET`    | `/api/products/:id` | Get one     |
-| `POST`   | `/api/products`     | Create      |
-| `PUT`    | `/api/products/:id` | Update      |
-| `DELETE` | `/api/products/:id` | Delete      |
+| `GET`    | `/api/products`     | Listar      |
+| `GET`    | `/api/products/:id` | Obtener uno |
+| `POST`   | `/api/products`     | Crear       |
+| `PUT`    | `/api/products/:id` | Actualizar  |
+| `DELETE` | `/api/products/:id` | Eliminar    |
 
-The example UI lives in `src/app/domains/products/`: a list (`mat-table`), a create/edit form built with Signal Forms, and a delete confirmation dialog. To use a real backend, point `proxy.conf.json` (development) and the `/api/` location in `nginx.conf` (deployed) at it, then delete `mock/`.
+La UI de ejemplo vive en `src/app/domains/products/`: un listado (`mat-table`), un formulario de alta/edición hecho con Signal Forms y un diálogo de confirmación de borrado. Para usar un backend real, apuntá `proxy.conf.json` (desarrollo) y el location `/api/` de `nginx.conf` (desplegado) hacia él, y después borrá `mock/`.
 
-### Without the mock API (JSON data source)
+### Sin la API mock (fuente de datos JSON)
 
-`api.mode` in `src/environments/environment*.ts` chooses where the products come from:
+`api.mode` en `src/environments/environment*.ts` elige de dónde vienen los productos:
 
-- `'http'` (default): `HttpProductsService` calls `/api/products` (the mock API in development, your backend later).
-- `'json'`: `JsonProductsService` loads `public/mock/products.json` once and applies create, edit and delete **in browser memory**: no server is needed, and changes are lost when the page is reloaded.
+- `'http'` (por defecto): `HttpProductsService` llama a `/api/products` (la API mock en desarrollo, tu backend más adelante).
+- `'json'`: `JsonProductsService` carga `public/mock/products.json` una vez y aplica el alta, la edición y el borrado **en la memoria del navegador**: no hace falta ningún servidor y los cambios se pierden al recargar la página.
 
-`npm run remove:mock-api` (also run by the project wizard when you decline the mock API) sets `json` in `environment.ts` and `environment.e2e.ts`, deletes `mock/`, the dev proxy and the `mock:api` script, and removes the mock server from `playwright.config.ts`. The production environment stays on `http`: it expects a real backend behind `/api`. The sample products in `public/mock/products.json` are shared by both modes.
+`npm run remove:mock-api` (que también ejecuta el wizard del proyecto si rechazás la API mock) pone `json` en `environment.ts` y `environment.e2e.ts`, borra `mock/`, el proxy de desarrollo y el script `mock:api`, y quita el servidor mock de `playwright.config.ts`. El entorno de producción se queda en `http`: espera un backend real detrás de `/api`. Los productos de ejemplo de `public/mock/products.json` son compartidos por ambos modos.
+
+---
 
 <a id="dark-mode"></a>
 
-## Dark mode
+## Modo oscuro
 
-`theme.darkMode` in `src/environments/environment*.ts` is `false` by default: the app is always light and shows no toggle. Set it to `true` (or run `npm run configure:theme -- --dark-mode`) to show a light/dark toggle in the header. The app starts in light mode and the ui-kit's `CotoThemeService` remembers the user's choice. The dark styles are included either way (`coto.dark-theme()` in `src/styles.scss`); they only apply when the `coto-dark-theme` class is set.
+`theme.darkMode` en `src/environments/environment*.ts` es `false` por defecto: la app es siempre clara y no muestra el botón. Poné `true` (o ejecutá `npm run configure:theme -- --dark-mode`) para mostrar un botón claro/oscuro en el header. La app arranca en modo claro y el `CotoThemeService` del ui-kit recuerda la elección del usuario. Los estilos oscuros se incluyen en ambos casos (`coto.dark-theme()` en `src/styles.scss`); solo se aplican cuando está la clase `coto-dark-theme`.
 
 ---
 
 <a id="project-structure"></a>
 
-## Project structure
+## Estructura del proyecto
 
 ```
 src/app/
   core/
-    auth/          AuthService contract, KeycloakAuthService, MockAuthService, testing/FakeAuthService
+    auth/          contrato AuthService, KeycloakAuthService, MockAuthService, testing/FakeAuthService
     guards/        auth.guard.ts
     interceptors/  auth.interceptor.ts
     services/ models/
   shared/
-    layouts/main-layout/        header (user, logout, demo badge, theme toggle) + routed page + footer
+    layouts/main-layout/        header (usuario, logout, insignia demo, botón de tema) + página enrutada + footer
     components/confirm-dialog/
-    pages/not-found-page/
   domains/
-    home/ about/                example pages
-    products/                   CRUD example: models/ services/ (http + json) pages/
-  app.routes.ts                 every route sits behind authGuard
+    home/ about/                páginas de ejemplo
+    products/                   ejemplo de ABM: models/ services/ (http + json) pages/
+  app.routes.ts                 todas las rutas están detrás de authGuard
 src/environments/               environment.ts, environment.prod.ts, environment.e2e.ts
-mock/server.mjs                 in-memory products API (removed without the mock API)
-public/mock/products.json       sample products shared by the mock API and the JSON data source
-scripts/configure-keycloak.mjs  writes Keycloak settings into the environment files
-scripts/configure-theme.mjs     turns dark mode support on or off
-scripts/remove-mock-api.mjs     removes the mock API and switches to the JSON data source
-e2e/                            Playwright specs
+mock/server.mjs                 API de productos en memoria (se elimina sin la API mock)
+public/mock/products.json       productos de ejemplo compartidos por la API mock y la fuente JSON
+scripts/configure-keycloak.mjs  escribe la configuración de Keycloak en los archivos de entorno
+scripts/configure-theme.mjs     activa o desactiva el soporte de modo oscuro
+scripts/remove-mock-api.mjs     elimina la API mock y pasa a la fuente de datos JSON
+e2e/                            specs de Playwright
 ```
 
-To add a feature, create `domains/<name>/` and a lazy route in `app.routes.ts`. Files and folders are kebab-case; types live in `models/` folders.
+Para agregar una funcionalidad, creá `domains/<nombre>/` y una ruta lazy en `app.routes.ts`. Los archivos y carpetas van en kebab-case; los tipos viven en carpetas `models/`.
 
 ---
 
 <a id="path-aliases"></a>
 
-## Path aliases
+## Alias de rutas
 
-`tsconfig.json` defines path aliases so imports don't depend on long relative paths:
+`tsconfig.json` define alias de rutas para que los imports no dependan de rutas relativas largas:
 
-| Alias        | Path                 | Example                                                                 |
+| Alias        | Ruta                 | Ejemplo                                                                 |
 | ------------ | -------------------- | ----------------------------------------------------------------------- |
 | `@app/*`     | `src/app/*`          | `import { routes } from '@app/app.routes';`                             |
 | `@core/*`    | `src/app/core/*`     | `import { authGuard } from '@core/guards/auth.guard';`                  |
@@ -292,7 +293,7 @@ To add a feature, create `domains/<name>/` and a lazy route in `app.routes.ts`. 
 | `@domains/*` | `src/app/domains/*`  | `import { HomePage } from '@domains/home/pages/home-page/home-page';`   |
 | `@env/*`     | `src/environments/*` | `import { environment } from '@env/environment';`                       |
 
-They work in the dev server, the build and the unit tests with no extra configuration.
+Funcionan en el servidor de desarrollo, el build y los tests unitarios sin configuración extra.
 
 ---
 
@@ -300,24 +301,23 @@ They work in the dev server, the build and the unit tests with no extra configur
 
 ## Breakpoints
 
-Breakpoints come from `@coto-dev/ui-kit`, so SCSS and TypeScript share the same thresholds. The design system is **mobile-first**: write base styles for the smallest screen and layer overrides upward.
+Los breakpoints vienen de `@coto-dev/ui-kit`, así que SCSS y TypeScript comparten los mismos umbrales. El sistema de diseño es **mobile-first**: escribí los estilos base para la pantalla más chica y agregá las variantes hacia arriba.
 
+**Header responsive.** Desde `tablet-portrait` (768px) el header muestra la navegación en línea. Por debajo, un botón hamburguesa (`menu-toggle`) abre un drawer animado con los mismos links y el área de usuario (botón de tema, insignia demo, nombre de usuario, logout). El drawer se cierra al hacer clic en el fondo, con Escape o al activar un link, atrapa el foco mientras está abierto y respeta `prefers-reduced-motion`. Para agregar un link, editá el template compartido `links` en `header.html`: alimenta tanto la navegación en línea como el drawer.
 
-**Responsive header.** From `tablet-portrait` (768px) up the header shows the navigation inline. Below it, a hamburger button (`menu-toggle`) opens an animated drawer with the same links and the user area (theme toggle, demo badge, user name, logout). The drawer closes on backdrop click, Escape or link activation, traps the focus while open, and respects `prefers-reduced-motion`. To add a link, edit the shared `links` template in `header.html`: it feeds both the inline navigation and the drawer.
-
-| Breakpoint name    | Min width |
-| ------------------ | --------- |
-| `mobile`           | 320px     |
-| `tablet-portrait`  | 768px     |
-| `tablet-landscape` | 1024px    |
-| `desktop-small`    | 1366px    |
-| `desktop-large`    | 1920px    |
+| Nombre del breakpoint | Ancho mínimo |
+| --------------------- | ------------ |
+| `mobile`              | 320px        |
+| `tablet-portrait`     | 768px        |
+| `tablet-landscape`    | 1024px       |
+| `desktop-small`       | 1366px       |
+| `desktop-large`       | 1920px       |
 
 ```scss
 @use '@coto-dev/ui-kit/styles' as coto;
 
 .card {
-  padding: 1rem; // mobile (base, no query)
+  padding: 1rem; // mobile (base, sin query)
 
   @include coto.breakpoint-up(tablet-landscape) {
     padding: 2rem;
@@ -325,28 +325,28 @@ Breakpoints come from `@coto-dev/ui-kit`, so SCSS and TypeScript share the same 
 }
 ```
 
-From TypeScript use the `COTO_BREAKPOINTS` constant (e.g. with `BreakpointObserver`).
+Desde TypeScript usá la constante `COTO_BREAKPOINTS` (por ejemplo con `BreakpointObserver`).
 
 ---
 
 <a id="unit-tests"></a>
 
-## Unit tests
+## Tests unitarios
 
-Vitest through Angular's `@angular/build:unit-test` builder. Specs live next to the code as `*.spec.ts` and need no registration. Select elements with `data-testid`, not CSS classes. Run everything with `npm test`, or one spec with `--include` (see [Main commands](#main-commands)).
+Vitest a través del builder `@angular/build:unit-test` de Angular. Los specs viven junto al código como `*.spec.ts` y no requieren registro. Seleccioná elementos con `data-testid`, no con clases CSS. Ejecutá todo con `npm test`, o un solo spec con `--include` (ver [Comandos principales](#main-commands)).
 
 ---
 
 <a id="e2e-tests-with-playwright"></a>
 
-## E2E tests with Playwright
+## Tests E2E con Playwright
 
 ```bash
-npx playwright install chromium   # first time only
+npx playwright install chromium   # solo la primera vez
 npm run test:e2e
 ```
 
-Playwright starts the mock API and the app with the `e2e` configuration (demo user, no Keycloak). Prefer accessible locators (`getByRole`, `getByLabel`), then `getByTestId`. `e2e/products.spec.ts` covers list, create, edit and delete, plus form validation. The mock keeps state in memory, so specs run one at a time.
+Playwright levanta la API mock y la app con la configuración `e2e` (usuario demo, sin Keycloak). Preferí locators accesibles (`getByRole`, `getByLabel`), y después `getByTestId`. `e2e/products.spec.ts` cubre listado, alta, edición y borrado, además de la validación del formulario. El mock guarda el estado en memoria, así que los specs se ejecutan de a uno.
 
 ---
 
@@ -354,6 +354,6 @@ Playwright starts the mock API and the app with the `e2e` configuration (demo us
 
 ## Deploy
 
-- `Dockerfile` serves the built static files with nginx using `nginx.conf` (`npm run build` first): `docker build -t coto-angular-template . && docker run -p 8080:80 coto-angular-template`.
-- `nginx.conf` falls back to `index.html` for every route (single-page app), answers `/health`, and enables gzip. Uncomment its `/api/` location and point it at your backend.
-- Set the real Keycloak values in `src/environments/environment.prod.ts` before building.
+- El `Dockerfile` sirve los archivos estáticos compilados con nginx usando `nginx.conf` (antes `npm run build`): `docker build -t coto-angular-template . && docker run -p 8080:80 coto-angular-template`.
+- `nginx.conf` redirige a `index.html` en todas las rutas (single-page app), responde `/health` y habilita gzip. Descomentá su location `/api/` y apuntalo a tu backend.
+- Definí los valores reales de Keycloak en `src/environments/environment.prod.ts` antes de compilar.

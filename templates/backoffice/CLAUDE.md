@@ -46,7 +46,7 @@ mock/server.mjs   in-memory products API (GET/POST/PUT/DELETE /api/products); ab
 public/mock/products.json   sample products shared by the mock API and `JsonProductsService`
 scripts/          configure-keycloak, configure-theme, remove-mock-api
 scripts/configure-keycloak.mjs   writes Keycloak settings into the environment files
-README.md         user-facing docs (keep in sync with this file)
+README.md         user-facing docs in Spanish (default); README.en.md is the English copy. Keep both in sync with this file
 ```
 
 Add a feature by creating `domains/<name>/` and a lazy route in `app.routes.ts`. Routes (URL paths) are in Spanish (`/acerca-de`, `/productos`, `/productos/nuevo`, `/productos/:id/editar`); folders, files and `data-testid`s stay in English, and so does the API (`/api/products`).

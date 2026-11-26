@@ -132,7 +132,7 @@ The CLI SHALL run on macOS, Linux and Windows with only Node.js installed, and S
 - **THEN** it generates the same project content as on macOS or Linux
 
 ### Requirement: Optional mock API for the backoffice
-When the app type is backoffice, the wizard SHALL ask whether to include the mock API, explaining in Spanish what it is (a small local server that makes the products example work without a backend) and what happens if it is declined (the example loads its data from a JSON file and keeps changes only in browser memory). The default SHALL be to include it. The `--no-mock-api` flag SHALL answer the question negatively and SHALL be rejected for the public template.
+When the app type is backoffice, the wizard SHALL ask whether to include the mock API, explaining in Spanish, in at most three short sentences, what it is (a local server that simulates the products API so the example works without a backend) and what happens if it is declined (the products load from a JSON file and changes are lost on reload). The default SHALL be to include it. The `--no-mock-api` flag SHALL answer the question negatively and SHALL be rejected for the public template.
 
 #### Scenario: Include the mock API
 - **WHEN** the user generates a backoffice and accepts the default
@@ -171,12 +171,12 @@ Without a terminal or with `--yes`, the wizard SHALL NOT ask the mock API, dark 
 - **THEN** the remote is set and dependencies are installed without any question
 
 ### Requirement: Mock API clarified as a mock
-The wizard's mock API question SHALL state that it is only a mock and not a real API, and that the products ABM it supports is only a sample for testing. For a backoffice, the final summary SHALL also state that the products ABM is only a sample.
+The wizard's mock API question SHALL state concisely that the mock simulates the products API and that the products ABM is only a sample to be replaced. For a backoffice, the final summary SHALL also state that the products ABM is only a sample.
 
 #### Scenario: Explanation
 - **WHEN** the wizard asks whether to include the mock API
-- **THEN** the question says it is only a mock, not a real API, that simulates the products API with sample data
-- **AND** it says the products ABM is only a sample for testing
+- **THEN** the question says the mock is a local server that simulates the products API with sample data
+- **AND** it says the products ABM is only a sample to be replaced
 
 #### Scenario: Summary note
 - **WHEN** a backoffice is generated

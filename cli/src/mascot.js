@@ -69,6 +69,21 @@ export function mascotLines(frame = 0) {
  */
 export function headerLines({ frame = 0, title, subtitle, stack = '', detail = '' }) {
   const mascot = mascotLines(frame);
-  const text = ['', pc.bold(title), pc.dim(subtitle), pc.dim(stack), pc.dim(detail)];
-  return mascot.map((line, index) => `  ${line}   ${text[index] ?? ''}`);
+  const text = [badge(title), '', subtitle, '', styleStack(stack), pc.dim(detail)];
+  const blank = ' '.repeat(14);
+  const rows = Math.max(mascot.length, text.length);
+  return Array.from({ length: rows }, (_, index) => `  ${mascot[index] ?? blank}   ${text[index] ?? ''}`);
+}
+
+/** Title as a highlighted badge: bold white text on the mascot's purple. */
+function badge(text) {
+  return `\u001b[48;2;109;40;217m\u001b[1;97m ${text} \u001b[0m`;
+}
+
+/** Stack line: a dim label followed by the items in light purple, separated by dim dots. */
+function styleStack(stack) {
+  if (!stack) return '';
+  const [label, list] = stack.includes(': ') ? stack.split(/: (.*)/s) : ['', stack];
+  const items = list.split(' · ').map((item) => ORANGE(item)).join(pc.dim(' · '));
+  return label ? `${pc.dim(`${label}:`)} ${items}` : items;
 }
