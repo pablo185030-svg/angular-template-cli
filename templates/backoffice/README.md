@@ -177,7 +177,7 @@ La app autentica usuarios con el flujo OIDC Authorization Code y PKCE (`angular-
 
 ### Modo demo (por defecto)
 
-Con `auth.mode: 'mock'`, `MockAuthService` inicia sesión con un "Usuario demo" ficticio, así podés ver y trabajar toda la app sin un servidor Keycloak. El header muestra una insignia **Modo demo** y oculta el botón de logout. **Nunca uses `mock` en un entorno desplegado.**
+Con `auth.mode: 'mock'`, `MockAuthService` inicia sesión con un "Usuario demo" ficticio, así podés ver y trabajar toda la app sin un servidor Keycloak. El header muestra una insignia **Modo demo** y oculta el botón de logout. Al arrancar, pide un token ficticio a la API mock (`POST /api/auth/token`), lo guarda solo en memoria y toma el nombre de usuario de sus claims; si usás la fuente de datos JSON o la API mock no responde, usa un token local y avisa con un `console.warn`. **Nunca uses `mock` en un entorno desplegado.**
 
 ### Conectar Keycloak
 
@@ -226,6 +226,13 @@ Los tests unitarios usan `FakeAuthService` de `src/app/core/auth/testing/`. La c
 | `POST`   | `/api/products`     | Crear       |
 | `PUT`    | `/api/products/:id` | Actualizar  |
 | `DELETE` | `/api/products/:id` | Eliminar    |
+
+La API mock también emite el token ficticio del modo demo con `POST /api/auth/token` (un JWT sin firmar con `name`, `roles` y `exp`) y responde `401` a `/api/products` si falta el header `Authorization: Bearer <token>`; el token no se verifica. `/health` y el endpoint del token son públicos. Para llamarla con `curl`, pedí primero un token:
+
+```bash
+TOKEN=$(curl -s -X POST localhost:5000/api/auth/token | node -pe 'JSON.parse(require("fs").readFileSync(0)).access_token')
+curl -H "Authorization: Bearer $TOKEN" localhost:5000/api/products
+```
 
 La UI de ejemplo vive en `src/app/domains/products/`: un listado (`mat-table`), un formulario de alta/edición hecho con Signal Forms y un diálogo de confirmación de borrado. Para usar un backend real, apuntá `proxy.conf.json` (desarrollo) y el location `/api/` de `nginx.conf` (desplegado) hacia él, y después borrá `mock/`.
 

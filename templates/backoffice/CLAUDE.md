@@ -77,7 +77,7 @@ Per environment, in `src/environments/environment*.ts`:
 
 ### Demo mode (no Keycloak)
 
-`environment.ts` ships with `auth.mode: 'mock'`: `MockAuthService` signs in a fake "Usuario demo", the header shows a "Modo demo" badge and hides logout, so the app is fully usable without a Keycloak server. `environment.e2e.ts` is always `mock`, so `npm run test:e2e` needs no Keycloak. Never set `mock` in a deployed environment (`environment.prod.ts` is `keycloak`). Unit tests use `FakeAuthService` from `core/auth/testing/`.
+`environment.ts` ships with `auth.mode: 'mock'`: `MockAuthService` signs in a fake "Usuario demo", the header shows a "Modo demo" badge and hides logout, so the app is fully usable without a Keycloak server. `environment.e2e.ts` is always `mock`, so `npm run test:e2e` needs no Keycloak. Never set `mock` in a deployed environment (`environment.prod.ts` is `keycloak`). In demo mode `MockAuthService.init()` asks the mock API for a fake token (`POST /api/auth/token`, unsigned JWT with `name`, `roles`, `exp`), keeps it in memory only and takes the user name from its claims; with `api.mode: 'json'`, or if the request fails, it keeps a local fake token (and warns in the console). Unit tests use `FakeAuthService` from `core/auth/testing/`.
 
 ### Connect Keycloak later
 
@@ -85,7 +85,7 @@ Run `npm run configure:keycloak` (asks for URL, realm and client id, or pass `--
 
 ## Mock API and the CRUD example
 
-`npm run mock:api` is a mock, not a real API: it serves `/api/products` from memory (data resets on restart); `proxy.conf.json` forwards `/api` from the dev server to it. To use a real backend, point the proxy (dev) or the nginx `/api/` location (deployed) at it and delete `mock/` when no longer needed.
+`npm run mock:api` is a mock, not a real API: it serves `/api/products` from memory (data resets on restart), issues the fake demo token at `POST /api/auth/token` and answers `401` to `/api/products` requests without an `Authorization: Bearer` header (the token is never verified; `/health` stays open); `proxy.conf.json` forwards `/api` from the dev server to it. To use a real backend, point the proxy (dev) or the nginx `/api/` location (deployed) at it and delete `mock/` when no longer needed.
 
 `ProductsService` is a contract; `environment.api.mode` picks `HttpProductsService` (`'http'`) or `JsonProductsService` (`'json'`: loads `public/mock/products.json`, create/update/delete live in browser memory). `npm run remove:mock-api` switches dev and e2e to `json` and deletes the mock server, the proxy and their config; production stays `http`.
 

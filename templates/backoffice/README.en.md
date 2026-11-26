@@ -179,7 +179,7 @@ The app signs users in with the OIDC Authorization Code flow and PKCE (`angular-
 
 ### Demo mode (default)
 
-With `auth.mode: 'mock'`, `MockAuthService` signs in a fake "Usuario demo", so you can see and work on the whole app without a Keycloak server. The header shows a **Modo demo** badge and hides the logout button. **Never use `mock` in a deployed environment.**
+With `auth.mode: 'mock'`, `MockAuthService` signs in a fake "Usuario demo", so you can see and work on the whole app without a Keycloak server. The header shows a **Modo demo** badge and hides the logout button. On startup it asks the mock API for a fake token (`POST /api/auth/token`), keeps it in memory only and takes the user name from its claims; with the JSON data source, or if the mock API does not answer, it uses a local token and logs a `console.warn`. **Never use `mock` in a deployed environment.**
 
 ### Connect Keycloak
 
@@ -228,6 +228,13 @@ Unit tests use `FakeAuthService` from `src/app/core/auth/testing/`. The `e2e` bu
 | `POST`   | `/api/products`     | Create      |
 | `PUT`    | `/api/products/:id` | Update      |
 | `DELETE` | `/api/products/:id` | Delete      |
+
+The mock API also issues the demo-mode fake token at `POST /api/auth/token` (an unsigned JWT with `name`, `roles` and `exp`) and answers `401` to `/api/products` when the `Authorization: Bearer <token>` header is missing; the token is never verified. `/health` and the token endpoint are public. To call it with `curl`, get a token first:
+
+```bash
+TOKEN=$(curl -s -X POST localhost:5000/api/auth/token | node -pe 'JSON.parse(require("fs").readFileSync(0)).access_token')
+curl -H "Authorization: Bearer $TOKEN" localhost:5000/api/products
+```
 
 The example UI lives in `src/app/domains/products/`: a list (`mat-table`), a create/edit form built with Signal Forms, and a delete confirmation dialog. To use a real backend, point `proxy.conf.json` (development) and the `/api/` location in `nginx.conf` (deployed) at it, then delete `mock/`.
 
