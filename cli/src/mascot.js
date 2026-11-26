@@ -24,6 +24,8 @@ function grid({ legs, eyes }) {
   return [...head, ...FEET[legs]];
 }
 
+const MASCOT_WIDTH = 14;
+
 /** Renders a pixel grid as terminal lines using half blocks (two pixel rows per text line). */
 function render(rows) {
   const lines = [];
@@ -64,20 +66,31 @@ export function mascotLines(frame = 0) {
 
 /**
  * Header: the mascot on the left, title and subtitle on the right.
- * @param {{ frame?: number, title: string, subtitle: string, stack?: string, detail?: string }} options
+ * @param {{ frame?: number, title: string, subtitle: string, stack?: string, detail?: string, version?: string }} options
  * @returns {string[]}
  */
-export function headerLines({ frame = 0, title, subtitle, stack = '', detail = '' }) {
+export function headerLines({ frame = 0, title, subtitle, stack = '', detail = '', version = '' }) {
+  // Left column: the mascot with the version badge under it, one blank line apart.
   const mascot = mascotLines(frame);
-  const text = [badge(title), '', subtitle, '', styleStack(stack), pc.dim(detail)];
-  const blank = ' '.repeat(14);
-  const rows = Math.max(mascot.length, text.length);
-  return Array.from({ length: rows }, (_, index) => `  ${mascot[index] ?? blank}   ${text[index] ?? ''}`);
+  const badgeText = version ? versionBadge(version) : '';
+  const width = Math.max(MASCOT_WIDTH, version ? version.length + ' version  '.length : 0);
+  const left = [...mascot.map((line) => line + ' '.repeat(width - MASCOT_WIDTH)), ...(version ? [' '.repeat(width), badgeText] : [])];
+  // Right column: evenly spaced, one blank line between each paragraph, same height as the left one.
+  const text = [badge(title), '', subtitle, '', styleStack(stack), '', pc.dim(detail)];
+  const rows = Math.max(left.length, text.length);
+  return Array.from({ length: rows }, (_, index) => {
+    return `  ${left[index] ?? ' '.repeat(width)}   ${text[index] ?? ''}`;
+  });
 }
 
 /** Title as a highlighted badge: bold white text on the mascot's purple. */
 function badge(text) {
   return `\u001b[48;2;109;40;217m\u001b[1;97m ${text} \u001b[0m`;
+}
+
+/** Version as a light violet badge under the mascot. */
+function versionBadge(version) {
+  return `\u001b[48;2;196;181;253m\u001b[1;38;2;46;16;101m version ${version} \u001b[0m`;
 }
 
 /** Stack line: a dim label followed by the items in light purple, separated by dim dots. */

@@ -1,9 +1,12 @@
 import * as clack from '@clack/prompts';
 import { MULTISELECT_INSTRUCTIONS, SELECT_INSTRUCTIONS } from '@clack/prompts';
+import { readFileSync } from 'node:fs';
 import pc from 'picocolors';
 import { FRAME_COUNT, headerLines } from './mascot.js';
 import { createScreen } from './screen.js';
 
+/** The project version lives in the repository's root package.json. */
+const { version: VERSION } = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8'));
 const TITLE = 'COTO - CoE Desarrollo | Asistente para la creación de microservicio frontend';
 const SUBTITLE = 'Generá un proyecto Angular nuevo a partir de un template';
 /** What the generated projects are built with, shown under the title. */
@@ -147,7 +150,7 @@ export function createInteractiveReporter({
   const warnings = [];
   let frame = 0;
 
-  const header = () => headerLines({ frame, title: TITLE, subtitle: SUBTITLE, stack: STACK, detail: cwd });
+  const header = () => headerLines({ frame, title: TITLE, subtitle: SUBTITLE, stack: STACK, detail: cwd, version: VERSION });
 
   function drawSteps(tick) {
     screen.clear();
@@ -210,7 +213,7 @@ export function createInteractiveReporter({
     summary(project) {
       screen.leave();
       const { title, lines } = buildSummary(project);
-      out.write(`\n${headerLines({ frame: 0, title: TITLE, subtitle: SUBTITLE, stack: STACK, detail: cwd }).join('\n')}\n\n`);
+      out.write(`\n${headerLines({ frame: 0, title: TITLE, subtitle: SUBTITLE, stack: STACK, detail: cwd, version: VERSION }).join('\n')}\n\n`);
       warnings.forEach((warning) => clack.log.warn(warning, { output: out }));
       clack.note(lines.join('\n'), title, { output: out });
       clack.outro(pc.green('¡A programar!'), { output: out });
