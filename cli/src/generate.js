@@ -147,17 +147,32 @@ function failureDetail(error) {
 }
 
 /**
- * Writes the Keycloak settings into a generated backoffice by running the project's own
- * `scripts/configure-keycloak.mjs`, the same script behind `npm run configure:keycloak`.
+ * Creates the extra environments of a generated backoffice by running the project's own
+ * `scripts/configure-keycloak.mjs --add-env`.
  * @param {string} directory - Generated project directory.
- * @param {{ url: string, realm: string, clientId: string }} settings
+ * @param {string[]} environments - Extra environment names (besides `local` and `prod`).
  * @param {(args: string[], cwd: string) => void} [runNode] - Node runner, injectable for tests.
  */
-export function configureKeycloak(directory, { url, realm, clientId }, runNode = defaultRunNode) {
-  runNode(
-    ['scripts/configure-keycloak.mjs', '--url', url, '--realm', realm, '--client-id', clientId],
-    directory,
-  );
+export function addEnvironments(directory, environments, runNode = defaultRunNode) {
+  for (const name of environments) {
+    runNode(['scripts/configure-keycloak.mjs', '--add-env', name], directory);
+  }
+}
+
+/**
+ * Writes the Keycloak settings of each environment into a generated backoffice by running the
+ * project's own `scripts/configure-keycloak.mjs`, the same script behind `npm run configure:keycloak`.
+ * @param {string} directory - Generated project directory.
+ * @param {Record<string, { url: string, realm: string, clientId: string }>} settings - By environment.
+ * @param {(args: string[], cwd: string) => void} [runNode] - Node runner, injectable for tests.
+ */
+export function configureKeycloak(directory, settings, runNode = defaultRunNode) {
+  for (const [env, { url, realm, clientId }] of Object.entries(settings)) {
+    runNode(
+      ['scripts/configure-keycloak.mjs', '--env', env, '--url', url, '--realm', realm, '--client-id', clientId],
+      directory,
+    );
+  }
 }
 
 function defaultRunNode(args, cwd) {
@@ -206,8 +221,10 @@ export function configureRendering(directory, mode, runNode = defaultRunNode) {
  *   Runs one step, showing progress. Must rethrow when the action fails. An action may return a
  *   string: a warning for a step that did not fail the generation.
  * @param {(args: string[], cwd: string) => void} [options.runGit] - Git runner, injectable for tests.
- * @param {{ url: string, realm: string, clientId: string }} [options.keycloak] - Keycloak settings
- *   to write into a backoffice; omitted to leave the project in demo mode.
+ * @param {Record<string, { url: string, realm: string, clientId: string }>} [options.keycloak] - Keycloak
+ *   settings by environment to write into a backoffice; omitted to leave the project in demo mode.
+ * @param {string[]} [options.environments] - Extra environments to create in a backoffice (besides
+ *   `local` and `prod`).
  * @param {boolean} [options.mockApi] - Backoffice only: false removes the mock API (default true).
  * @param {boolean} [options.darkMode] - True enables dark mode support (default false: light only).
  * @param {'ssr' | 'ssg' | 'spa'} [options.rendering] - Public website only; ssg and spa convert the
@@ -227,6 +244,7 @@ export async function generateProject({
   runStep,
   runGit,
   keycloak,
+  environments = [],
   mockApi = true,
   darkMode = false,
   rendering = 'ssr',
@@ -250,6 +268,11 @@ export async function generateProject({
     await replacePlaceholders(targetDir, projectName);
     await assertNoPlaceholders(targetDir, projectName);
   });
+  if (environments.length > 0) {
+    await runStep(`Creando los ambientes (${environments.join(', ')})`, () =>
+      addEnvironments(targetDir, environments, runNode),
+    );
+  }
   if (keycloak) {
     await runStep('Configurando Keycloak', () => configureKeycloak(targetDir, keycloak, runNode));
   }

@@ -165,6 +165,9 @@ Ejecutar un solo spec unitario: `npx ng test --watch=false --include "src/app/**
 | `src/environments/environment.ts`      | `npm start`, `npm run build:dev` | `mock` (demo) hasta que configures Keycloak, luego `keycloak` |
 | `src/environments/environment.prod.ts` | `npm run build` (producción)     | `keycloak`                                                    |
 | `src/environments/environment.e2e.ts`  | `npm run start:e2e`, Playwright  | `mock`, siempre                                               |
+| `src/environments/environment.<nombre>.ts` | `npm run build:<nombre>`, `npm run start:<nombre>` | `keycloak` (ambientes adicionales, como `dev` o `qa`) |
+
+Cada ambiente tiene su propio Keycloak en `auth.authConfig` (`issuer`, `clientId`, `redirectUri`, etc.). Para agregar un ambiente: `npm run configure:keycloak -- --add-env qa`.
 
 `apiBaseUrl` (por defecto `/api`) es el prefijo que recibe el access token; ver [Autenticación](#authentication). Cada archivo de entorno tiene además dos configuraciones: `api.mode` (`http` o `json`, ver [API mock](#mock-api)) y `theme.darkMode` (ver [Modo oscuro](#dark-mode)).
 
@@ -182,7 +185,7 @@ Con `auth.mode: 'mock'` nadie inicia sesión al arrancar: `authGuard` envía al 
 
 ### Conectar Keycloak
 
-Necesitás tres valores de quien administre tu Keycloak:
+Cada ambiente tiene su propio Keycloak. Necesitás tres valores por ambiente de quien administre tu Keycloak:
 
 | Dato      | Significado                                       | Ejemplo                          |
 | --------- | ------------------------------------------------- | -------------------------------- |
@@ -193,11 +196,14 @@ Necesitás tres valores de quien administre tu Keycloak:
 El generador de proyectos puede configurarlos por vos. Más adelante, ejecutá:
 
 ```bash
-npm run configure:keycloak                      # pregunta cada valor
-npm run configure:keycloak -- --url https://keycloak.mycompany.com --realm my-realm --client-id my-app
+npm run configure:keycloak                      # pregunta cada valor, ambiente por ambiente
+npm run configure:keycloak -- --env qa --url https://keycloak.mycompany.com --realm my-realm --client-id my-app
+npm run configure:keycloak -- --add-env qa      # crea el ambiente qa (archivo, build y serve)
 ```
 
-Esto escribe los valores en `src/environments/environment.ts` y `environment.prod.ts` y pasa el desarrollo local a `auth.mode: 'keycloak'`. También podés editar esos archivos a mano. Para volver al modo demo, poné `mode: 'mock'` en `environment.ts`.
+Sin `--env`, los valores se aplican a todos los ambientes. Esto escribe `auth.authConfig.issuer` (`<url>/realms/<realm>`) y `clientId` en el archivo de cada ambiente y, para `local`, pasa el desarrollo a `auth.mode: 'keycloak'`. También podés editar esos archivos a mano.
+
+Al terminar la sesión (logout, sesión terminada o fallo del refresh del token) la app limpia la sesión y revoca el token en Keycloak. `AuthService` también expone el payload del token y los roles del client (`resource_access[clientId].roles`), solo para lectura: la plantilla no restringe nada por rol. Para volver al modo demo, poné `mode: 'mock'` en `environment.ts`.
 
 ### Configuración del client en Keycloak
 

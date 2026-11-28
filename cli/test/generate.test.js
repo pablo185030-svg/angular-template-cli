@@ -6,6 +6,8 @@ import {
   assertNoPlaceholders,
   assertTargetAvailable,
   copyTemplate,
+  addEnvironments,
+  configureKeycloak,
   generateProject,
   replacePlaceholders,
 } from '../src/generate.js';
@@ -110,4 +112,37 @@ test('uses path APIs only: works with a target inside a path with spaces', async
   await generateProject({ templateDir: join(templates, 'public'), targetDir: target, projectName: 'my-shop', runStep });
 
   strictEqual(JSON.parse(await readFile(join(target, 'package.json'), 'utf8')).name, 'my-shop');
+});
+
+test('creates the extra environments, then configures each environment through the project script', async () => {
+  const root = await makeTempDir();
+  const templates = await makeTemplates(root);
+  const calls = [];
+
+  await generateProject({
+    templateDir: join(templates, 'backoffice'),
+    targetDir: join(root, 'out'),
+    projectName: 'my-admin',
+    runStep,
+    runGit: () => {},
+    environments: ['qa'],
+    keycloak: {
+      qa: { url: 'https://qa.example.com', realm: 'r', clientId: 'my-admin' },
+      prod: { url: 'https://sso.example.com', realm: 'r2', clientId: 'my-admin' },
+    },
+    runNode: (args) => calls.push(args),
+  });
+
+  deepStrictEqual(calls, [
+    ['scripts/configure-keycloak.mjs', '--add-env', 'qa'],
+    ['scripts/configure-keycloak.mjs', '--env', 'qa', '--url', 'https://qa.example.com', '--realm', 'r', '--client-id', 'my-admin'],
+    ['scripts/configure-keycloak.mjs', '--env', 'prod', '--url', 'https://sso.example.com', '--realm', 'r2', '--client-id', 'my-admin'],
+  ]);
+});
+
+test('runs one script call per environment', () => {
+  const calls = [];
+  addEnvironments('/x', ['dev', 'qa'], (args) => calls.push(args[2]));
+  configureKeycloak('/x', {}, (args) => calls.push(args));
+  deepStrictEqual(calls, ['dev', 'qa']);
 });

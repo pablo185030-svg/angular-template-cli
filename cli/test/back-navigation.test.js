@@ -53,7 +53,7 @@ test('the first asked question is not offered a way back, later ones are', async
 test('changing the app type on the way back drops the answers that no longer apply', async () => {
   // backoffice: type, name, location, keycloak no, mock yes, then back x4 to type; pick public
   const { result } = await resolve([
-    'backoffice', 'a-b', LOC, false, true, BACK, BACK, BACK, BACK, BACK,
+    'backoffice', 'a-b', LOC, '', false, false, true, BACK, BACK, BACK, BACK, BACK, BACK, BACK,
     'public', 'a-b', LOC, false, 'spa', false, true, false,
   ]);
 
@@ -64,23 +64,24 @@ test('changing the app type on the way back drops the answers that no longer app
 
 test('Esc inside Keycloak goes back one sub-question and the sub-answers are kept', async () => {
   const { result, prompts } = await resolve([
-    'backoffice', 'my-admin', LOC,
+    'backoffice', 'my-admin', LOC, '',
     true, 'https://sso.example.com', BACK, 'https://sso2.example.com', 'my-realm', 'my-admin',
-    true, false, false, true, false,
+    false, true, false, false, true, false,
   ]);
 
-  deepStrictEqual(result.keycloak, { url: 'https://sso2.example.com', realm: 'my-realm', clientId: 'my-admin' });
+  deepStrictEqual(result.keycloak, { local: { url: 'https://sso2.example.com', realm: 'my-realm', clientId: 'my-admin' } });
   const urlAsks = prompts.asked.filter((question) => /URL de Keycloak/.test(question.message));
   strictEqual(urlAsks[1].initialValue, 'https://sso.example.com');
 });
 
-test('Esc on the first Keycloak sub-question goes back to the previous step', async () => {
+test('Esc on the first Keycloak sub-question goes back to the environments question', async () => {
   const { result, prompts } = await resolve([
-    'backoffice', 'a-b', LOC, BACK, '/other', false, true, false, false, true, false,
+    'backoffice', 'a-b', LOC, '', BACK, '', false, false, true, false, false, true, false,
   ]);
 
-  strictEqual(result.outDir, '/other');
-  strictEqual(prompts.asked.filter((question) => /configurar Keycloak/.test(question.message)).length, 2);
+  strictEqual(result.environments.length, 0);
+  strictEqual(prompts.asked.filter((question) => /Ambientes adicionales/.test(question.message)).length, 2);
+  strictEqual(prompts.asked.filter((question) => /Keycloak para local/.test(question.message)).length, 2);
 });
 
 test('Ctrl+C still cancels, also after going back', async () => {

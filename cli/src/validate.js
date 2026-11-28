@@ -74,3 +74,51 @@ export function validateRendering(mode) {
   if (RENDERING_MODES.some((entry) => entry.value === mode)) return undefined;
   return `Modo de renderizado desconocido "${mode}". Usá uno de: ${RENDERING_MODES.map((entry) => entry.value).join(', ')}.`;
 }
+
+/**
+ * Validates the name of an extra environment (`local` and `prod` always exist).
+ * @param {string | undefined} name
+ * @returns {string | undefined} An error message, or undefined when valid.
+ */
+export function validateEnvironmentName(name) {
+  if (!name || !/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(name)) {
+    return `Nombre de ambiente inválido "${name ?? ''}". Usá minúsculas y guiones (ej.: dev, qa, pre-prod).`;
+  }
+  if (['local', 'prod', 'e2e', 'development', 'production'].includes(name)) {
+    return `"${name}" ya existe o está reservado; local y prod siempre están y e2e es solo de pruebas.`;
+  }
+  return undefined;
+}
+
+/**
+ * Parses a comma-separated list of extra environment names.
+ * @param {string | undefined} text - For example `"dev, qa"`; empty means none.
+ * @returns {{ names: string[], error?: string }} The names, or the first error found.
+ */
+export function parseEnvironments(text) {
+  const names = (text ?? '')
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean);
+  for (const [index, name] of names.entries()) {
+    const error = validateEnvironmentName(name);
+    if (error) return { names: [], error };
+    if (names.indexOf(name) !== index) return { names: [], error: `El ambiente "${name}" está repetido.` };
+  }
+  return { names };
+}
+
+/**
+ * Parses a `--keycloak <env>=<url>,<realm>[,<clientId>]` value.
+ * @param {string} value
+ * @returns {{ env?: string, url?: string, realm?: string, clientId?: string, error?: string }}
+ */
+export function parseKeycloakFlag(value) {
+  const separator = value.indexOf('=');
+  const parts = separator < 0 ? [] : value.slice(separator + 1).split(',');
+  if (separator <= 0 || parts.length < 2 || parts.length > 3) {
+    return { error: `--keycloak "${value}": el formato es <ambiente>=<url>,<realm>[,<client-id>].` };
+  }
+  const [url, realm, clientId] = parts;
+  return { env: value.slice(0, separator), url, realm, ...(clientId === undefined ? {} : { clientId }) };
+}

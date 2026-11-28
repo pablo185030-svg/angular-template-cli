@@ -17,10 +17,16 @@ export const environment = {
     // Production always authenticates against Keycloak. Set the real values below (or run
     // `npm run configure:keycloak`) before deploying.
     mode: 'keycloak' as 'keycloak' | 'mock',
-    keycloak: {
-      url: 'https://keycloak.example.com',
-      realm: 'my-realm',
+    authConfig: {
+      // Keycloak realm URL: <server>/realms/<realm>.
+      issuer: 'https://keycloak.example.com/realms/my-realm',
       clientId: 'coto-angular-template',
+      redirectUri: window.location.origin + '/',
+      silentRefreshRedirectUri: window.location.origin + '/silent-refresh.html',
+      responseType: 'code',
+      scope: 'openid profile email',
+      requireHttps: true,
+      timeoutFactor: 0.9,
     },
   },
 };

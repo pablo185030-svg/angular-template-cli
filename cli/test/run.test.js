@@ -49,7 +49,7 @@ test('does not prompt without a terminal and fails when flags are missing', asyn
 
 test('guided flow with prompts generates the chosen template', async () => {
   const { cwd, templatesDir, write } = await setup();
-  const prompts = fakePrompts(['backoffice', 'admin-panel', cwd, false, true, false, false, true, false]);
+  const prompts = fakePrompts(['backoffice', 'admin-panel', cwd, '', false, false, true, false, false, true, false]);
 
   const code = await run([], {
     templatesDir, cwd, write, prompts, isTTY: true,
@@ -180,14 +180,42 @@ test('backoffice with Keycloak flags writes the settings and switches to Keycloa
   const dev = await readFile(join(cwd, 'my-admin', 'src', 'environments', 'environment.ts'), 'utf8');
   const prod = await readFile(join(cwd, 'my-admin', 'src', 'environments', 'environment.prod.ts'), 'utf8');
   for (const source of [dev, prod]) {
-    match(source, /url: 'https:\/\/sso\.example\.com'/);
-    match(source, /realm: 'corp'/);
+    match(source, /issuer: 'https:\/\/sso\.example\.com\/realms\/corp'/);
     match(source, /clientId: 'my-admin'/);
   }
   match(dev, /mode: 'keycloak'/);
   const text = output.join('\n');
   match(text, /Configurando Keycloak\.\.\. listo/);
   match(text, /Keycloak configurado/);
+});
+
+test('backoffice with environments writes each environment its own Keycloak', async () => {
+  const { cwd, templatesDir, output, write } = await setup();
+
+  const code = await run(
+    [
+      '--type', 'backoffice', '--name', 'my-admin', '--yes', '--environments', 'dev,qa',
+      '--keycloak', 'local=http://localhost:8080,dev-realm',
+      '--keycloak', 'dev=https://sso-dev.example.com,dev-realm',
+      '--keycloak', 'prod=https://sso.example.com,corp,custom-client',
+    ],
+    { templatesDir, cwd, write, isTTY: false },
+  );
+
+  strictEqual(code, 0);
+  const read = (file) => readFile(join(cwd, 'my-admin', 'src', 'environments', file), 'utf8');
+  match(await read('environment.ts'), /issuer: 'http:\/\/localhost:8080\/realms\/dev-realm'/);
+  match(await read('environment.ts'), /requireHttps: false/);
+  match(await read('environment.dev.ts'), /issuer: 'https:\/\/sso-dev\.example\.com\/realms\/dev-realm'/);
+  match(await read('environment.dev.ts'), /clientId: 'my-admin'/);
+  match(await read('environment.prod.ts'), /clientId: 'custom-client'/);
+  match(await read('environment.qa.ts'), /issuer: 'https:\/\/keycloak\.example\.com/);
+  const angular = JSON.parse(await readFile(join(cwd, 'my-admin', 'angular.json'), 'utf8'));
+  const configurations = Object.values(angular.projects)[0].architect.build.configurations;
+  ok(configurations.dev && configurations.qa);
+  const text = output.join('\n');
+  match(text, /Ambientes: local, dev, qa, prod\. Keycloak configurado en: local, dev, prod/);
+  match(text, /Con valores de ejemplo: qa/);
 });
 
 test('backoffice without Keycloak stays in demo mode and the summary says how to connect it later', async () => {
@@ -305,4 +333,15 @@ test('the help lists the new flags', async () => {
 
   match(output.join('\n'), /--no-mock-api/);
   match(output.join('\n'), /--dark-mode/);
+});
+
+test('the summary lists environments, configured ones and the ones left with example values', () => {
+  const text = buildSummary({
+    name: 'a-b', type: 'backoffice', targetDir: '/x/a-b',
+    environments: ['local', 'qa', 'prod'], keycloakEnvironments: ['prod'],
+  }).lines.join('\n');
+
+  match(text, /Ambientes: local, qa, prod\. Keycloak configurado en: prod/);
+  match(text, /Con valores de ejemplo: local, qa/);
+  match(text, /redirect URI/);
 });

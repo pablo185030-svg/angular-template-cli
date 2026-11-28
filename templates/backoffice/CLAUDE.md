@@ -46,7 +46,7 @@ src/app/
 mock/server.mjs   in-memory API: /api/products, POST /api/auth/login; absent when generated with --no-mock-api
 public/mock/   products.json, users.json: seeds shared by the mock API and the JSON services
 scripts/          configure-keycloak, configure-theme, remove-mock-api
-scripts/configure-keycloak.mjs   writes Keycloak settings into the environment files
+scripts/configure-keycloak.mjs   writes Keycloak settings per environment and adds environments
 README.md         user-facing docs in Spanish (default); README.en.md is the English copy. Keep both in sync with this file
 ```
 
@@ -62,33 +62,35 @@ Per environment, in `src/environments/environment*.ts`:
 
 | Setting                  | Meaning                                                          |
 | ------------------------ | ---------------------------------------------------------------- |
-| `auth.keycloak.url`      | Keycloak base URL, the part before `/realms`                     |
-| `auth.keycloak.realm`    | Realm name                                                       |
-| `auth.keycloak.clientId` | Client id (defaults to the project name)                         |
+| `auth.authConfig`        | Full `angular-oauth2-oidc` config of that environment's client (below) |
 | `apiBaseUrl`             | API prefix that receives the access token (default `/api`)       |
 | `api.mode`               | `'http'` (API) or `'json'` (sample JSON, changes in memory)      |
 | `theme.darkMode`         | `true` shows a light/dark toggle (starts light); default `false` |
 
+`auth.authConfig` has `issuer` (`<keycloak url>/realms/<realm>`), `clientId`, `redirectUri` and `silentRefreshRedirectUri` (both from `window.location.origin`, so one build works on any host), `responseType: 'code'`, `scope`, `requireHttps` and `timeoutFactor`. Each environment has its own Keycloak: edit `issuer` and `clientId` in its file or use `npm run configure:keycloak`. Environments are `local` (`environment.ts`), `prod` (`environment.prod.ts`), any extra ones (`environment.<name>.ts`, built with `ng build --configuration <name>` or `npm run build:<name>`, served with `npm run start:<name>`) and `e2e` (always mock).
+
+`KeycloakAuthService` ends the session (clears state and revokes the token) on the OAuth events `logout`, `session_terminated`, `token_refresh_error` and `silent_refresh_error`, never on `token_expires` (that one only triggers the silent refresh). `getPayloadToken()` and `getRoles()` read the access token (`resource_access[clientId].roles`); they are read-only helpers, nothing in the app uses roles to restrict access. Demo mode never calls Keycloak.
+
 ### Local realm setup
 
-1. In the Keycloak admin console, create (or pick) a realm and set `auth.keycloak.realm`.
-2. Create a client with the id in `auth.keycloak.clientId`: client authentication **off** (public client), standard flow **on**, PKCE method `S256`.
-3. Valid redirect URIs: `http://localhost:4200/*`. Web origins: `http://localhost:4200`.
-4. Create a user in the realm, set `auth.keycloak.url`, and run `npm start`.
+1. In the Keycloak admin console, create (or pick) a realm and use it in `issuer`.
+2. Create a client with the id in `authConfig.clientId`: client authentication **off** (public client), standard flow **on**, PKCE method `S256`.
+3. Valid redirect URIs: the app URL of that environment (`http://localhost:4200/*` for local). Web origins: its origin.
+4. Create a user in the realm, set `issuer`, and run `npm start`.
 
 ### Demo mode (no Keycloak)
 
-`environment.ts` ships with `auth.mode: 'mock'`: nobody is signed in at start, `authGuard` sends users to `/login` (outside the layout) and `MockAuthService.signIn()` checks the seeded users (only `admin`, password `1234`; see Roles below). The header shows a "Modo demo" badge, the user (initials avatar, name) and logout, so the app is usable without a Keycloak server. `environment.e2e.ts` is always `mock`, so `npm run test:e2e` needs no Keycloak. Never set `mock` in a deployed environment (`environment.prod.ts` is `keycloak`). Sign-in goes to `POST /api/auth/login` (unsigned JWT with `sub`, `name`, `exp`); with `api.mode: 'json'` it is checked in the browser against `public/mock/users.json`. The token lives in memory only, so a reload or logout returns to `/login`. Unit tests use `FakeAuthService` from `core/auth/testing/`. e2e specs sign in with `signIn()` from `e2e/support/auth.ts`: a page load drops the session, so navigate with in-app links after signing in.
+`environment.ts` ships with `auth.mode: 'mock'`: nobody is signed in at start, `authGuard` sends users to `/login` (outside the layout) and `MockAuthService.signIn()` checks the seeded users (only `admin`, password `1234`; see Roles below). The header shows a "Modo demo" badge, the user (initials avatar, name) and logout, so the app is usable without a Keycloak server. `environment.e2e.ts` is always `mock`, so `npm run test:e2e` needs no Keycloak. Never set `mock` in a deployed environment (`environment.prod.ts` and every extra environment are `keycloak`). Sign-in goes to `POST /api/auth/login` (unsigned JWT with `sub`, `name`, `exp`); with `api.mode: 'json'` it is checked in the browser against `public/mock/users.json`. The token lives in memory only, so a reload or logout returns to `/login`. Unit tests use `FakeAuthService` from `core/auth/testing/`. e2e specs sign in with `signIn()` from `e2e/support/auth.ts`: a page load drops the session, so navigate with in-app links after signing in.
 
 ### Connect Keycloak later
 
-Run `npm run configure:keycloak` (asks for URL, realm and client id, or pass `--url --realm --client-id`). It writes the values into `environment.ts` and `environment.prod.ts` and switches `environment.ts` to `mode: 'keycloak'`. The project generator can do the same at creation time.
+Run `npm run configure:keycloak` (asks URL, realm and client id for each environment). `-- --env qa --url <url> --realm <realm> --client-id <id>` configures one environment; without `--env` the same values go to every environment. `-- --add-env qa` creates `environment.qa.ts` (a copy of the prod one), its `angular.json` build and serve configurations and the `build:qa` and `start:qa` scripts. Configuring `local` also switches it to `mode: 'keycloak'`. The project generator does the same at creation time (`--environments` and `--keycloak <env>=<url>,<realm>[,<client-id>]`).
 
 ## Mock API and the CRUD example
 
 `npm run mock:api` is a mock, not a real API: it serves `/api/products` from memory (data resets on restart), logs users in at `POST /api/auth/login`, and answers `401` to `/api/products` requests without an `Authorization: Bearer` header (the token is trusted, never verified, and no roles or permissions are checked; `/health` and the login stay open); `proxy.conf.json` forwards `/api` from the dev server to it. To use a real backend, point the proxy (dev) or the nginx `/api/` location (deployed) at it and delete `mock/` when no longer needed.
 
-`ProductsService` is a contract; `environment.api.mode` picks `HttpProductsService` (`'http'`) or `JsonProductsService` (`'json'`: loads `public/mock/products.json`, create/update/delete live in browser memory). `npm run remove:mock-api` switches dev and e2e to `json` and deletes the mock server, the proxy and their config; production stays `http`.
+`ProductsService` is a contract; `environment.api.mode` picks `HttpProductsService` (`'http'`) or `JsonProductsService` (`'json'`: loads `public/mock/products.json`, create/update/delete live in browser memory). `npm run remove:mock-api` switches dev and e2e to `json` (prod and extra environments stay `http`) and deletes the mock server, the proxy and their config; production stays `http`.
 
 ## Roles
 

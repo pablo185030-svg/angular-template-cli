@@ -1,0 +1,13 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Silent refresh</title>
+  </head>
+  <body>
+    <script>
+      // Hands the authorization response of the hidden iframe back to the app window.
+      parent.postMessage(location.hash || '#' + location.search, location.origin);
+    </script>
+  </body>
+</html>

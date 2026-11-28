@@ -33,7 +33,7 @@ test('the public site asks the rendering mode, SSR by default, with a warning ab
 });
 
 test('the backoffice never asks the rendering mode', async () => {
-  const prompts = fakePrompts(['backoffice', 'my-admin', '/w', false, true, false, false, true, false]);
+  const prompts = fakePrompts(['backoffice', 'my-admin', '/w', '', false, false, true, false, false, true, false]);
 
   const result = await resolveOptions({ flags: {}, interactive: true, prompts });
 

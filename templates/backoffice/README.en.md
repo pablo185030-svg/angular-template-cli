@@ -165,6 +165,9 @@ Run one unit spec: `npx ng test --watch=false --include "src/app/**/header.spec.
 | `src/environments/environment.ts`      | `npm start`, `npm run build:dev` | `mock` (demo) until you configure Keycloak, then `keycloak` |
 | `src/environments/environment.prod.ts` | `npm run build` (production)     | `keycloak`                                                  |
 | `src/environments/environment.e2e.ts`  | `npm run start:e2e`, Playwright  | `mock`, always                                              |
+| `src/environments/environment.<name>.ts` | `npm run build:<name>`, `npm run start:<name>` | `keycloak` (extra environments such as `dev` or `qa`) |
+
+Each environment has its own Keycloak in `auth.authConfig` (`issuer`, `clientId`, `redirectUri`, etc.). To add an environment: `npm run configure:keycloak -- --add-env qa`.
 
 `apiBaseUrl` (default `/api`) is the prefix that receives the access token; see [Authentication](#authentication).
 
@@ -184,7 +187,7 @@ With `auth.mode: 'mock'` nobody is signed in at start: `authGuard` sends the use
 
 ### Connect Keycloak
 
-You need three values from your Keycloak admin:
+Each environment has its own Keycloak. You need three values per environment from your Keycloak admin:
 
 | Setting   | Meaning                                      | Example                          |
 | --------- | -------------------------------------------- | -------------------------------- |
@@ -195,11 +198,14 @@ You need three values from your Keycloak admin:
 The project generator can set them for you. Later, run:
 
 ```bash
-npm run configure:keycloak                      # asks for each value
-npm run configure:keycloak -- --url https://keycloak.mycompany.com --realm my-realm --client-id my-app
+npm run configure:keycloak                      # asks for each value, environment by environment
+npm run configure:keycloak -- --env qa --url https://keycloak.mycompany.com --realm my-realm --client-id my-app
+npm run configure:keycloak -- --add-env qa      # creates the qa environment (file, build and serve)
 ```
 
-This writes the values into `src/environments/environment.ts` and `environment.prod.ts` and switches local development to `auth.mode: 'keycloak'`. You can also edit those files by hand. To go back to demo mode, set `mode: 'mock'` in `environment.ts`.
+Without `--env` the values apply to every environment. This writes `auth.authConfig.issuer` (`<url>/realms/<realm>`) and `clientId` into each environment file and, for `local`, switches development to `auth.mode: 'keycloak'`. You can also edit those files by hand.
+
+When the session ends (logout, terminated session or a failed token refresh) the app clears the session and revokes the token at Keycloak. `AuthService` also exposes the token payload and the client's roles (`resource_access[clientId].roles`), read-only: the template restricts nothing by role. To go back to demo mode, set `mode: 'mock'` in `environment.ts`.
 
 ### Keycloak client setup
 

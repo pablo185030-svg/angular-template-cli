@@ -51,3 +51,12 @@ test('fails loudly when the setting is missing', async () => {
 
   await rejects(applyThemeSettings(dir, true), /Could not find theme\.darkMode/);
 });
+
+test('backoffice: dark mode also reaches an extra environment file', async () => {
+  const dir = await project('backoffice');
+  await cp(join(dir, 'src', 'environments', 'environment.prod.ts'), join(dir, 'src', 'environments', 'environment.qa.ts'));
+
+  await applyThemeSettings(dir, true);
+
+  match(await read(dir, 'environment.qa.ts'), /darkMode: true/);
+});

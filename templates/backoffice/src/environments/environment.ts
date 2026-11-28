@@ -15,14 +15,20 @@ export const environment = {
   },
   auth: {
     // 'mock' runs the app in demo mode: a fake signed-in user and no Keycloak server needed.
-    // 'keycloak' authenticates against the settings below. `npm run configure:keycloak` sets
-    // them and switches this to 'keycloak'. Never use 'mock' in a deployed environment.
+    // 'keycloak' authenticates against `authConfig` below. `npm run configure:keycloak` sets
+    // the issuer and client id and switches this to 'keycloak'. Never use 'mock' in a deployed
+    // environment.
     mode: 'mock' as 'keycloak' | 'mock',
-    keycloak: {
-      // Base URL of the Keycloak server, the part before "/realms".
-      url: 'https://keycloak.example.com',
-      realm: 'my-realm',
+    authConfig: {
+      // Keycloak realm URL: <server>/realms/<realm>.
+      issuer: 'https://keycloak.example.com/realms/my-realm',
       clientId: 'coto-angular-template',
+      redirectUri: window.location.origin + '/',
+      silentRefreshRedirectUri: window.location.origin + '/silent-refresh.html',
+      responseType: 'code',
+      scope: 'openid profile email',
+      requireHttps: true,
+      timeoutFactor: 0.9,
     },
   },
 };

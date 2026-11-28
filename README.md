@@ -55,7 +55,7 @@ El wizard copia el template en una carpeta **junto a este repositorio** (hermana
 
 **Solo backoffice**
 
-- **Keycloak** (URL, realm y client id). Si lo salteás, arranca en modo demo, con pantalla de login y un usuario de prueba (`admin`, contraseña `1234`, solo para entornos locales), y lo conectás después con `npm run configure:keycloak`.
+- **Ambientes adicionales** (ej.: `dev, qa`; `local` y `prod` siempre existen) y **Keycloak por ambiente** (URL, realm y client id; cada pregunta propone la respuesta del ambiente anterior). Si lo salteás, arranca en modo demo, con pantalla de login y un usuario de prueba (`admin`, contraseña `1234`, solo para entornos locales), y lo conectás después con `npm run configure:keycloak`.
 - **API mock**: un servidor local que simula la API de productos para que el ABM funcione sin backend. Si no la incluís, el ABM carga los productos de un archivo JSON y los cambios se pierden al recargar.
 
 **Solo sitio público**
@@ -76,6 +76,10 @@ Sin terminal (CI, scripts), pasá todo como flags:
 npm run create -- --type backoffice --name my-admin --yes
 npm run create -- --type backoffice --name my-admin --yes \
   --keycloak-url https://keycloak.mycompany.com --keycloak-realm my-realm
+npm run create -- --type backoffice --name my-admin --yes --environments qa \
+  --keycloak local=http://localhost:8080,my-realm \
+  --keycloak qa=https://keycloak-qa.mycompany.com,my-realm \
+  --keycloak prod=https://keycloak.mycompany.com,my-realm
 npm run create -- --type backoffice --name my-admin --yes --no-mock-api --dark-mode
 ```
 
@@ -84,9 +88,11 @@ npm run create -- --type backoffice --name my-admin --yes --no-mock-api --dark-m
 | `--type public\|backoffice`   | Tipo de app                                                                                 |
 | `--name <nombre>`             | Nombre del proyecto: minúsculas, números y guiones simples                                  |
 | `--out <dir>`                 | Directorio padre del proyecto nuevo (por defecto: la carpeta que contiene este repositorio) |
-| `--keycloak-url <url>`        | Backoffice: URL base de Keycloak (la parte antes de `/realms`)                              |
-| `--keycloak-realm <realm>`    | Backoffice: realm                                                                           |
-| `--keycloak-client-id <id>`   | Backoffice: client id (por defecto, el nombre del proyecto)                                 |
+| `--environments <lista>`      | Backoffice: ambientes adicionales separados por coma (`local` y `prod` siempre existen)     |
+| `--keycloak <amb>=<url>,<realm>[,<client-id>]` | Backoffice: Keycloak de un ambiente (repetible; client id por defecto, el nombre del proyecto) |
+| `--keycloak-url <url>`        | Backoffice: URL base de Keycloak para todos los ambientes (la parte antes de `/realms`)     |
+| `--keycloak-realm <realm>`    | Backoffice: realm para todos los ambientes                                                  |
+| `--keycloak-client-id <id>`   | Backoffice: client id para todos los ambientes                                              |
 | `--no-mock-api`               | Backoffice: sin API mock; el ABM usa un archivo JSON y guarda los cambios en memoria        |
 | `--dark-mode`                 | Soportar modo oscuro (botón en el header; por defecto: solo claro)                          |
 | `--rendering <ssr\|ssg\|spa>` | Sitio público: modo de renderizado (por defecto `ssr`; `spa` no tiene SEO)                  |

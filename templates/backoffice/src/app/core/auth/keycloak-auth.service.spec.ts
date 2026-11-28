@@ -1,6 +1,7 @@
 import { Location } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
-import { OAuthService } from 'angular-oauth2-oidc';
+import { OAuthEvent, OAuthService } from 'angular-oauth2-oidc';
+import { Subject } from 'rxjs';
 import { environment } from '@env/environment';
 import { KeycloakAuthService } from './keycloak-auth.service';
 
@@ -11,7 +12,8 @@ class FakeOAuthService {
   claims: Record<string, string> = {};
   token = 'real-token';
   readonly codeFlowStates: string[] = [];
-  logOutCalls = 0;
+  revokeCalls = 0;
+  readonly events = new Subject<OAuthEvent>();
   silentRefreshCalls = 0;
 
   configure(config: Record<string, unknown>): void {
@@ -35,8 +37,8 @@ class FakeOAuthService {
   initCodeFlow(state: string): void {
     this.codeFlowStates.push(state);
   }
-  logOut(): void {
-    this.logOutCalls++;
+  revokeTokenAndLogout(): void {
+    this.revokeCalls++;
   }
 }
 
@@ -59,12 +61,8 @@ describe('KeycloakAuthService', () => {
 
     await service.init();
 
-    const { url, realm, clientId } = environment.auth.keycloak;
-    expect(oauth.config).toMatchObject({
-      issuer: `${url}/realms/${realm}`,
-      clientId,
-      responseType: 'code',
-    });
+    expect(oauth.config).toBe(environment.auth.authConfig);
+    expect(oauth.config).toMatchObject({ responseType: 'code' });
     expect(oauth.silentRefreshCalls).toBe(1);
   });
 
@@ -132,13 +130,89 @@ describe('KeycloakAuthService', () => {
     expect(oauth.codeFlowStates).toEqual([encodeURIComponent('/productos')]);
   });
 
-  it('ends the session on logout', () => {
+  it('revokes the token and signs out on logout', async () => {
     const oauth = new FakeOAuthService();
+    oauth.validToken = true;
     const { service } = setup(oauth);
+    await service.init();
 
     service.logout();
 
-    expect(oauth.logOutCalls).toBe(1);
+    expect(oauth.revokeCalls).toBe(1);
+    expect(service.isAuthenticated()).toBe(false);
+  });
+
+  it.each(['logout', 'session_terminated', 'token_refresh_error', 'silent_refresh_error'])(
+    'ends the session on the %s event',
+    async (type) => {
+      const oauth = new FakeOAuthService();
+      oauth.validToken = true;
+      const { service } = setup(oauth);
+      await service.init();
+
+      oauth.events.next({ type } as OAuthEvent);
+
+      expect(oauth.revokeCalls).toBe(1);
+      expect(service.isAuthenticated()).toBe(false);
+    },
+  );
+
+  it.each(['token_expires', 'token_received', 'token_refreshed'])(
+    'keeps the session on the %s event',
+    async (type) => {
+      const oauth = new FakeOAuthService();
+      oauth.validToken = true;
+      const { service } = setup(oauth);
+      await service.init();
+
+      oauth.events.next({ type } as OAuthEvent);
+
+      expect(oauth.revokeCalls).toBe(0);
+      expect(service.isAuthenticated()).toBe(true);
+    },
+  );
+
+  describe('token payload and roles', () => {
+    const tokenWith = (payload: object) => `h.${btoa(JSON.stringify(payload))}.s`;
+
+    async function signedIn(token: string) {
+      const oauth = new FakeOAuthService();
+      oauth.validToken = true;
+      oauth.token = token;
+      const { service } = setup(oauth);
+      await service.init();
+      return service;
+    }
+
+    it('returns the roles granted to the configured client', async () => {
+      const { clientId } = environment.auth.authConfig;
+      const service = await signedIn(
+        tokenWith({ resource_access: { [clientId]: { roles: ['admin', 'user'] } } }),
+      );
+
+      expect(service.getRoles()).toEqual(['admin', 'user']);
+    });
+
+    it('returns no roles when the client has none', async () => {
+      const service = await signedIn(tokenWith({ resource_access: { other: { roles: ['x'] } } }));
+
+      expect(service.getRoles()).toEqual([]);
+    });
+
+    it('returns a null payload and no roles for a malformed token', async () => {
+      const service = await signedIn('not-a-token');
+
+      expect(service.getPayloadToken()).toBeNull();
+      expect(service.getRoles()).toEqual([]);
+    });
+
+    it('returns a null payload and no roles when signed out', async () => {
+      const { service } = setup(new FakeOAuthService());
+      await service.init();
+
+      expect(service.getPayloadToken()).toBeNull();
+      expect(service.getRoles()).toEqual([]);
+    });
   });
 
   it('has no login page and is not authenticated when signed out', async () => {

@@ -1,6 +1,8 @@
 import { APP_TYPES, DEFAULT_RENDERING, RENDERING_MODES } from './constants.js';
 import {
   validateAppType,
+  parseEnvironments,
+  parseKeycloakFlag,
   validateKeycloakName,
   validateKeycloakUrl,
   validateProjectName,
@@ -22,7 +24,7 @@ export class UsageError extends Error {}
  * In a terminal the user can go back to the previous question (`prompts.isBack`, Esc) to change an
  * answer; Ctrl+C cancels. Without a terminal nothing is asked and the defaults apply.
  * @param {object} options
- * @param {{ type?: string, name?: string, outDir?: string, remote?: string, commit?: boolean, install?: boolean, keycloakUrl?: string, keycloakRealm?: string, keycloakClientId?: string, mockApi?: boolean, darkMode?: boolean, rendering?: string }} options.flags
+ * @param {{ type?: string, name?: string, outDir?: string, remote?: string, commit?: boolean, install?: boolean, keycloakUrl?: string, keycloakRealm?: string, keycloakClientId?: string, environments?: string, keycloak?: string[], mockApi?: boolean, darkMode?: boolean, rendering?: string }} options.flags
  *   Values given on the command line. `mockApi: false` and `darkMode: true` are the only flag values.
  *   Unanswered questions use their defaults without a terminal (mock API included, light only).
  * @param {string} [options.defaultOutDir] - Location offered by the location question.
@@ -30,14 +32,20 @@ export class UsageError extends Error {}
  * @param {{ select: Function, text: Function, confirm: Function, isCancel: (value: unknown) => boolean, isBack?: (value: unknown) => boolean }} options.prompts
  * @param {(answers: string[]) => void} [options.redraw] - Called when going back, with the answers so
  *   far as short lines, so a full-screen UI can clear and redraw.
- * @returns {Promise<{ type: string, name: string, darkMode: boolean, mockApi?: boolean, keycloak?: { url: string, realm: string, clientId: string } }>}
- *   `keycloak` is present only for a backoffice whose Keycloak settings were provided; `mockApi`
- *   is present only for a backoffice.
+ * @returns {Promise<{ type: string, name: string, darkMode: boolean, mockApi?: boolean, environments?: string[], keycloak?: Record<string, { url: string, realm: string, clientId: string }> }>}
+ *   For a backoffice, `environments` lists the extra environments (besides `local` and `prod`) and
+ *   `keycloak` maps each environment whose Keycloak settings were provided to them; `mockApi` is
+ *   present only for a backoffice.
  */
 export async function resolveOptions({ flags, interactive, prompts, defaultOutDir, redraw }) {
   const { type, name } = flags;
   const { keycloakUrl, keycloakRealm, keycloakClientId } = flags;
-  const keycloakFlags = [keycloakUrl, keycloakRealm, keycloakClientId].some((value) => value !== undefined);
+  const legacyKeycloakFlags = [keycloakUrl, keycloakRealm, keycloakClientId].some((value) => value !== undefined);
+  const envKeycloakFlags = (flags.keycloak ?? []).length > 0;
+  const keycloakFlags = legacyKeycloakFlags || envKeycloakFlags || flags.environments !== undefined;
+  if (legacyKeycloakFlags && envKeycloakFlags) {
+    throw new UsageError('No se pueden combinar --keycloak con --keycloak-url, --keycloak-realm ni --keycloak-client-id.');
+  }
 
   if (type !== undefined) {
     const error = validateAppType(type);
@@ -141,11 +149,35 @@ export async function resolveOptions({ flags, interactive, prompts, defaultOutDi
       },
     },
     {
+      id: 'environments',
+      applies: isBackoffice,
+      auto: () => {
+        if (flags.environments !== undefined) return { value: environmentsFromFlag(flags.environments) };
+        return interactive ? undefined : { value: [] };
+      },
+      ask: async (answers, canGoBack) => {
+        const answer = await ask(
+          'text',
+          {
+            message:
+              'Ambientes adicionales de Keycloak, separados por coma (local y prod siempre existen; cada uno tiene su propio Keycloak). Dejalo vacío si no hay más',
+            placeholder: 'dev, qa',
+            initialValue: answers.environmentsText ?? (answers.environments ?? []).join(', '),
+            validate: (value) => parseEnvironments(value).error,
+          },
+          canGoBack,
+        );
+        if (answer === BACK) return BACK;
+        answers.environmentsText = answer;
+        return parseEnvironments(answer).names;
+      },
+    },
+    {
       id: 'keycloak',
       applies: isBackoffice,
       auto: (answers) =>
         keycloakFlags
-          ? { value: keycloakFromFlags(flags, answers.name) }
+          ? { value: keycloakFromFlags(flags, answers.name, ['local', ...answers.environments, 'prod']) }
           : interactive
             ? undefined
             : { value: undefined },
@@ -223,60 +255,84 @@ export async function resolveOptions({ flags, interactive, prompts, defaultOutDi
 
   async function askKeycloak(answers, canGoBack) {
     const state = sub.keycloak;
-    const subSteps = [
+    const environments = ['local', ...answers.environments, 'prod'];
+    // Defaults chain from the closest previous environment that was configured.
+    const previous = (env, key) => {
+      for (const earlier of environments.slice(0, environments.indexOf(env)).reverse()) {
+        if (state[`${earlier}.wanted`] && state[`${earlier}.${key}`] !== undefined) return state[`${earlier}.${key}`];
+      }
+      return undefined;
+    };
+    const subSteps = environments.flatMap((env) => [
       {
-        id: 'wanted',
+        id: `${env}.wanted`,
         applies: () => true,
         ask: (_, back) =>
           ask(
             'confirm',
             {
               message:
-                '¿Querés configurar Keycloak ahora? Si no, el backoffice arranca en modo demo (podés hacerlo después con npm run configure:keycloak)',
-              initialValue: state.wanted ?? false,
+                env === 'local'
+                  ? '¿Querés configurar Keycloak para local ahora? Si no, local arranca en modo demo (después: npm run configure:keycloak)'
+                  : `¿Querés configurar Keycloak para ${env} ahora? Si no, queda con valores de ejemplo (después: npm run configure:keycloak -- --env ${env})`,
+              initialValue: state[`${env}.wanted`] ?? (env !== 'local' && environments.some((other) => other !== env && state[`${other}.wanted`])),
             },
             back,
           ),
       },
       {
-        id: 'url',
-        applies: () => state.wanted === true,
+        id: `${env}.url`,
+        applies: () => state[`${env}.wanted`] === true,
         ask: (_, back) =>
           ask(
             'text',
             {
-              message: 'URL de Keycloak (la parte previa a /realms)',
+              message: `[${env}] URL de Keycloak (la parte previa a /realms)`,
               placeholder: 'https://keycloak.miempresa.com',
-              initialValue: state.url,
+              initialValue: state[`${env}.url`] ?? previous(env, 'url'),
               validate: (value) => validateKeycloakUrl(value),
             },
             back,
           ),
       },
       {
-        id: 'realm',
-        applies: () => state.wanted === true,
+        id: `${env}.realm`,
+        applies: () => state[`${env}.wanted`] === true,
         ask: (_, back) =>
           ask(
             'text',
-            { message: 'Realm', placeholder: 'mi-realm', initialValue: state.realm, validate: (value) => validateKeycloakName(value) },
+            {
+              message: `[${env}] Realm`,
+              placeholder: 'mi-realm',
+              initialValue: state[`${env}.realm`] ?? previous(env, 'realm'),
+              validate: (value) => validateKeycloakName(value),
+            },
             back,
           ),
       },
       {
-        id: 'clientId',
-        applies: () => state.wanted === true,
+        id: `${env}.clientId`,
+        applies: () => state[`${env}.wanted`] === true,
         ask: (_, back) =>
           ask(
             'text',
-            { message: 'Client id', initialValue: state.clientId ?? answers.name, validate: (value) => validateKeycloakName(value) },
+            {
+              message: `[${env}] Client id`,
+              initialValue: state[`${env}.clientId`] ?? previous(env, 'clientId') ?? answers.name,
+              validate: (value) => validateKeycloakName(value),
+            },
             back,
           ),
       },
-    ];
+    ]);
     const result = await walk(subSteps, state, { canGoBackAtStart: canGoBack });
     if (result === BACK) return BACK;
-    return state.wanted ? { url: state.url, realm: state.realm, clientId: state.clientId } : undefined;
+    const configured = Object.fromEntries(
+      environments
+        .filter((env) => state[`${env}.wanted`])
+        .map((env) => [env, { url: state[`${env}.url`], realm: state[`${env}.realm`], clientId: state[`${env}.clientId`] }]),
+    );
+    return Object.keys(configured).length > 0 ? configured : undefined;
   }
 
   async function askRemote(_answers, canGoBack) {
@@ -373,6 +429,7 @@ export async function resolveOptions({ flags, interactive, prompts, defaultOutDi
   return {
     ...common,
     mockApi: answers.mockApi,
+    environments: answers.environments,
     ...outDir,
     ...(answers.keycloak ? { keycloak: answers.keycloak } : {}),
     ...setup,
@@ -385,14 +442,40 @@ function describeAnswers({ type, name, outDir }) {
   return [label && `Tipo: ${label}`, name && `Nombre: ${name}`, outDir && `Carpeta: ${outDir}`].filter(Boolean);
 }
 
-function keycloakFromFlags(flags, name) {
-  const settings = {
-    url: flags.keycloakUrl,
-    realm: flags.keycloakRealm,
-    clientId: flags.keycloakClientId ?? name,
+function environmentsFromFlag(text) {
+  const { names, error } = parseEnvironments(text);
+  if (error) throw new UsageError(`--environments: ${error}`);
+  return names;
+}
+
+/** Keycloak settings by environment from the flags: the repeatable `--keycloak` or the legacy trio. */
+function keycloakFromFlags(flags, name, environments) {
+  const checked = (settings, label) => {
+    const error =
+      validateKeycloakUrl(settings.url) ?? validateKeycloakName(settings.realm) ?? validateKeycloakName(settings.clientId);
+    if (error) throw new UsageError(`Keycloak${label}: ${error} (se necesitan la URL y el realm)`);
+    return settings;
   };
-  const error =
-    validateKeycloakUrl(settings.url) ?? validateKeycloakName(settings.realm) ?? validateKeycloakName(settings.clientId);
-  if (error) throw new UsageError(`Keycloak: ${error} (se necesitan --keycloak-url y --keycloak-realm)`);
-  return settings;
+
+  if ((flags.keycloak ?? []).length > 0) {
+    const result = {};
+    for (const value of flags.keycloak) {
+      const parsed = parseKeycloakFlag(value);
+      if (parsed.error) throw new UsageError(parsed.error);
+      if (!environments.includes(parsed.env)) {
+        throw new UsageError(`--keycloak: el ambiente "${parsed.env}" no existe (ambientes: ${environments.join(', ')}).`);
+      }
+      if (result[parsed.env]) throw new UsageError(`--keycloak: el ambiente "${parsed.env}" está repetido.`);
+      result[parsed.env] = checked({ url: parsed.url, realm: parsed.realm, clientId: parsed.clientId ?? name }, ` (${parsed.env})`);
+    }
+    return result;
+  }
+  if (flags.keycloakUrl === undefined && flags.keycloakRealm === undefined && flags.keycloakClientId === undefined) {
+    return undefined;
+  }
+  const settings = checked(
+    { url: flags.keycloakUrl, realm: flags.keycloakRealm, clientId: flags.keycloakClientId ?? name },
+    '',
+  );
+  return Object.fromEntries(environments.map((env) => [env, { ...settings }]));
 }

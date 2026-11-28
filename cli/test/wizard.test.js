@@ -1,4 +1,4 @@
-import { deepStrictEqual, match, rejects, strictEqual } from 'node:assert';
+import { deepStrictEqual, match, ok, rejects, strictEqual } from 'node:assert';
 import { test } from 'node:test';
 import { CancelledError, UsageError, resolveOptions } from '../src/wizard.js';
 import { CANCEL, fakePrompts } from '../support/test-helpers.js';
@@ -62,21 +62,21 @@ test('rejects an invalid flag value even when interactive', async () => {
 const KC = { url: 'https://sso.example.com', realm: 'my-realm', clientId: 'my-admin' };
 
 test('backoffice: asks whether to configure Keycloak and collects the three values', async () => {
-  const prompts = fakePrompts(['backoffice', 'my-admin', LOC, true, KC.url, KC.realm, KC.clientId, true, false, ...TAIL]);
+  const prompts = fakePrompts(['backoffice', 'my-admin', LOC, '', true, KC.url, KC.realm, KC.clientId, false, true, false, ...TAIL]);
 
   const result = await resolveOptions({ flags: {}, interactive: true, prompts });
 
-  deepStrictEqual(result, { type: 'backoffice', name: 'my-admin', mockApi: true, darkMode: false, keycloak: KC, ...INTERACTIVE });
-  strictEqual(prompts.asked[6].initialValue, 'my-admin', 'client id defaults to the project name');
+  deepStrictEqual(result, { type: 'backoffice', name: 'my-admin', mockApi: true, environments: [], darkMode: false, keycloak: { local: KC }, ...INTERACTIVE });
+  strictEqual(prompts.asked[7].initialValue, 'my-admin', 'client id defaults to the project name');
 });
 
 test('backoffice: declining Keycloak returns no settings and asks nothing else', async () => {
-  const prompts = fakePrompts(['backoffice', 'my-admin', LOC, false, true, false, ...TAIL]);
+  const prompts = fakePrompts(['backoffice', 'my-admin', LOC, '', false, false, true, false, ...TAIL]);
 
   const result = await resolveOptions({ flags: {}, interactive: true, prompts });
 
-  deepStrictEqual(result, { type: 'backoffice', name: 'my-admin', mockApi: true, darkMode: false, ...INTERACTIVE });
-  strictEqual(prompts.asked.length, 9, 'type, name, location, Keycloak, mock API, dark mode, remote, commit, install');
+  deepStrictEqual(result, { type: 'backoffice', name: 'my-admin', mockApi: true, environments: [], darkMode: false, ...INTERACTIVE });
+  strictEqual(prompts.asked.length, 11, 'type, name, location, environments, Keycloak local and prod, mock API, dark mode, remote, commit, install');
 });
 
 test('public: never asks about Keycloak', async () => {
@@ -89,23 +89,23 @@ test('public: never asks about Keycloak', async () => {
 });
 
 test('Keycloak prompts validate inline', async () => {
-  const prompts = fakePrompts(['backoffice', 'my-admin', LOC, true, KC.url, KC.realm, KC.clientId, true, false, ...TAIL]);
+  const prompts = fakePrompts(['backoffice', 'my-admin', LOC, '', true, KC.url, KC.realm, KC.clientId, false, true, false, ...TAIL]);
   await resolveOptions({ flags: {}, interactive: true, prompts });
 
-  strictEqual(typeof prompts.asked[3].validate, 'undefined');
-  strictEqual(typeof prompts.asked[4].validate('not a url'), 'string');
-  strictEqual(prompts.asked[4].validate('https://sso.example.com'), undefined);
-  strictEqual(typeof prompts.asked[5].validate('my realm'), 'string');
-  strictEqual(prompts.asked[5].validate('my-realm'), undefined);
+  strictEqual(typeof prompts.asked[4].validate, 'undefined');
+  strictEqual(typeof prompts.asked[5].validate('not a url'), 'string');
+  strictEqual(prompts.asked[5].validate('https://sso.example.com'), undefined);
+  strictEqual(typeof prompts.asked[6].validate('my realm'), 'string');
+  strictEqual(prompts.asked[6].validate('my-realm'), undefined);
 });
 
 test('cancelling inside the Keycloak questions throws CancelledError', async () => {
   await rejects(
-    resolveOptions({ flags: {}, interactive: true, prompts: fakePrompts(['backoffice', 'a-b', LOC, CANCEL]) }),
+    resolveOptions({ flags: {}, interactive: true, prompts: fakePrompts(['backoffice', 'a-b', LOC, '', CANCEL]) }),
     CancelledError,
   );
   await rejects(
-    resolveOptions({ flags: {}, interactive: true, prompts: fakePrompts(['backoffice', 'a-b', LOC, true, CANCEL]) }),
+    resolveOptions({ flags: {}, interactive: true, prompts: fakePrompts(['backoffice', 'a-b', LOC, '', true, CANCEL]) }),
     CancelledError,
   );
 });
@@ -116,7 +116,7 @@ test('Keycloak flags skip the questions; client id defaults to the project name'
 
   const result = await resolveOptions({ flags, interactive: false, prompts });
 
-  deepStrictEqual(result, { type: 'backoffice', name: 'my-admin', mockApi: true, darkMode: false, keycloak: KC, ...QUIET });
+  deepStrictEqual(result, { type: 'backoffice', name: 'my-admin', mockApi: true, environments: [], darkMode: false, keycloak: { local: KC, prod: KC }, ...QUIET });
   strictEqual(prompts.asked.length, 0);
 });
 
@@ -133,15 +133,15 @@ test('Keycloak flags are rejected when incomplete, invalid, or used with a publi
 test('without a terminal and without Keycloak flags, the backoffice is left in demo mode', async () => {
   const result = await resolveOptions({ flags: { type: 'backoffice', name: 'a-b' }, interactive: false, prompts: fakePrompts([]) });
 
-  deepStrictEqual(result, { type: 'backoffice', name: 'a-b', mockApi: true, darkMode: false, ...QUIET });
+  deepStrictEqual(result, { type: 'backoffice', name: 'a-b', mockApi: true, environments: [], darkMode: false, ...QUIET });
 });
 
 test('backoffice: the mock API question explains what it is and defaults to yes', async () => {
-  const prompts = fakePrompts(['backoffice', 'my-admin', LOC, false, true, false, ...TAIL]);
+  const prompts = fakePrompts(['backoffice', 'my-admin', LOC, '', false, false, true, false, ...TAIL]);
 
   await resolveOptions({ flags: {}, interactive: true, prompts });
 
-  const question = prompts.asked[4];
+  const question = prompts.asked[6];
   strictEqual(question.initialValue, true);
   match(question.message, /API mock/);
   match(question.message, /sin backend/);
@@ -151,7 +151,7 @@ test('backoffice: the mock API question explains what it is and defaults to yes'
 });
 
 test('backoffice: declining the mock API is reported as mockApi false', async () => {
-  const prompts = fakePrompts(['backoffice', 'my-admin', LOC, false, false, false, ...TAIL]);
+  const prompts = fakePrompts(['backoffice', 'my-admin', LOC, '', false, false, false, false, ...TAIL]);
 
   const result = await resolveOptions({ flags: {}, interactive: true, prompts });
 
@@ -174,12 +174,12 @@ test('--no-mock-api and --dark-mode skip their questions', async () => {
   const prompts = fakePrompts([]);
   const flags = { type: 'backoffice', name: 'my-admin', mockApi: false, darkMode: true };
 
-  const result = await resolveOptions({ flags, interactive: true, prompts: fakePrompts([LOC, false, ...TAIL]) });
+  const result = await resolveOptions({ flags, interactive: true, prompts: fakePrompts([LOC, '', false, false, ...TAIL]) });
   const quiet = await resolveOptions({ flags, interactive: false, prompts });
 
   strictEqual(result.mockApi, false);
   strictEqual(result.darkMode, true);
-  deepStrictEqual(quiet, { type: 'backoffice', name: 'my-admin', mockApi: false, darkMode: true, ...QUIET });
+  deepStrictEqual(quiet, { type: 'backoffice', name: 'my-admin', mockApi: false, environments: [], darkMode: true, ...QUIET });
   strictEqual(prompts.asked.length, 0);
 });
 
@@ -196,11 +196,88 @@ test('--no-mock-api is rejected for a public site', async () => {
 
 test('cancelling the mock API or dark mode question throws CancelledError', async () => {
   await rejects(
-    resolveOptions({ flags: {}, interactive: true, prompts: fakePrompts(['backoffice', 'a-b', LOC, false, CANCEL]) }),
+    resolveOptions({ flags: {}, interactive: true, prompts: fakePrompts(['backoffice', 'a-b', LOC, '', false, false, CANCEL]) }),
     CancelledError,
   );
   await rejects(
-    resolveOptions({ flags: {}, interactive: true, prompts: fakePrompts(['public', 'a-b', LOC, CANCEL]) }),
+    resolveOptions({ flags: {}, interactive: true, prompts: fakePrompts(['public', 'a-b', LOC, '', CANCEL]) }),
     CancelledError,
   );
+});
+
+const KC_QA = { url: 'https://sso-qa.example.com', realm: 'qa-realm', clientId: 'my-admin' };
+
+test('backoffice: asks Keycloak per environment, chaining defaults from the previous one', async () => {
+  const prompts = fakePrompts([
+    'backoffice', 'my-admin', LOC, 'qa',
+    false,
+    true, KC_QA.url, KC_QA.realm, KC_QA.clientId,
+    true, KC.url, KC.realm, KC.clientId,
+    true, false, ...TAIL,
+  ]);
+
+  const result = await resolveOptions({ flags: {}, interactive: true, prompts });
+
+  deepStrictEqual(result.environments, ['qa']);
+  deepStrictEqual(result.keycloak, { qa: KC_QA, prod: KC });
+  const messages = prompts.asked.map((question) => question.message);
+  ok(messages.some((message) => /para local/.test(message)));
+  ok(messages.some((message) => /\[qa\] URL/.test(message)));
+  const prodUrl = prompts.asked.find((question) => /\[prod\] URL/.test(question.message));
+  strictEqual(prodUrl.initialValue, KC_QA.url, 'defaults to the closest configured environment');
+  const prodWanted = prompts.asked.find((question) => /Keycloak para prod/.test(question.message));
+  strictEqual(prodWanted.initialValue, true);
+});
+
+test('the environments question validates names inline', async () => {
+  const prompts = fakePrompts(['backoffice', 'my-admin', LOC, 'dev, qa', false, false, false, true, false, ...TAIL]);
+
+  const result = await resolveOptions({ flags: {}, interactive: true, prompts });
+
+  deepStrictEqual(result.environments, ['dev', 'qa']);
+  const { validate } = prompts.asked[3];
+  strictEqual(validate(''), undefined);
+  strictEqual(typeof validate('QA'), 'string');
+  strictEqual(typeof validate('e2e'), 'string');
+  strictEqual(typeof validate('prod'), 'string');
+  strictEqual(typeof validate('qa, qa'), 'string');
+});
+
+test('--environments and --keycloak flags configure each environment without questions', async () => {
+  const flags = {
+    type: 'backoffice',
+    name: 'my-admin',
+    environments: 'qa',
+    keycloak: [`prod=${KC.url},${KC.realm}`, `qa=${KC_QA.url},${KC_QA.realm},custom`],
+  };
+
+  const result = await resolveOptions({ flags, interactive: false, prompts: fakePrompts([]) });
+
+  deepStrictEqual(result.environments, ['qa']);
+  deepStrictEqual(result.keycloak, { prod: KC, qa: { ...KC_QA, clientId: 'custom' } });
+});
+
+test('legacy Keycloak flags apply to every environment', async () => {
+  const flags = { type: 'backoffice', name: 'my-admin', environments: 'dev', keycloakUrl: KC.url, keycloakRealm: KC.realm };
+
+  const result = await resolveOptions({ flags, interactive: false, prompts: fakePrompts([]) });
+
+  deepStrictEqual(Object.keys(result.keycloak), ['local', 'dev', 'prod']);
+  deepStrictEqual(result.keycloak.dev, KC);
+});
+
+test('environment flags are rejected when invalid, mixed with the legacy ones, or with a public site', async () => {
+  const base = { type: 'backoffice', name: 'my-admin' };
+  const attempt = (flags) => resolveOptions({ flags, interactive: false, prompts: fakePrompts([]) });
+
+  await rejects(attempt({ ...base, environments: 'QA' }), UsageError);
+  await rejects(attempt({ ...base, environments: 'e2e' }), UsageError);
+  await rejects(attempt({ ...base, environments: 'qa,qa' }), UsageError);
+  await rejects(attempt({ ...base, keycloak: ['qa=https://x.com,r'] }), UsageError, 'unknown environment');
+  await rejects(attempt({ ...base, keycloak: ['bad-format'] }), UsageError);
+  await rejects(attempt({ ...base, keycloak: ['prod=nourl,r'] }), UsageError);
+  await rejects(attempt({ ...base, keycloak: [`prod=${KC.url},r`, `prod=${KC.url},r`] }), UsageError);
+  await rejects(attempt({ ...base, keycloak: [`prod=${KC.url},r`], keycloakUrl: KC.url, keycloakRealm: 'r' }), UsageError);
+  await rejects(attempt({ type: 'public', name: 'my-site', environments: 'qa' }), UsageError);
+  await rejects(attempt({ type: 'public', name: 'my-site', keycloak: [`prod=${KC.url},r`] }), UsageError);
 });

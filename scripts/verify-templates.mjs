@@ -8,7 +8,7 @@
 //   node scripts/verify-templates.mjs --skip-variant        # without the generated backoffice variant
 //
 // A full run also generates a backoffice with the wizard's non-default answers
-// (`--no-mock-api --dark-mode`) and a public site converted to SSG and to SPA
+// (`--no-mock-api --dark-mode --environments qa`) and a public site converted to SSG and to SPA
 // (`--rendering ssg|spa`), and runs the same steps on each.
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
@@ -92,6 +92,8 @@ if (!values['skip-variant'] && fullRun && templates.includes('backoffice')) {
     [
       join(cliDir, 'index.js'),
       ...['--type', 'backoffice', '--name', 'verify-variant', '--yes', '--no-mock-api', '--dark-mode'],
+      ...['--environments', 'qa'],
+      ...['--keycloak', 'qa=https://keycloak-qa.example.com,qa-realm'],
       ...['--out', outDir],
     ],
     { stdio: 'inherit' },
@@ -100,6 +102,10 @@ if (!values['skip-variant'] && fullRun && templates.includes('backoffice')) {
   const projectDir = join(outDir, 'verify-variant');
   for (const step of stepNames) {
     if (!npm(STEPS[step], projectDir)) fail(`backoffice (--no-mock-api --dark-mode): ${step}`);
+  }
+  // The extra environment must build with its own configuration.
+  if (stepNames.includes('build') && !npm(['run', 'build:qa'], projectDir)) {
+    fail('backoffice (--environments qa): build:qa');
   }
   rmSync(outDir, { recursive: true, force: true });
 }

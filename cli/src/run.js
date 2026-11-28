@@ -19,9 +19,14 @@ Opciones:
   --name <nombre-proyecto>    Nombre del proyecto (minúsculas, números y guiones)
   --out <directorio>          Directorio donde crear el proyecto
                               (por defecto: la carpeta que contiene este repositorio)
-  --keycloak-url <url>        Backoffice: URL de Keycloak (la parte previa a /realms)
-  --keycloak-realm <realm>    Backoffice: realm
-  --keycloak-client-id <id>   Backoffice: client id (por defecto: el nombre del proyecto)
+  --environments <lista>      Backoffice: ambientes adicionales separados por coma (ej.: dev,qa);
+                              local y prod siempre existen
+  --keycloak <amb>=<url>,<realm>[,<client-id>]
+                              Backoffice: Keycloak de un ambiente (se repite por ambiente);
+                              el client id es por defecto el nombre del proyecto
+  --keycloak-url <url>        Backoffice: URL de Keycloak para todos los ambientes (la parte previa a /realms)
+  --keycloak-realm <realm>    Backoffice: realm para todos los ambientes
+  --keycloak-client-id <id>   Backoffice: client id para todos los ambientes
   --no-mock-api               Backoffice: sin la API mock; el ABM usa un JSON con datos de ejemplo
                               y guarda los cambios solo en la memoria del navegador
   --dark-mode                 Soportar modo oscuro (botón en el header; por defecto solo tema claro)
@@ -70,6 +75,8 @@ export async function run(argv, deps = {}) {
         type: { type: 'string' },
         name: { type: 'string' },
         out: { type: 'string' },
+        environments: { type: 'string' },
+        keycloak: { type: 'string', multiple: true },
         'keycloak-url': { type: 'string' },
         'keycloak-realm': { type: 'string' },
         'keycloak-client-id': { type: 'string' },
@@ -107,10 +114,12 @@ export async function run(argv, deps = {}) {
   await reporter.intro();
 
   try {
-    const { type, name, keycloak, mockApi, darkMode, rendering, outDir, remote, commit, install } = await resolveOptions({
+    const { type, name, keycloak, environments, mockApi, darkMode, rendering, outDir, remote, commit, install } = await resolveOptions({
       flags: {
         type: values.type,
         name: values.name,
+        environments: values.environments,
+        keycloak: values.keycloak,
         keycloakUrl: values['keycloak-url'],
         keycloakRealm: values['keycloak-realm'],
         keycloakClientId: values['keycloak-client-id'],
@@ -136,6 +145,7 @@ export async function run(argv, deps = {}) {
       runStep: reporter.runStep,
       runGit,
       keycloak,
+      environments,
       mockApi,
       darkMode,
       rendering,
@@ -150,7 +160,8 @@ export async function run(argv, deps = {}) {
       type,
       targetDir,
       cdPath: cdPathFor(cwd, targetDir),
-      keycloakConfigured: Boolean(keycloak),
+      environments: type === 'backoffice' ? ['local', ...environments, 'prod'] : undefined,
+      keycloakEnvironments: keycloak ? Object.keys(keycloak) : [],
       mockApi,
       darkMode,
       rendering,

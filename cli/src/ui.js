@@ -35,7 +35,8 @@ export function buildSummary({
   type,
   targetDir,
   cdPath = name,
-  keycloakConfigured = false,
+  environments = ['local', 'prod'],
+  keycloakEnvironments = [],
   mockApi = true,
   darkMode = false,
   rendering,
@@ -102,17 +103,25 @@ export function buildSummary({
         ]
       : [];
 
+  const pending = environments.filter((env) => !keycloakEnvironments.includes(env));
   const keycloakLines =
     type !== 'backoffice'
       ? []
-      : keycloakConfigured
+      : keycloakEnvironments.length > 0
         ? [
-            'Keycloak configurado. Agregá http://localhost:4200/* como redirect URI del client.',
+            `Ambientes: ${environments.join(', ')}. Keycloak configurado en: ${keycloakEnvironments.join(', ')}.`,
+            'Agregá la URL de la app de cada ambiente como redirect URI de su client (http://localhost:4200/* en local).',
+            ...(pending.length > 0
+              ? [
+                  `Con valores de ejemplo: ${pending.join(', ')}. Para configurarlos: npm run configure:keycloak -- --env <ambiente>`,
+                  ...(pending.includes('local') ? ['local arranca en modo demo con login de prueba (admin / 1234).'] : []),
+                ]
+              : []),
             '',
           ]
         : [
             'Keycloak sin configurar: el backoffice arranca en modo demo con login de prueba (admin / 1234).',
-            'Para conectarlo después: npm run configure:keycloak',
+            `Ambientes: ${environments.join(', ')}. Para conectarlos después: npm run configure:keycloak`,
             '',
           ];
 

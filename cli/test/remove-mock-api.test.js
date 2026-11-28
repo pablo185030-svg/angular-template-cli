@@ -62,3 +62,15 @@ test('fails loudly when an expected block is missing', async () => {
 
   await rejects(removeMockApi(dir), /Could not find/);
 });
+
+test('keeps an extra deployed environment on the HTTP API', async () => {
+  const dir = await project();
+  await cp(
+    join(dir, 'src', 'environments', 'environment.prod.ts'),
+    join(dir, 'src', 'environments', 'environment.qa.ts'),
+  );
+
+  await removeMockApi(dir);
+
+  match(await readFile(join(dir, 'src', 'environments', 'environment.qa.ts'), 'utf8'), /mode: 'http'/);
+});
