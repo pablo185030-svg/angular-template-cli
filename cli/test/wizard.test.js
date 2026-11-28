@@ -10,7 +10,7 @@ const INTERACTIVE = { outDir: LOC, commit: true, install: false, angularSkill: f
 const QUIET = { commit: false, install: false, angularSkill: false };
 
 test('prompts for both values when no flags are given', async () => {
-  const prompts = fakePrompts(['website', 'my-shop', LOC, false, 'ssr', '', ...TAIL]);
+  const prompts = fakePrompts(['website', 'my-shop', LOC, false, 'ssr', 'skip', ...TAIL]);
 
   const result = await resolveOptions({ flags: {}, interactive: true, prompts });
 
@@ -19,7 +19,7 @@ test('prompts for both values when no flags are given', async () => {
 });
 
 test('does not prompt for values given as flags', async () => {
-  const prompts = fakePrompts(['my-shop', LOC, false, 'ssr', '', ...TAIL]);
+  const prompts = fakePrompts(['my-shop', LOC, false, 'ssr', 'skip', ...TAIL]);
 
   const result = await resolveOptions({ flags: { type: 'website' }, interactive: true, prompts });
 
@@ -80,7 +80,7 @@ test('backoffice: declining Keycloak returns no settings and asks nothing else',
 });
 
 test('public: never asks about Keycloak', async () => {
-  const prompts = fakePrompts(['website', 'my-site', LOC, false, 'ssr', '', ...TAIL]);
+  const prompts = fakePrompts(['website', 'my-site', LOC, false, 'ssr', 'skip', ...TAIL]);
 
   const result = await resolveOptions({ flags: {}, interactive: true, prompts });
 
@@ -283,14 +283,14 @@ test('environment flags are rejected when invalid, mixed with the legacy ones, o
 });
 
 test('the Angular skill question defaults to no and its flag skips it', async () => {
-  const prompts = fakePrompts(['website', 'my-shop', LOC, false, 'ssr', '', false, true, false, true]);
+  const prompts = fakePrompts(['website', 'my-shop', LOC, false, 'ssr', 'skip', false, true, false, true]);
   const asked = await resolveOptions({ flags: {}, interactive: true, prompts });
   strictEqual(asked.angularSkill, true);
   const question = prompts.asked.at(-1);
   strictEqual(question.initialValue, false);
   match(question.message, /angular-developer/);
 
-  const flagged = fakePrompts(['website', 'my-shop', LOC, false, 'ssr', '', false, true, false]);
+  const flagged = fakePrompts(['website', 'my-shop', LOC, false, 'ssr', 'skip', false, true, false]);
   const result = await resolveOptions({ flags: { angularSkill: true }, interactive: true, prompts: flagged });
   strictEqual(result.angularSkill, true);
   strictEqual(flagged.asked.length, 9);

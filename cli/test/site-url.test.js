@@ -29,13 +29,13 @@ test('validateSiteUrl accepts an http(s) origin and rejects anything else', () =
 });
 
 test('the public site asks for the domain after the rendering mode; empty keeps the placeholder', async () => {
-  const answers = ['website', 'my-site', '/w', false, 'ssr', '', false, true, false];
+  const answers = ['website', 'my-site', '/w', false, 'ssr', 'enter', '', false, true, false, false];
   const prompts = fakePrompts(answers);
 
   const result = await resolveOptions({ flags: {}, interactive: true, prompts });
 
   ok(!('siteUrl' in result));
-  const question = prompts.asked[5];
+  const question = prompts.asked[6];
   match(question.message, /Dominio de producción/);
   strictEqual(question.validate(''), undefined, 'empty is allowed');
   strictEqual(typeof question.validate('mi-sitio.com'), 'string');
@@ -44,9 +44,9 @@ test('the public site asks for the domain after the rendering mode; empty keeps 
 
 test('the domain question says it can wait, and explains itself for SPA', async () => {
   const ask = async (mode) => {
-    const prompts = fakePrompts(['website', 'my-site', '/w', false, mode, '', false, true, false]);
+    const prompts = fakePrompts(['website', 'my-site', '/w', false, mode, 'enter', '', false, true, false, false]);
     await resolveOptions({ flags: {}, interactive: true, prompts });
-    return prompts.asked[5].message;
+    return prompts.asked[6].message;
   };
 
   const ssr = await ask('ssr');
@@ -59,8 +59,20 @@ test('the domain question says it can wait, and explains itself for SPA', async 
   match(spa, /Enter sin escribir nada lo saltea/);
 });
 
+test('the domain can be skipped explicitly: no text prompt is shown and the placeholder stays', async () => {
+  const prompts = fakePrompts(['website', 'my-site', '/w', false, 'ssr', 'skip', false, true, false, false]);
+
+  const result = await resolveOptions({ flags: {}, interactive: true, prompts });
+
+  ok(!('siteUrl' in result));
+  strictEqual(prompts.asked.length, 10, 'type, name, location, dark mode, rendering, domain choice, remote, commit, install, Angular skill');
+  const choice = prompts.asked[5];
+  deepStrictEqual(choice.options.map((option) => option.value), ['enter', 'skip']);
+  match(choice.options[1].hint, /npm run configure:seo/);
+});
+
 test('a typed domain is trimmed and returned', async () => {
-  const prompts = fakePrompts(['website', 'my-site', '/w', false, 'ssr', '  https://www.mi-sitio.com ', false, true, false]);
+  const prompts = fakePrompts(['website', 'my-site', '/w', false, 'ssr', 'enter', '  https://www.mi-sitio.com ', false, true, false, false]);
 
   const result = await resolveOptions({ flags: {}, interactive: true, prompts });
 

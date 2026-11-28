@@ -259,8 +259,26 @@ export async function resolveOptions({ flags, interactive, prompts, defaultOutDi
         ),
     },
     {
-      id: 'siteUrl',
+      id: 'siteUrlChoice',
       applies: isPublic,
+      auto: () => (flags.siteUrl !== undefined ? { value: 'enter' } : interactive ? undefined : { value: 'skip' }),
+      ask: (answers, canGoBack) =>
+        ask(
+          'select',
+          {
+            message: '¿Querés configurar ahora el dominio de producción para el SEO?',
+            initialValue: answers.siteUrlChoice ?? 'enter',
+            options: [
+              { value: 'enter', label: 'Ingresar el dominio ahora' },
+              { value: 'skip', label: 'Saltearlo por ahora', hint: 'después: npm run configure:seo' },
+            ],
+          },
+          canGoBack,
+        ),
+    },
+    {
+      id: 'siteUrl',
+      applies: (answers) => isPublic(answers) && answers.siteUrlChoice !== 'skip',
       auto: () =>
         flags.siteUrl !== undefined ? { value: flags.siteUrl } : interactive ? undefined : { value: undefined },
       ask: (answers, canGoBack) =>
@@ -493,7 +511,7 @@ export async function resolveOptions({ flags, interactive, prompts, defaultOutDi
     return {
       ...common,
       rendering: answers.rendering,
-      ...(answers.siteUrl ? { siteUrl: answers.siteUrl } : {}),
+      ...(answers.siteUrl && answers.siteUrlChoice !== 'skip' ? { siteUrl: answers.siteUrl } : {}),
       ...outDir,
       ...setup,
     };
