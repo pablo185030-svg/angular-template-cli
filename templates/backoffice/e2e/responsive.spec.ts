@@ -66,16 +66,6 @@ test.describe('mobile', () => {
     expect(await noHorizontalScroll(page)).toBe(true);
   });
 
-  test('roles list and form fit the viewport', async ({ page }) => {
-    await signIn(page, '/roles');
-    await expect(page.getByTestId('roles-table')).toBeVisible();
-    expect(await noHorizontalScroll(page)).toBe(true);
-
-    await page.getByTestId('new-role').click();
-    await expect(page.getByTestId('role-form')).toBeVisible();
-    expect(await noHorizontalScroll(page)).toBe(true);
-  });
-
   test('product form fits the viewport', async ({ page }) => {
     await signIn(page, '/productos/nuevo');
     await expect(page.getByTestId('product-form')).toBeVisible();

@@ -56,17 +56,10 @@ test('a signed-in user opening /login goes to the home page', async ({ page }) =
   await expect(page).toHaveURL(/localhost:4200\/$/);
 });
 
-test('a read-only user sees products without write actions and cannot open write routes', async ({
-  page,
-}) => {
-  await signIn(page, '/productos', 'lectura');
+test('a signed-in user sees products with the write actions', async ({ page }) => {
+  await signIn(page, '/productos');
 
   await expect(page.getByTestId('products-table')).toBeVisible();
-  await expect(page.getByTestId('new-product')).toHaveCount(0);
-  await expect(page.getByRole('link', { name: /^Editar/ })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: /^Eliminar/ })).toHaveCount(0);
+  await expect(page.getByTestId('new-product')).toBeVisible();
   await expect(page.getByTestId('nav-roles')).toHaveCount(0);
-
-  await signIn(page, '/productos/nuevo', 'lectura');
-  await expect(page).toHaveURL(/localhost:4200\/$/);
 });

@@ -13,7 +13,6 @@ describe('Header', () => {
     const auth = new FakeAuthService();
     auth.authenticated.set(true);
     auth.name.set('Ana Pérez');
-    auth.role.set('lectura');
     TestBed.configureTestingModule({
       imports: [Header],
       providers: [
@@ -30,19 +29,13 @@ describe('Header', () => {
     return { auth, fixture, element: fixture.nativeElement as HTMLElement };
   }
 
-  it('shows the user name, initials and role badge', async () => {
-    const { element, auth } = await setup();
+  it('shows the user name and initials', async () => {
+    const { element } = await setup();
 
     const text = (id: string) =>
       element.querySelector(`[data-testid="${id}"]`)?.textContent?.trim();
     expect(text('user-name')).toBe('Ana Pérez');
-    expect(text('role-badge')).toBe('lectura');
     expect(element.querySelector('.header__avatar')?.textContent?.trim()).toBe('AP');
-
-    auth.role.set('');
-    const fixture = TestBed.createComponent(Header);
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('[data-testid="role-badge"]')).toBeNull();
   });
 
   it('renders navigation links to Home, Products and About', async () => {
@@ -105,17 +98,6 @@ describe('Header', () => {
       'Modo demo',
     );
     expect(element.querySelector('[data-testid="logout"]')).not.toBeNull();
-  });
-
-  it('shows the roles link only to users who can manage roles', async () => {
-    const { auth, fixture, element } = await setup();
-    expect(element.querySelector('[data-testid="nav-roles"]')).toBeNull();
-
-    auth.grants.set(['read', 'write', 'manage-roles']);
-    fixture.detectChanges();
-
-    expect(element.querySelector('[data-testid="nav-roles"]')).not.toBeNull();
-    expect(element.querySelector('[data-testid="drawer-nav-roles"]')).not.toBeNull();
   });
 
   it('hides the demo badge when a real identity provider is used', async () => {

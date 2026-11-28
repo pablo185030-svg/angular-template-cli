@@ -1,7 +1,7 @@
 import { Page, expect } from '@playwright/test';
 
-/** Seeded users (see `public/mock/users.json`); all share the password `1234`. */
-export type SeededUser = 'admin' | 'escritura' | 'lectura';
+/** Seeded users (see `public/mock/users.json`); its password is `1234`. */
+export type SeededUser = 'admin';
 
 /**
  * Signs in through the login form and lands on `path`. The session lives in memory only, so a

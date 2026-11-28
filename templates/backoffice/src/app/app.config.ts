@@ -20,9 +20,6 @@ import { authInterceptor } from '@core/interceptors/auth.interceptor';
 import { HttpProductsService } from '@domains/products/services/http-products.service';
 import { JsonProductsService } from '@domains/products/services/json-products.service';
 import { ProductsService } from '@domains/products/services/products.service';
-import { HttpRolesService } from '@domains/roles/services/http-roles.service';
-import { JsonRolesService } from '@domains/roles/services/json-roles.service';
-import { RolesService } from '@domains/roles/services/roles.service';
 
 registerLocaleData(localeEsAr);
 
@@ -42,10 +39,6 @@ export const appConfig: ApplicationConfig = {
     {
       provide: ProductsService,
       useClass: environment.api.mode === 'json' ? JsonProductsService : HttpProductsService,
-    },
-    {
-      provide: RolesService,
-      useClass: environment.api.mode === 'json' ? JsonRolesService : HttpRolesService,
     },
     // Resolve the auth state (including the Keycloak redirect back) before the first navigation.
     provideAppInitializer(() => inject(AuthService).init()),

@@ -16,14 +16,7 @@ interface SeedUser {
   password: string;
   firstName: string;
   lastName: string;
-  roleId: number;
   id: number;
-}
-
-interface SeedRole {
-  id: number;
-  name: string;
-  permissions: TokenClaims['permissions'];
 }
 
 /**
@@ -46,8 +39,6 @@ export class MockAuthService extends AuthService {
   readonly hasLoginPage = true;
   readonly isAuthenticated = computed(() => this.claims() !== null);
   readonly userName = computed(() => this.claims()?.name ?? '');
-  readonly roleName = computed(() => this.claims()?.role ?? '');
-  readonly permissions = computed(() => this.claims()?.permissions ?? []);
 
   /** @inheritdoc */
   async init(): Promise<void> {
@@ -112,24 +103,18 @@ export class MockAuthService extends AuthService {
 
   /** Checks the seeded users in the browser and builds a local token. Null for wrong credentials. */
   private async localToken(username: string, password: string): Promise<string | null> {
-    const load = async <T>(file: string): Promise<T[]> => {
-      const response = await fetch(`mock/${file}.json`, {
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return response.json();
-    };
-    const [users, roles] = await Promise.all([load<SeedUser>('users'), load<SeedRole>('roles')]);
+    const response = await fetch('mock/users.json', {
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const users: SeedUser[] = await response.json();
 
     const user = users.find((u) => u.username === username && u.password === password);
-    const role = user && roles.find((r) => r.id === user.roleId);
-    if (!user || !role) return null;
+    if (!user) return null;
 
     return encodeToken({
       sub: String(user.id),
       name: `${user.firstName} ${user.lastName}`,
-      role: role.name,
-      permissions: role.permissions,
       exp: Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS,
     });
   }

@@ -20,7 +20,7 @@
 - [Main commands](#main-commands)
 - [Environments](#environments)
 - [Authentication (Keycloak)](#authentication)
-- [Roles and permissions](#roles)
+- [Roles](#roles)
 - [Mock API and the CRUD example](#mock-api)
 - [Dark mode](#dark-mode)
 - [Project structure](#project-structure)
@@ -36,7 +36,7 @@
 
 ## What is it?
 
-A backoffice (private web app) starter: an Angular 22 SPA (standalone components, signals, zoneless) with a main layout (header and footer), home and about pages, Keycloak authentication, role-based access, a roles ABM and a products CRUD (ABM) example that run against a mock API. It is meant to be copied, renamed and grown into a real app.
+A backoffice (private web app) starter: an Angular 22 SPA (standalone components, signals, zoneless) with a main layout (header and footer), home and about pages, Keycloak authentication and a products CRUD (ABM) example that run against a mock API. It is meant to be copied, renamed and grown into a real app.
 
 Theming and shared UI (M3 palette, typography, breakpoints, components) come from `@coto-dev/ui-kit`, an internal design-system library installed from the private Nexus registry — see [Dependencies](#dependencies).
 
@@ -55,7 +55,7 @@ npm run mock:api     # terminal 1 — mock API on http://localhost:5000
 npm start            # terminal 2 — app on http://localhost:4200
 ```
 
-The app opens on the login screen: sign in as `admin` / `1234` (see [Roles and permissions](#roles)). To use Keycloak, run `npm run configure:keycloak` — see [Authentication](#authentication).
+The app opens on the login screen: sign in as `admin` / `1234` (see [Roles](#roles)). To use Keycloak, run `npm run configure:keycloak` — see [Authentication](#authentication).
 
 ---
 
@@ -180,7 +180,7 @@ The app signs users in with the OIDC Authorization Code flow and PKCE (`angular-
 
 ### Demo mode (default)
 
-With `auth.mode: 'mock'` nobody is signed in at start: `authGuard` sends the user to the login screen (`/login`, no header) and `MockAuthService.signIn()` checks the seeded users. With the mock API the credentials go to `POST /api/auth/login`, which returns a fake unsigned token; with the JSON data source (no server) they are checked in the browser against `public/mock/users.json` and a local token is built. The token is kept in memory only, so a reload or logout returns to the login. The header shows a **Modo demo** badge, the user (initials avatar, name and a role badge) and the logout button. The seeded passwords are plain text in a JSON file: this is demo data. **Never use `mock` in a deployed environment.**
+With `auth.mode: 'mock'` nobody is signed in at start: `authGuard` sends the user to the login screen (`/login`, no header) and `MockAuthService.signIn()` checks the seeded users. With the mock API the credentials go to `POST /api/auth/login`, which returns a fake unsigned token; with the JSON data source (no server) they are checked in the browser against `public/mock/users.json` and a local token is built. The token is kept in memory only, so a reload or logout returns to the login. The header shows a **Modo demo** badge, the user (initials avatar and name) and the logout button. The seeded passwords are plain text in a JSON file: this is demo data. **Never use `mock` in a deployed environment.**
 
 ### Connect Keycloak
 
@@ -212,17 +212,15 @@ Before deploying, add your production URL to the client's redirect URIs and web 
 
 ### Tests
 
-Unit tests use `FakeAuthService` from `src/app/core/auth/testing/`. The `e2e` build configuration always uses demo mode, so `npm run test:e2e` needs no Keycloak; specs sign in with `signIn()` from `e2e/support/auth.ts` (a page load drops the in-memory session). With Keycloak, permissions come from a `permissions` claim in the access token or, without it, from realm roles named like the default roles (`admin`, `escritura`, `lectura`); adapt `core/auth/keycloak-permissions.ts` to your realm.
+Unit tests use `FakeAuthService` from `src/app/core/auth/testing/`. The `e2e` build configuration always uses demo mode, so `npm run test:e2e` needs no Keycloak; specs sign in with `signIn()` from `e2e/support/auth.ts` (a page load drops the in-memory session).
 
 ---
 
 <a id="roles"></a>
 
-## Roles and permissions
+## Roles
 
-A role is a name, a description and a set of permissions: `read` (view), `write` (create, edit, delete products) and `manage-roles` (the roles ABM at `/roles`). The seeded roles are `admin` (all), `escritura` (`read` + `write`) and `lectura` (`read`). In demo mode these users exist (password `1234` for all): `admin` (`admin@coto.com.ar`, employee number 1234), `escritura` and `lectura`.
-
-Permissions are enforced by `permissionGuard(permission)` on routes, by hiding actions in the UI (`AuthService.hasPermission()`), and by the mock API (`403`). The `admin` role cannot be edited or deleted, and a role assigned to a user cannot be deleted. There is no users ABM: users are seed data. Changes to roles apply the next time a user signs in. The roles UI lives in `src/app/domains/roles/`.
+Roles are managed in Keycloak, not in this app: the template has no roles ABM and does not restrict routes or actions by role or permission, so any signed-in user can use every page. If your app needs role-based access, read the realm roles from the access token and add guards in your project. In demo mode there is a single user: `admin` / `1234` (`admin@coto.com.ar`, employee number 1234).
 
 ---
 
@@ -240,7 +238,7 @@ Permissions are enforced by `permissionGuard(permission)` on routes, by hiding a
 | `PUT`    | `/api/products/:id` | Update      |
 | `DELETE` | `/api/products/:id` | Delete      |
 
-The mock API also serves `/api/roles` (list, get, create, update, delete) and logs users in at `POST /api/auth/login` (`{ username, password }`, an unsigned JWT with `name`, `role`, `permissions` and `exp`). It answers `401` to `/api/products` and `/api/roles` when the `Authorization: Bearer <token>` header is missing and `403` when the token lacks the permission (`read`, `write` or `manage-roles`); the token is trusted, never verified. `/health` and the login endpoint are public. To call it with `curl`, get a token first:
+The mock API also logs users in at `POST /api/auth/login` (`{ username, password }`, an unsigned JWT with `name` and `exp`). It answers `401` to `/api/products` when the `Authorization: Bearer <token>` header is missing; the token is trusted, never verified, and no roles or permissions are checked. `/health` and the login endpoint are public. To call it with `curl`, get a token first:
 
 ```bash
 TOKEN=$(curl -s -X POST localhost:5000/api/auth/login -H 'Content-Type: application/json' -d '{"username":"admin","password":"1234"}' | node -pe 'JSON.parse(require("fs").readFileSync(0)).access_token')
@@ -274,7 +272,7 @@ The example UI lives in `src/app/domains/products/`: a list (`mat-table`), a cre
 src/app/
   core/
     auth/          AuthService contract, KeycloakAuthService, MockAuthService, testing/FakeAuthService
-    guards/        auth.guard.ts, permission.guard.ts, login-page.guard.ts
+    guards/        auth.guard.ts, login-page.guard.ts
     interceptors/  auth.interceptor.ts
     services/ models/
   shared/
@@ -285,12 +283,11 @@ src/app/
     home/ about/                example pages
     products/                   CRUD example: models/ services/ (http + json) pages/
     login/                      login screen (demo mode)
-    roles/                      roles ABM: models/ services/ (http + json) pages/
   app.routes.ts                 every route but /login sits behind authGuard
 src/environments/               environment.ts, environment.prod.ts, environment.e2e.ts
-mock/server.mjs                 in-memory products, roles and login API (removed without the mock API)
+mock/server.mjs                 in-memory products and login API (removed without the mock API)
 public/mock/products.json       sample products shared by the mock API and the JSON data source
-public/mock/roles.json, users.json  seeded roles and users, shared the same way
+public/mock/users.json            seeded user (admin), shared the same way
 scripts/configure-keycloak.mjs  writes Keycloak settings into the environment files
 scripts/configure-theme.mjs     turns dark mode support on or off
 scripts/remove-mock-api.mjs     removes the mock API and switches to the JSON data source

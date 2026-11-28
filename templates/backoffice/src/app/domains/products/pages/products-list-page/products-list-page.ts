@@ -1,10 +1,9 @@
 import { CurrencyPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { RouterLink } from '@angular/router';
-import { AuthService } from '@core/auth/auth.service';
 import { ConfirmDialog, ConfirmDialogData } from '@shared/components/confirm-dialog/confirm-dialog';
 import { Product } from '../../models/product.model';
 import { ProductsService } from '../../services/products.service';
@@ -19,16 +18,11 @@ import { ProductsService } from '../../services/products.service';
 export class ProductsListPage {
   private readonly products = inject(ProductsService);
   private readonly dialog = inject(MatDialog);
-  private readonly auth = inject(AuthService);
 
   protected readonly items = signal<Product[]>([]);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
-  /** Creating, editing and deleting need the `write` permission. */
-  protected readonly canWrite = computed(() => this.auth.hasPermission('write'));
-  protected readonly columns = computed(() =>
-    this.canWrite() ? ['name', 'price', 'stock', 'actions'] : ['name', 'price', 'stock'],
-  );
+  protected readonly columns = ['name', 'price', 'stock', 'actions'];
 
   constructor() {
     this.load();

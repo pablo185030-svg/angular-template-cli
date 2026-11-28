@@ -16,16 +16,6 @@
     (click)="onLinkClick(prefix)"
     >Productos</a
   >
-  @if (auth.hasPermission('manage-roles')) {
-    <a
-      mat-button
-      routerLink="/roles"
-      routerLinkActive="header__link--active"
-      [attr.data-testid]="prefix + 'nav-roles'"
-      (click)="onLinkClick(prefix)"
-      >Roles</a
-    >
-  }
   <a
     mat-button
     routerLink="/acerca-de"
@@ -55,11 +45,6 @@
       <span class="header__user-name" [attr.data-testid]="prefix + 'user-name'">{{
         auth.userName()
       }}</span>
-      @if (auth.roleName()) {
-        <span class="header__role" [attr.data-testid]="prefix + 'role-badge'">{{
-          auth.roleName()
-        }}</span>
-      }
     </div>
   </div>
   <button

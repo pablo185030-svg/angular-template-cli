@@ -9,7 +9,7 @@ Dos templates de proyecto Angular 22 listos para usar en apps de Coto, con estil
 | Template               | Qué es                                                                                                              |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `templates/public`     | Sitio web público. Renderizado en el servidor, layout principal (header + footer), páginas de inicio y "acerca de". |
-| `templates/backoffice` | App web privada. SPA, login con Keycloak, roles y permisos, mismo layout y páginas, más ABM de roles y de productos.               |
+| `templates/backoffice` | App web privada. SPA, login con Keycloak, mismo layout y páginas, más un ABM de productos.                          |
 
 Ambos son apps zoneless con componentes standalone, con ESLint, Prettier, Vitest, Husky + lint-staged, un Dockerfile y configuración de nginx, y ejemplos de e2e con Playwright. Cada template es un proyecto Angular normal que compila y se testea por sí solo.
 
@@ -55,7 +55,7 @@ El wizard copia el template en una carpeta **junto a este repositorio** (hermana
 
 **Solo backoffice**
 
-- **Keycloak** (URL, realm y client id). Si lo salteás, arranca en modo demo, con pantalla de login y usuarios de prueba (`admin`, `escritura`, `lectura`; contraseña `1234`, solo para entornos locales), y lo conectás después con `npm run configure:keycloak`.
+- **Keycloak** (URL, realm y client id). Si lo salteás, arranca en modo demo, con pantalla de login y un usuario de prueba (`admin`, contraseña `1234`, solo para entornos locales), y lo conectás después con `npm run configure:keycloak`.
 - **API mock**: un servidor local que simula la API de productos para que el ABM funcione sin backend. Si no la incluís, el ABM carga los productos de un archivo JSON y los cambios se pierden al recargar.
 
 **Solo sitio público**

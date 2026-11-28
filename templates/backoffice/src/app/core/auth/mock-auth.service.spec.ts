@@ -7,8 +7,6 @@ import { MockAuthService } from './mock-auth.service';
 const claims = {
   sub: '1',
   name: 'Ana Demo',
-  role: 'escritura',
-  permissions: ['read' as const, 'write' as const],
   exp: 4_000_000_000,
 };
 const apiToken = encodeToken(claims);
@@ -50,7 +48,6 @@ describe('MockAuthService', () => {
     expect(service.hasLoginPage).toBe(true);
     expect(service.isAuthenticated()).toBe(false);
     expect(service.getAccessToken()).toBeNull();
-    expect(service.permissions()).toEqual([]);
   });
 
   it('sends the user to the login page keeping the requested route', () => {
@@ -63,21 +60,19 @@ describe('MockAuthService', () => {
     const fetchSpy = stubFetch(Response.json({ access_token: apiToken }));
     const service = create();
 
-    const result = await service.signIn('escritura', '1234');
+    const result = await service.signIn('admin', '1234');
 
     expect(result).toEqual({ ok: true });
     expect(fetchSpy).toHaveBeenCalledWith(
       `${environment.apiBaseUrl}/auth/login`,
       expect.objectContaining({
         method: 'POST',
-        body: JSON.stringify({ username: 'escritura', password: '1234' }),
+        body: JSON.stringify({ username: 'admin', password: '1234' }),
       }),
     );
     expect(service.isAuthenticated()).toBe(true);
     expect(service.userName()).toBe('Ana Demo');
     expect(service.getAccessToken()).toBe(apiToken);
-    expect(service.hasPermission('write')).toBe(true);
-    expect(service.hasPermission('manage-roles')).toBe(false);
   });
 
   it('stays signed out on wrong credentials', async () => {
@@ -113,17 +108,15 @@ describe('MockAuthService', () => {
         password: '1234',
         firstName: 'Admin',
         lastName: 'Coto',
-        roleId: 1,
       },
     ];
-    const roles = [{ id: 1, name: 'admin', permissions: ['read', 'write', 'manage-roles'] }];
 
     beforeEach(() => {
       environment.api.mode = 'json';
     });
 
     it('checks the seeded users in the browser without calling the API', async () => {
-      const fetchSpy = stubFetch(Response.json(users), Response.json(roles));
+      const fetchSpy = stubFetch(Response.json(users));
       const service = create();
 
       const result = await service.signIn('admin', '1234');
@@ -134,11 +127,10 @@ describe('MockAuthService', () => {
         expect.anything(),
       );
       expect(service.userName()).toBe('Admin Coto');
-      expect(service.permissions()).toEqual(['read', 'write', 'manage-roles']);
     });
 
     it('rejects wrong credentials', async () => {
-      stubFetch(Response.json(users), Response.json(roles));
+      stubFetch(Response.json(users));
       const service = create();
 
       expect(await service.signIn('admin', 'x')).toEqual({
@@ -151,7 +143,7 @@ describe('MockAuthService', () => {
   it('discards the session on logout and goes back to the login page', async () => {
     stubFetch(Response.json({ access_token: apiToken }));
     const service = create();
-    await service.signIn('escritura', '1234');
+    await service.signIn('admin', '1234');
 
     service.logout();
 

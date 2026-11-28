@@ -42,8 +42,6 @@ describe('LoginPage', () => {
     const { byId } = setup();
 
     expect(byId('login-hint')?.textContent).toContain('admin');
-    expect(byId('login-hint')?.textContent).toContain('escritura');
-    expect(byId('login-hint')?.textContent).toContain('lectura');
     expect(byId('login-hint')?.textContent).toContain('1234');
   });
 

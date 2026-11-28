@@ -35,9 +35,7 @@ export function decodeToken(token: string): TokenClaims | null {
     claims !== null &&
     typeof claims['name'] === 'string' &&
     typeof claims['sub'] === 'string' &&
-    typeof claims['exp'] === 'number' &&
-    typeof claims['role'] === 'string' &&
-    Array.isArray(claims['permissions']);
+    typeof claims['exp'] === 'number';
   return valid ? (claims as unknown as TokenClaims) : null;
 }
 

@@ -9,8 +9,6 @@ describe('decodeToken', () => {
     const claims = {
       sub: 'demo-user',
       name: 'Usuario demo',
-      role: 'admin',
-      permissions: ['read'],
       exp: 123,
     };
 

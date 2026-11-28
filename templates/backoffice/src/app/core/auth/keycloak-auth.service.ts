@@ -3,9 +3,6 @@ import { Injectable, inject, signal } from '@angular/core';
 import { AuthConfig, OAuthService } from 'angular-oauth2-oidc';
 import { environment } from '@env/environment';
 import { AuthService } from './auth.service';
-import { decodePayload } from './decode-token';
-import { permissionsFromKeycloakToken, roleNameFromKeycloakToken } from './keycloak-permissions';
-import { Permission } from './models/permission.model';
 
 /** Authenticates against Keycloak with the Authorization Code flow and PKCE. */
 @Injectable()
@@ -15,15 +12,11 @@ export class KeycloakAuthService extends AuthService {
 
   private readonly authenticated = signal(false);
   private readonly name = signal('');
-  private readonly role = signal('');
-  private readonly grants = signal<Permission[]>([]);
 
   readonly isDemo = false;
   readonly hasLoginPage = false;
   readonly isAuthenticated = this.authenticated.asReadonly();
   readonly userName = this.name.asReadonly();
-  readonly roleName = this.role.asReadonly();
-  readonly permissions = this.grants.asReadonly();
 
   /** @inheritdoc */
   async init(): Promise<void> {
@@ -69,8 +62,5 @@ export class KeycloakAuthService extends AuthService {
     this.authenticated.set(valid);
     const claims = this.oauth.getIdentityClaims();
     this.name.set(valid ? (claims?.['name'] ?? claims?.['preferred_username'] ?? '') : '');
-    const token = valid ? this.oauth.getAccessToken() : null;
-    this.role.set(token ? roleNameFromKeycloakToken(decodePayload(token)) : '');
-    this.grants.set(token ? permissionsFromKeycloakToken(decodePayload(token)) : []);
   }
 }

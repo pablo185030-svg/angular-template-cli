@@ -1,5 +1,4 @@
 import { Signal } from '@angular/core';
-import { Permission } from './models/permission.model';
 import { SignInResult } from './models/sign-in-result.model';
 
 /**
@@ -19,12 +18,6 @@ export abstract class AuthService {
 
   /** Display name of the signed-in user, or an empty string when signed out. */
   abstract readonly userName: Signal<string>;
-
-  /** Name of the signed-in user's role, or an empty string when unknown or signed out. */
-  abstract readonly roleName: Signal<string>;
-
-  /** Permissions of the signed-in user (empty when signed out). */
-  abstract readonly permissions: Signal<Permission[]>;
 
   /** Runs once at startup, before the first navigation. Resolves when the auth state is known. */
   abstract init(): Promise<void>;
@@ -49,12 +42,4 @@ export abstract class AuthService {
 
   /** Returns the current access token, or null when signed out. */
   abstract getAccessToken(): string | null;
-
-  /**
-   * Tells whether the signed-in user holds a permission.
-   * @param {Permission} permission - Permission to check.
-   */
-  hasPermission(permission: Permission): boolean {
-    return this.permissions().includes(permission);
-  }
 }

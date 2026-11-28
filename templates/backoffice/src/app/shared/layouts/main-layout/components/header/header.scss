@@ -70,15 +70,6 @@ $drawer-easing: cubic-bezier(0.4, 0, 0.2, 1);
     overflow-wrap: anywhere;
   }
 
-  &__role {
-    padding: 0 0.5rem;
-    border-radius: var(--mat-sys-corner-full, 9999px);
-    background: var(--mat-sys-secondary-container);
-    color: var(--mat-sys-on-secondary-container);
-    font: var(--mat-sys-label-small);
-    text-transform: capitalize;
-  }
-
   // Stays above the drawer so it can turn into the close button.
   &__menu-toggle {
     position: relative;

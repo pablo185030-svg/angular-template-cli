@@ -141,25 +141,12 @@ describe('KeycloakAuthService', () => {
     expect(oauth.logOutCalls).toBe(1);
   });
 
-  it('takes the permissions from the access token realm roles', async () => {
-    const oauth = new FakeOAuthService();
-    oauth.validToken = true;
-    oauth.token = `h.${btoa(JSON.stringify({ realm_access: { roles: ['escritura'] } }))}.s`;
-    const { service } = setup(oauth);
-
-    await service.init();
-
-    expect(service.permissions()).toEqual(['read', 'write']);
-    expect(service.hasPermission('write')).toBe(true);
-    expect(service.hasPermission('manage-roles')).toBe(false);
-  });
-
-  it('has no permissions and no login page when signed out', async () => {
+  it('has no login page and is not authenticated when signed out', async () => {
     const { service } = setup(new FakeOAuthService());
 
     await service.init();
 
-    expect(service.permissions()).toEqual([]);
+    expect(service.isAuthenticated()).toBe(false);
     expect(service.hasLoginPage).toBe(false);
   });
 });
