@@ -148,6 +148,9 @@ test('wrapText wraps at the width without splitting words and keeps line breaks'
   strictEqual(wrapText('uno dos tres cuatro', 8).split('\n').every((line) => line.length <= 20), true);
   strictEqual(wrapText('aaaa bbbb cccc dddd eeee ffff gggg hhhh', 20), 'aaaa bbbb cccc dddd\neeee ffff gggg hhhh');
   strictEqual(wrapText('a\nb', 80), 'a\nb');
+  // A list item keeps its indent and wraps with a hanging indent; color codes do not count as width.
+  strictEqual(wrapText('  + aaaa bbbb cccc dddd', 20), '  + aaaa bbbb cccc\n    dddd');
+  strictEqual(wrapText('\u001b[32m+\u001b[0m aaaa bbbb cccc dddd eeee', 20), '\u001b[32m+\u001b[0m aaaa bbbb cccc\ndddd eeee');
 });
 
 test('questions are wrapped to the terminal width and show the keys hint', async () => {

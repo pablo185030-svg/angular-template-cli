@@ -36,6 +36,11 @@ COPY ./dist/${project}/browser/ /usr/share/nginx/html/
 EXPOSE 80
 `;
 
+// Baseline security headers, indented for a location block.
+const SECURITY_HEADERS = `        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;`;
+
 const nginxConf = (mode) => `# Static web server for the built site (dist/<project>/browser). Used by the Dockerfile, or
 # place it at /etc/nginx/conf.d/default.conf on your own nginx with the build output as the root.
 server {
@@ -51,16 +56,21 @@ server {
     gzip_min_length 256;
     gzip_types text/plain text/css text/xml text/javascript application/javascript application/json application/xml image/svg+xml;
 
+    # Baseline security headers. nginx does not inherit add_header into a location that declares its
+    # own add_header, so the locations below repeat them.
+${SECURITY_HEADERS.replaceAll('        ', '    ')}
+
     # Health endpoint for monitoring.
     location = /health {
         access_log off;
         return 200 "ok\\n";
     }
 
-    # Hashed assets never change: cache them for a year.
-    location ~* \\.(?:js|css|woff2?|svg|png|jpe?g|webp|ico)$ {
+    # Build output files carry a content hash in their name, so they are cached for a year.
+    location ~* "-[A-Za-z0-9_-]{8}\\.(?:js|css|mjs)$" {
         expires 1y;
         add_header Cache-Control "public, immutable";
+${SECURITY_HEADERS}
         try_files $uri =404;
     }
 
@@ -68,11 +78,15 @@ ${
   mode === 'spa'
     ? `    # Every other path is a client-side route: serve the app shell.
     location / {
+        add_header Cache-Control "no-cache";
+${SECURITY_HEADERS}
         try_files $uri /index.html;
     }`
     : `    # Each prerendered route is a folder with an index.html. Any other path (the not-found
     # page) is rendered in the browser from index.csr.html.
     location / {
+        add_header Cache-Control "no-cache";
+${SECURITY_HEADERS}
         try_files $uri $uri/index.html /index.csr.html;
     }`
 }

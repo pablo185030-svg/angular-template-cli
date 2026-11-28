@@ -23,28 +23,42 @@ The CLI SHALL prompt the user for the application type (public website or backof
 - **THEN** no prompt is shown and the project is generated with the given values
 
 ### Requirement: Optional Keycloak configuration
-When the app type is backoffice, the CLI SHALL offer to configure Keycloak (URL, realm and client id) and, when the user accepts or passes the equivalent flags, SHALL write those values into the generated project's environment files. The client id SHALL default to the project name.
+When the app type is backoffice, the CLI SHALL ask which environments the project has (`local` and `prod` always, plus any extra environments the user names) and SHALL offer to configure Keycloak (URL, realm and client id) for each of them. It SHALL write each environment's values into that environment's file in the generated project. The client id SHALL default to the project name, and every question after the first SHALL default to the previous environment's answer.
 
 #### Scenario: Configure Keycloak in the wizard
-- **WHEN** the user chooses backoffice and accepts to configure Keycloak and enters a URL, a realm and a client id
-- **THEN** the generated project contains those values and authenticates against that Keycloak in local development
+- **WHEN** the user chooses backoffice, adds the environments `dev` and `qa`, and enters a different URL and realm for `local`, `dev`, `qa` and `prod`
+- **THEN** the generated project has one environment file per environment, each containing its own Keycloak URL, realm and client id
+- **AND** each of those environments can be built and served by its own configuration
 
 #### Scenario: Skip Keycloak
 - **WHEN** the user chooses backoffice and declines to configure Keycloak
-- **THEN** the generated project starts in demo mode
-- **AND** the final summary explains how to connect Keycloak later
+- **THEN** the generated project starts in demo mode in local development
+- **AND** the final summary explains how to connect Keycloak later, per environment
+
+#### Scenario: Leave one environment unconfigured
+- **WHEN** the user declines to configure Keycloak for a non-prod environment and configures the others
+- **THEN** that environment's file keeps placeholder Keycloak values and the others contain their own values
+- **AND** the final summary names the environments still to configure
 
 #### Scenario: Keycloak flags without a terminal
-- **WHEN** the CLI runs with the Keycloak URL and realm flags and no terminal
-- **THEN** no question is asked and the values are written to the generated project
+- **WHEN** the CLI runs with `--environments dev,qa` and one `--keycloak <env>=<url>,<realm>` flag per environment and no terminal
+- **THEN** no question is asked and each environment's values are written to the generated project
+
+#### Scenario: Legacy single-environment flags
+- **WHEN** the CLI runs with the Keycloak URL and realm flags and no environment flags
+- **THEN** the same values are written to every environment of the project
 
 #### Scenario: Keycloak with a public site
-- **WHEN** Keycloak flags are given together with the public website type
+- **WHEN** Keycloak or environment flags are given together with the public website type
 - **THEN** the CLI exits with a non-zero status and writes nothing
 
 #### Scenario: Invalid Keycloak values
 - **WHEN** the URL does not start with http:// or https://, or the realm or client id contains spaces
 - **THEN** the CLI rejects the value, and in the guided flow lets the user correct it
+
+#### Scenario: Invalid environment names
+- **WHEN** an environment name is not lowercase kebab-case, repeats another, or is `e2e`
+- **THEN** the CLI rejects it before writing any file, and in the guided flow lets the user correct it
 
 ### Requirement: Placeholder replacement
 The CLI SHALL replace the template's placeholder name `coto-angular-template` with the project name chosen by the user in every generated file that contains it, including package metadata and page titles.
@@ -310,3 +324,64 @@ In an interactive terminal the wizard SHALL wrap every question to the terminal 
 #### Scenario: Long question
 - **WHEN** a question is longer than the terminal width
 - **THEN** it is shown over several lines and all of its text is visible
+
+### Requirement: Rendering mode options explain themselves
+The rendering mode question SHALL show, above the options, one card per mode with the meaning of its acronym (Server-Side Rendering, Static Site Generation, Single Page Application), its pros, its cons and what it is best suited for, in Spanish. Each option label SHALL spell out its acronym and each hint SHALL be a short phrase.
+
+#### Scenario: Options in the rendering question
+- **WHEN** the rendering mode question is shown
+- **THEN** the three cards are visible at the same time, above the options
+- **AND** each card lists what the acronym means, pros, cons and an ideal use
+
+#### Scenario: Narrow terminal
+- **WHEN** the terminal is narrow
+- **THEN** the cards wrap keeping their indentation, without breaking words
+
+### Requirement: Production domain for the public website
+When the app type is the public website, the wizard SHALL ask in Spanish for the production domain. The question MAY be left empty. The `--site-url <url>` flag SHALL answer it, SHALL accept only an absolute http(s) origin, and SHALL be rejected for the backoffice. Without a terminal or with `--yes` only the flag applies. A given domain SHALL be applied with the project's own `configure:seo` script as a reported step after the rendering step; otherwise the placeholder stays and no step runs.
+
+#### Scenario: Domain given
+- **WHEN** the user answers `https://www.mi-sitio.com` or passes `--site-url https://www.mi-sitio.com`
+- **THEN** the generated project's environments, `robots.txt`, `sitemap.xml` and `llms.txt` use that origin
+- **AND** the project builds for production without the placeholder guard failing
+
+#### Scenario: Question left empty
+- **WHEN** the user leaves the domain empty
+- **THEN** the project keeps the placeholder and no configure step runs
+
+#### Scenario: Invalid or misplaced flag
+- **WHEN** `--site-url` is not an absolute http(s) origin, or is used with the backoffice
+- **THEN** the CLI exits with a non-zero status and writes nothing
+
+#### Scenario: Without a terminal
+- **WHEN** the wizard runs with `--type public --name my-site --yes` and no `--site-url`
+- **THEN** the question is not asked and the placeholder stays
+
+### Requirement: Production domain question wording
+The domain question SHALL say that the domain is asked for SEO, that pressing Enter without typing skips it, and that it is needed before the production build. When the chosen rendering mode is SPA it SHALL also explain that the site still publishes canonical, sitemap and metadata with that domain, so the question does not contradict the SPA SEO warning.
+
+#### Scenario: SSR or SSG
+- **WHEN** the question is shown for an SSR or SSG site
+- **THEN** it names SEO as the reason, says Enter skips it, and says the domain is needed before the production build
+
+#### Scenario: SPA
+- **WHEN** the question is shown for an SPA site
+- **THEN** it also explains that canonical, sitemap and metadata still use the domain despite the limited SEO
+
+### Requirement: Production domain in the summary
+For a public website, the final summary SHALL state the configured domain and remind the user to add its hostname to `ssr.allowedHosts` when the site is server-rendered. When no domain was given, it SHALL warn that the production build fails until `npm run configure:seo -- --site-url <url>` runs.
+
+#### Scenario: Summary with a domain
+- **WHEN** a public website is generated with a domain
+- **THEN** the summary names the domain
+
+#### Scenario: Summary without a domain
+- **WHEN** a public website is generated without a domain
+- **THEN** the summary warns that `npm run build` fails until `configure:seo` is run with the real domain
+
+### Requirement: Redirect URIs in the summary
+For a backoffice with Keycloak configured, the final summary SHALL list the environments and say that each Keycloak client needs the application's URL for that environment as a valid redirect URI.
+
+#### Scenario: Summary lists environments
+- **WHEN** a backoffice with the environments `local`, `dev` and `prod` is generated
+- **THEN** the summary names the three environments and the redirect URI to register for local development

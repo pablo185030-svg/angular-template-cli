@@ -1,0 +1,8 @@
+# coto-angular-template
+
+> Punto de partida para sitios web Angular con renderizado en el servidor, construido con Coto UI Kit. Reemplazá este resumen por la descripción real del sitio.
+
+## Páginas
+
+- [Inicio](https://www.example.com/): presentación del sitio.
+- [Acerca de](https://www.example.com/acerca-de): cómo está organizado el proyecto.

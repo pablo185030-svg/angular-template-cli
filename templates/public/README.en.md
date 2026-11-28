@@ -20,6 +20,7 @@
 - [Main commands](#main-commands)
 - [Environments](#environments)
 - [Server-side rendering](#server-side-rendering)
+- [SEO, GEO and web quality](#seo-geo-and-web-quality)
 - [Project structure](#project-structure)
 - [Path aliases](#path-aliases)
 - [Breakpoints](#breakpoints)
@@ -127,19 +128,20 @@ Every `@angular/*` entry in `package.json` is pinned to the same exact version (
 
 ## Main commands
 
-| Command                       | Description                                                                                          |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `npm start`                   | Dev server at `http://localhost:4200` with hot reload                                                |
-| `npm run build`               | Production build (browser + SSR server) to `dist/`                                                   |
-| `npm run build:dev`           | Development build                                                                                    |
-| `npm run watch`               | Incremental build in development mode                                                                |
-| `npm run serve:ssr`           | Runs the built SSR server (`PORT`, default 4000); requires a prior `npm run build`                   |
-| `npm test`                    | Unit tests with Vitest (watch mode)                                                                  |
-| `npm run lint`                | ESLint (`angular-eslint`) on `.ts` and `.html` under `src/`                                          |
-| `npm run format`              | Prettier on `src/` and `e2e/`                                                                        |
-| `npm run test:e2e`            | Playwright e2e; starts the dev server automatically                                                  |
-| `npm run configure:rendering` | `-- --mode ssg` or `-- --mode spa`: converts the SSR project (see [Rendering mode](#rendering-mode)) |
-| `npm run configure:theme`     | `-- --dark-mode` or `-- --no-dark-mode`: turns the light/dark toggle on or off                       |
+| Command                       | Description                                                                                                                        |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `npm start`                   | Dev server at `http://localhost:4200` with hot reload                                                                              |
+| `npm run build`               | Production build (browser + SSR server) to `dist/`                                                                                 |
+| `npm run build:dev`           | Development build                                                                                                                  |
+| `npm run watch`               | Incremental build in development mode                                                                                              |
+| `npm run serve:ssr`           | Runs the built SSR server (`PORT`, default 4000); requires a prior `npm run build`                                                 |
+| `npm test`                    | Unit tests with Vitest (watch mode)                                                                                                |
+| `npm run lint`                | ESLint (`angular-eslint`) on `.ts` and `.html` under `src/`                                                                        |
+| `npm run format`              | Prettier on `src/` and `e2e/`                                                                                                      |
+| `npm run test:e2e`            | Playwright e2e; starts the dev server automatically                                                                                |
+| `npm run configure:rendering` | `-- --mode ssg` or `-- --mode spa`: converts the SSR project (see [Rendering mode](#rendering-mode))                               |
+| `npm run configure:seo`       | `-- --site-url https://your-domain.com`: sets the public URL in the environments and in `robots.txt`, `sitemap.xml` and `llms.txt` |
+| `npm run configure:theme`     | `-- --dark-mode` or `-- --no-dark-mode`: turns the light/dark toggle on or off                                                     |
 
 Run one unit spec: `npx ng test --watch=false --include "src/app/**/header.spec.ts"`.
 
@@ -165,6 +167,26 @@ Run one unit spec: `npx ng test --watch=false --include "src/app/**/header.spec.
 
 ---
 
+<a id="seo-geo-and-web-quality"></a>
+
+## SEO, GEO and web quality
+
+The template is ready for search engines and AI answer engines (GEO), and follows Google's recommendations for accessibility, images and performance.
+
+- **Site URL**: `siteUrl` in `src/environments/environment*.ts` (placeholder `https://www.example.com`). Change it with `npm run configure:seo -- --site-url https://www.your-domain.com`: it updates the environments, `robots.txt`, `sitemap.xml` and `llms.txt`. If you generated the project with the wizard and gave the domain (`--site-url`), it is already done.
+- **Placeholder domain blocked**: `npm run build` first runs `scripts/check-seo.mjs`, which fails while `environment.prod.ts`, `robots.txt`, `sitemap.xml` or `llms.txt` still use `example.com`, `example.org` or `example.net`, and lists the files to fix. `npm start`, `npm test` and `npm run build:dev` are not affected. Only for tests or pipelines that do not publish, `ALLOW_PLACEHOLDER_SITE_URL=1` skips the check.
+- **Per-route metadata**: every route declares `title` and `data: { seo: { description } }` in `app.routes.ts`. `PageTitleStrategy` and `SeoService` write the title (`<page> | <siteName>`), description, canonical, Open Graph, Twitter and `robots` tags, both in the server HTML and on navigation. A route with `noindex: true` emits no canonical and stays out of the sitemap.
+- **Crawler files** (`public/`): `robots.txt` allows every crawler, AI crawlers included; to block one, add a block (`User-agent: GPTBot` + `Disallow: /`). `sitemap.xml` lists the indexable routes and a test fails when one is missing. `llms.txt` summarizes the site for language models; it is optional and its effect on search engines is unproven.
+- **Structured data**: the home page emits `WebSite` and `Organization` JSON-LD. Any page can add its own with `SeoService.setJsonLd(id, data)`.
+- **Real 404**: with SSR an unknown path answers HTTP 404 with the not-found page and `noindex`. On SSG and SPA the host answers 200 (a limitation of static hosts); `noindex` stays.
+- **Accessibility**: a "Skip to content" link, a single `h1` per page and an axe E2E test (WCAG 2.2 AA) that scans every sitemap page at 320px and 1280px and the open drawer.
+- **Images**: use `NgOptimizedImage` (`ngSrc`) with `width` and `height`; lint fails on a plain `<img src>`. `priority` only on the largest image visible without scrolling (LCP); the rest loads lazily. Prefer AVIF/WebP and always a Spanish `alt` (empty when decorative).
+- **Performance and security**: hashed assets cached for a year, HTML not cached, and the `X-Content-Type-Options`, `Referrer-Policy` and `X-Frame-Options` headers on the Node server and in nginx.
+
+To add a page that meets all of this: a route with `title` and `description`, an entry in `sitemap.xml`, a single `h1`, images with `ngSrc` and, when relevant, JSON-LD. Tests and lint tell you when something is missing. The `.claude/skills/web-quality-review` folder holds a Claude Code skill that audits all of it on demand (Lighthouse optional); community skills such as [claude-seo](https://github.com/AgriciDaniel/claude-seo) or [tvl-seo-geo-audit](https://academy.tvl.tech/en/skills/tvl-seo-geo-audit/) are optional extras and are not included in the template.
+
+---
+
 <a id="project-structure"></a>
 
 ## Project structure
@@ -182,6 +204,8 @@ src/app/
   app.routes.server.ts   SSR render mode per route
 src/environments/        environment.ts, environment.prod.ts (SSR hosts, theme.darkMode)
 src/server.ts            Express SSR server
+public/                  robots.txt, sitemap.xml, llms.txt, favicon and logo
+src/app/core/services/   SeoService and PageTitleStrategy (per-route SEO metadata)
 e2e/                     Playwright specs
 ```
 

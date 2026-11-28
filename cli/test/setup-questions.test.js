@@ -99,7 +99,7 @@ test('a failing install is reported but does not abort and the summary lists npm
 test('the initial commit adds everything; a failing commit is only a warning', async () => {
   // Without a terminal the commit is off, so the commit itself is exercised through the guided flow.
   const { cwd, templatesDir, write, runGit, runNpm, gitCalls } = await setup();
-  const prompts = fakePrompts(['public', 'my-site', cwd, false, 'ssr', false, true, false]);
+  const prompts = fakePrompts(['public', 'my-site', cwd, false, 'ssr', '', false, true, false]);
   const reporterFactory = () => createPlainReporter(write);
 
   const code = await run([], { templatesDir, cwd, write, isTTY: true, prompts, reporterFactory, runGit, runNpm });
@@ -113,7 +113,7 @@ test('the initial commit adds everything; a failing commit is only a warning', a
     cwd: failing.cwd,
     write: failing.write,
     isTTY: true,
-    prompts: fakePrompts(['public', 'my-site', failing.cwd, false, 'ssr', false, true, false]),
+    prompts: fakePrompts(['public', 'my-site', failing.cwd, false, 'ssr', '', false, true, false]),
     reporterFactory: () => createPlainReporter(failing.write),
     runNpm: failing.runNpm,
     runGit: (args) => { if (args[0] === 'commit') throw new Error('no identity'); },
@@ -159,7 +159,7 @@ test('the guided flow asks the location (default: the sibling folder) and uses i
 
 test('remote and install prompts explain themselves and validate', async () => {
   const { cwd, templatesDir, write, runGit, runNpm } = await setup();
-  const prompts = fakePrompts(['public', 'my-site', cwd, false, 'ssr', true, 'git@h:o/r.git', false, true]);
+  const prompts = fakePrompts(['public', 'my-site', cwd, false, 'ssr', '', true, 'git@h:o/r.git', false, true]);
 
   await run([], {
     templatesDir, cwd, write, isTTY: true, prompts, runGit, runNpm,

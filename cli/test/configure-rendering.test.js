@@ -1,10 +1,12 @@
 import { match, ok, rejects, strictEqual } from 'node:assert';
 import { access, readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { addRenderingFiles, makeTempDir } from '../support/test-helpers.js';
 import { applyRendering } from '../../templates/public/scripts/configure-rendering.mjs';
 
+const TEMPLATE = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'templates', 'public');
 const exists = (path) => access(path).then(() => true, () => false);
 const read = (dir, file) => readFile(join(dir, file), 'utf8');
 
@@ -53,6 +55,30 @@ test('SPA removes every server file and dependency and falls back to index.html'
   ok(!/Hydration/.test(config));
   match(config, /provideRouter\(routes\)/);
   match(await read(dir, 'nginx.conf'), /try_files \$uri \/index\.html;/);
+});
+
+for (const mode of ['ssg', 'spa']) {
+  test(`${mode}: the static web server sends security headers and caches only hashed assets`, async () => {
+    const dir = await project();
+
+    await applyRendering(dir, mode);
+
+    const nginx = await read(dir, 'nginx.conf');
+    for (const header of ['X-Content-Type-Options', 'Referrer-Policy', 'X-Frame-Options']) {
+      // Server level plus the two locations that declare their own add_header.
+      strictEqual(nginx.split(`add_header ${header}`).length - 1, 3, header);
+    }
+    match(nginx, /location ~\* "-\[A-Za-z0-9_-\]\{8\}\\\.\(\?:js\|css\|mjs\)\$" \{\s+expires 1y;/);
+    match(nginx, /location \/ \{\s+add_header Cache-Control "no-cache";/);
+  });
+}
+
+test('the SSR reverse proxy sends the same security headers', async () => {
+  const nginx = await readFile(join(TEMPLATE, 'nginx.conf'), 'utf8');
+
+  for (const header of ['X-Content-Type-Options', 'Referrer-Policy', 'X-Frame-Options']) {
+    strictEqual(nginx.split(`add_header ${header}`).length - 1, 3, header);
+  }
 });
 
 test('refuses a project that is no longer SSR and changes nothing', async () => {

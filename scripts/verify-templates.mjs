@@ -50,7 +50,9 @@ function npm(args, cwd) {
     cwd,
     stdio: 'inherit',
     shell: process.platform === 'win32',
-    env: { ...process.env, HUSKY: '0' }, // do not let husky touch this repository's git config
+    // HUSKY: do not let husky touch this repository's git config. The public template ships a
+    // placeholder domain that its prebuild check rejects; verification builds it on purpose.
+    env: { ...process.env, HUSKY: '0', ALLOW_PLACEHOLDER_SITE_URL: '1' },
   });
   return result.status === 0;
 }

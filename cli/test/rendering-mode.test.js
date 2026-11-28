@@ -29,7 +29,17 @@ test('the public site asks the rendering mode, SSR by default, with a warning ab
   const question = prompts.asked[4];
   strictEqual(question.initialValue, 'ssr');
   deepStrictEqual(question.options.map((option) => option.value), ['ssr', 'ssg', 'spa']);
-  match(question.options.find((option) => option.value === 'spa').hint, /sin SEO/);
+  // The comparison lives in the question, above the options, so all three are visible at once.
+  for (const part of ['Server-Side Rendering', 'Static Site Generation', 'Single Page Application']) {
+    match(question.message, new RegExp(part), part);
+  }
+  strictEqual((question.message.match(/Ideal:/g) ?? []).length, 3);
+  strictEqual((question.message.match(/^ {2}Pros: /gm) ?? []).length, 3, 'one pros line per mode');
+  strictEqual((question.message.match(/^ {2}Contras: /gm) ?? []).length, 3, 'one cons line per mode');
+  match(question.message, /ecommerce, catálogos o noticias/);
+  match(question.message, /SEO limitado/);
+  for (const option of question.options) match(option.label, /\(.+\)/, 'the label spells out the acronym');
+  strictEqual(question.options[0].hint, undefined, 'SSR is the default, not labeled');
 });
 
 test('the backoffice never asks the rendering mode', async () => {

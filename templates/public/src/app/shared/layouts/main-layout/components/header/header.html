@@ -50,7 +50,7 @@
     class="drawer__panel"
     aria-label="Principal (móvil)"
     data-testid="drawer"
-    cdkTrapFocus
+    [cdkTrapFocus]="menuOpen()"
     [cdkTrapFocusAutoCapture]="menuOpen()"
     [attr.inert]="menuOpen() ? null : ''"
   >

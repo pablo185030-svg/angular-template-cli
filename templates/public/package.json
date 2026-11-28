@@ -5,6 +5,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "prebuild": "node scripts/check-seo.mjs",
     "build": "ng build",
     "build:dev": "ng build --configuration development",
     "watch": "ng build --watch --configuration development",
@@ -15,6 +16,7 @@
     "format": "prettier --write \"src/**/*.{ts,html,scss,json}\" \"e2e/**/*.ts\"",
     "prepare": "husky",
     "configure:theme": "node scripts/configure-theme.mjs",
+    "configure:seo": "node scripts/configure-seo.mjs",
     "configure:rendering": "node scripts/configure-rendering.mjs"
   },
   "prettier": {
@@ -56,6 +58,7 @@
     "@angular/build": "22.1.5",
     "@angular/cli": "22.1.5",
     "@angular/compiler-cli": "22.1.5",
+    "@axe-core/playwright": "^4.14.1",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.1",
     "@types/express": "^5.0.1",

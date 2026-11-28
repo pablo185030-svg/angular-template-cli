@@ -49,6 +49,10 @@ async function addProjectScripts(dir, type) {
   await mkdir(join(dir, 'src', 'environments'), { recursive: true });
   await cp(join(real, 'src', 'environments'), join(dir, 'src', 'environments'), { recursive: true });
   await cp(join(real, 'scripts', 'configure-theme.mjs'), join(dir, 'scripts', 'configure-theme.mjs'));
+  if (type === 'public') {
+    await cp(join(real, 'scripts', 'configure-seo.mjs'), join(dir, 'scripts', 'configure-seo.mjs'));
+    await cp(join(real, 'public'), join(dir, 'public'), { recursive: true });
+  }
   if (type !== 'backoffice') return;
   for (const script of ['configure-keycloak.mjs', 'remove-mock-api.mjs']) {
     await cp(join(real, 'scripts', script), join(dir, 'scripts', script));

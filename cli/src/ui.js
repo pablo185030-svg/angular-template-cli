@@ -40,6 +40,7 @@ export function buildSummary({
   mockApi = true,
   darkMode = false,
   rendering,
+  siteUrl,
   remote,
   committed = false,
   installed = false,
@@ -74,12 +75,30 @@ export function buildSummary({
       : rendering === 'ssr'
         ? [
             'Renderizado: SSR (servidor Node). Para pasar a SSG o SPA:',
-            'npm run configure:rendering -- --mode ssg   (o spa; solo funciona mientras siga en SSR)',
+            'npm run configure:rendering -- --mode ssg   (o spa; el cambio es de ida: no se puede volver a SSR)',
             '',
           ]
         : [
             `Renderizado: ${rendering.toUpperCase()}. El build queda en dist/${name}/browser y se sirve con nginx (ver Dockerfile).`,
             'Para volver a SSR, regenerá el proyecto o usá git.',
+            '',
+          ];
+
+  const siteUrlLines =
+    type !== 'public'
+      ? []
+      : siteUrl
+        ? [
+            `Dominio del sitio: ${siteUrl}.${
+              rendering === 'ssr' || !rendering
+                ? ' Agregá el hostname a ssr.allowedHosts en src/environments/environment.prod.ts.'
+                : ''
+            }`,
+            '',
+          ]
+        : [
+            'Dominio sin configurar: quedó https://www.example.com y npm run build falla hasta que lo cambies:',
+            'npm run configure:seo -- --site-url https://www.tu-dominio.com',
             '',
           ];
 
@@ -136,6 +155,7 @@ export function buildSummary({
       ...sampleLines,
       ...mockApiLines,
       ...renderingLines,
+      ...siteUrlLines,
       ...themeLines,
       '@coto-dev/ui-kit se instala desde el registry privado configurado en .npmrc;',
       'tiene que ser accesible desde tu red al correr npm install.',
@@ -290,17 +310,21 @@ const HINT_FIRST = 'Ctrl+C: salir';
  */
 export function wrapText(text, width) {
   const limit = Math.max(20, width);
+  const visible = (value) => value.replace(/\u001b\[[0-9;]*m/g, '').length;
   return text
     .split('\n')
     .map((paragraph) => {
+      // An indented line (a list item) keeps its indent, and wrapped lines hang two spaces deeper.
+      const indent = /^ */.exec(paragraph)[0];
+      const hanging = indent ? `${indent}  ` : '';
       const lines = [];
       let line = '';
-      for (const word of paragraph.split(' ')) {
-        if (line && line.length + 1 + word.length > limit) {
+      for (const word of paragraph.slice(indent.length).split(' ')) {
+        if (line && visible(line) + 1 + visible(word) > limit) {
           lines.push(line);
-          line = word;
+          line = hanging + word;
         } else {
-          line = line ? `${line} ${word}` : word;
+          line = line ? `${line} ${word}` : indent + word;
         }
       }
       lines.push(line);

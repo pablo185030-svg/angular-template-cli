@@ -30,7 +30,9 @@ Opciones:
   --no-mock-api               Backoffice: sin la API mock; el ABM usa un JSON con datos de ejemplo
                               y guarda los cambios solo en la memoria del navegador
   --dark-mode                 Soportar modo oscuro (botón en el header; por defecto solo tema claro)
-  --rendering <ssr|ssg|spa>   Sitio web: modo de renderizado (por defecto ssr; spa no tiene SEO)
+  --rendering <ssr|ssg|spa>   Sitio web: modo de renderizado (por defecto ssr; spa tiene SEO limitado)
+  --site-url <url>            Sitio web: dominio de producción (ej.: https://www.mi-sitio.com); si no se
+                              indica, queda un dominio de ejemplo y el build de producción falla hasta configurarlo
   --remote <url>              Conectar un repositorio git existente como "origin" (no se sube nada)
   --no-commit                 No crear el commit inicial (con -y o sin terminal tampoco se crea)
   --install                   Instalar las dependencias al terminar (npm install)
@@ -83,6 +85,7 @@ export async function run(argv, deps = {}) {
         'no-mock-api': { type: 'boolean' },
         'dark-mode': { type: 'boolean' },
         rendering: { type: 'string' },
+        'site-url': { type: 'string' },
         remote: { type: 'string' },
         'no-commit': { type: 'boolean' },
         install: { type: 'boolean' },
@@ -114,7 +117,7 @@ export async function run(argv, deps = {}) {
   await reporter.intro();
 
   try {
-    const { type, name, keycloak, environments, mockApi, darkMode, rendering, outDir, remote, commit, install } = await resolveOptions({
+    const { type, name, keycloak, environments, mockApi, darkMode, rendering, siteUrl, outDir, remote, commit, install } = await resolveOptions({
       flags: {
         type: values.type,
         name: values.name,
@@ -126,6 +129,7 @@ export async function run(argv, deps = {}) {
         mockApi: values['no-mock-api'] ? false : undefined,
         darkMode: values['dark-mode'] ? true : undefined,
         rendering: values.rendering,
+        siteUrl: values['site-url'],
         outDir: values.out,
         remote: values.remote,
         commit: values['no-commit'] ? false : undefined,
@@ -149,6 +153,7 @@ export async function run(argv, deps = {}) {
       mockApi,
       darkMode,
       rendering,
+      siteUrl,
       remote,
       commit,
       install,
@@ -165,6 +170,7 @@ export async function run(argv, deps = {}) {
       mockApi,
       darkMode,
       rendering,
+      siteUrl,
       remote,
       committed,
       installed,

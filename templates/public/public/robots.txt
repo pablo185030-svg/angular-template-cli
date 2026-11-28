@@ -1,0 +1,9 @@
+# Every crawler, including AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended...), may
+# read the whole site. To keep a specific AI crawler out, add a block for it, for example:
+#
+#   User-agent: GPTBot
+#   Disallow: /
+User-agent: *
+Allow: /
+
+Sitemap: https://www.example.com/sitemap.xml

@@ -13,6 +13,15 @@ Dos templates de proyecto Angular 22 listos para usar en apps de Coto, con estil
 
 Ambos son apps zoneless con componentes standalone, con ESLint, Prettier, Vitest, Husky + lint-staged, un Dockerfile y configuración de nginx, y ejemplos de e2e con Playwright. Cada template es un proyecto Angular normal que compila y se testea por sí solo.
 
+El sitio público viene preparado para SEO, GEO (visibilidad en motores de respuesta con IA), accesibilidad y rendimiento, y esas reglas se hacen cumplir con tests, lint y una skill de Claude Code:
+
+- **Metadatos por ruta** (título, descripción, canonical, Open Graph, Twitter, `noindex`), `robots.txt`, `sitemap.xml`, `llms.txt` y datos estructurados JSON-LD, todos derivados de una única `siteUrl` que el wizard te pide al generar (`--site-url`) o que definís después con `npm run configure:seo`. Mientras quede el dominio de ejemplo, `npm run build` falla.
+- **404 real** con SSR, headers de seguridad y caché correcta (assets con hash por un año, HTML sin caché).
+- **Accesibilidad WCAG 2.2 AA** verificada con axe en e2e, enlace "Saltar al contenido" y un único `h1` por página; **imágenes** con `NgOptimizedImage` obligatorio por lint.
+- Un `CLAUDE.md` con la checklist por página y la skill `web-quality-review` (`.claude/skills/`) para auditar todo bajo demanda; ambos se copian a cada proyecto generado.
+
+El detalle está en el README del template (`templates/public/README.md`, sección "SEO, GEO y calidad web").
+
 ## Tabla de contenidos
 
 - [Requisitos](#requirements)
@@ -60,7 +69,7 @@ El wizard copia el template en una carpeta **junto a este repositorio** (hermana
 
 **Solo sitio público**
 
-- **Modo de renderizado**: SSR (por defecto, servidor Node), SSG (páginas estáticas prerenderizadas) o SPA (solo cliente, sin SEO). Se aplica con `npm run configure:rendering` dentro del proyecto generado.
+- **Modo de renderizado**: SSR (por defecto, servidor Node), SSG (páginas estáticas prerenderizadas) o SPA (solo cliente, SEO limitado). Se aplica con `npm run configure:rendering` dentro del proyecto generado.
 
 Los textos del wizard están en español. Presioná **Esc para volver** a la pregunta anterior o **Ctrl+C para salir** (no se escribe nada). Después:
 
@@ -95,7 +104,8 @@ npm run create -- --type backoffice --name my-admin --yes --no-mock-api --dark-m
 | `--keycloak-client-id <id>`   | Backoffice: client id para todos los ambientes                                              |
 | `--no-mock-api`               | Backoffice: sin API mock; el ABM usa un archivo JSON y guarda los cambios en memoria        |
 | `--dark-mode`                 | Soportar modo oscuro (botón en el header; por defecto: solo claro)                          |
-| `--rendering <ssr\|ssg\|spa>` | Sitio público: modo de renderizado (por defecto `ssr`; `spa` no tiene SEO)                  |
+| `--rendering <ssr\|ssg\|spa>` | Sitio público: modo de renderizado (por defecto `ssr`; `spa` tiene SEO limitado)               |
+| `--site-url <url>`            | Sitio público: dominio de producción (ej. `https://www.mi-sitio.com`); sin él, `npm run build` falla hasta configurarlo |
 | `--remote <url>`              | Conectar un repositorio git existente como `origin` (nunca hace push)                       |
 | `--no-commit`                 | Omitir el commit inicial (sin terminal no hay commit por defecto)                           |
 | `--install` / `--no-install`  | Ejecutar `npm install` tras generar (por defecto: no)                                       |

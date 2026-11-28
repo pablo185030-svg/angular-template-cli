@@ -1,3 +1,4 @@
+import pc from 'picocolors';
 import { APP_TYPES, DEFAULT_RENDERING, RENDERING_MODES } from './constants.js';
 import {
   validateAppType,
@@ -8,7 +9,27 @@ import {
   validateProjectName,
   validateRemoteUrl,
   validateRendering,
+  validateSiteUrl,
 } from './validate.js';
+
+/** A bold label in the given color. */
+const label = (color, text) => color(pc.bold(text));
+
+/**
+ * One card per rendering mode (meaning, pros, cons, ideal use), shown above the options so the
+ * three can be compared at a glance. The select only draws one line per option.
+ * @returns {string}
+ */
+export function renderingGuide() {
+  return RENDERING_MODES.map(({ value, meaning, pros, cons, ideal }) =>
+    [
+      pc.bold(`${value.toUpperCase()} · ${meaning}`),
+      `  ${label(pc.green, 'Pros:')} ${pros}`,
+      `  ${label(pc.red, 'Contras:')} ${cons}`,
+      `  ${label(pc.yellow, 'Ideal:')} ${ideal}`,
+    ].join('\n'),
+  ).join('\n\n');
+}
 
 /** Returned by a question when the user asks to go back (Esc). */
 const BACK = Symbol('wizard:back');
@@ -24,7 +45,7 @@ export class UsageError extends Error {}
  * In a terminal the user can go back to the previous question (`prompts.isBack`, Esc) to change an
  * answer; Ctrl+C cancels. Without a terminal nothing is asked and the defaults apply.
  * @param {object} options
- * @param {{ type?: string, name?: string, outDir?: string, remote?: string, commit?: boolean, install?: boolean, keycloakUrl?: string, keycloakRealm?: string, keycloakClientId?: string, environments?: string, keycloak?: string[], mockApi?: boolean, darkMode?: boolean, rendering?: string }} options.flags
+ * @param {{ type?: string, name?: string, outDir?: string, remote?: string, commit?: boolean, install?: boolean, keycloakUrl?: string, keycloakRealm?: string, keycloakClientId?: string, environments?: string, keycloak?: string[], mockApi?: boolean, darkMode?: boolean, rendering?: string, siteUrl?: string }} options.flags
  *   Values given on the command line. `mockApi: false` and `darkMode: true` are the only flag values.
  *   Unanswered questions use their defaults without a terminal (mock API included, light only).
  * @param {string} [options.defaultOutDir] - Location offered by the location question.
@@ -66,6 +87,13 @@ export async function resolveOptions({ flags, interactive, prompts, defaultOutDi
     if (error) throw new UsageError(error);
     if (type !== undefined && type !== 'public') {
       throw new UsageError('--rendering solo aplica al tipo public (sitio web).');
+    }
+  }
+  if (flags.siteUrl !== undefined) {
+    const error = validateSiteUrl(flags.siteUrl);
+    if (error) throw new UsageError(`--site-url: ${error}`);
+    if (type !== undefined && type !== 'public') {
+      throw new UsageError('--site-url solo aplica al tipo public (sitio web).');
     }
   }
 
@@ -111,6 +139,8 @@ export async function resolveOptions({ flags, interactive, prompts, defaultOutDi
           if (flags.mockApi === false) throw new UsageError('--no-mock-api solo aplica al tipo backoffice.');
         } else if (flags.rendering !== undefined) {
           throw new UsageError('--rendering solo aplica al tipo public (sitio web).');
+        } else if (flags.siteUrl !== undefined) {
+          throw new UsageError('--site-url solo aplica al tipo public (sitio web).');
         }
       },
     },
@@ -215,13 +245,35 @@ export async function resolveOptions({ flags, interactive, prompts, defaultOutDi
           'select',
           {
             message:
-              '¿Cómo querés renderizar el sitio? SSR (servidor Node), SSG (páginas prearmadas en el build) o SPA (solo cliente, sin SEO). ' +
-              'Después se puede convertir con npm run configure:rendering mientras el proyecto siga en SSR.',
+              '¿Cómo querés renderizar el sitio? Podés empezar en SSR y pasar a SSG o SPA más adelante con npm run configure:rendering, pero no volver atrás: para eso hay que regenerar el proyecto.\n\n' +
+              renderingGuide(),
             initialValue: answers.rendering ?? DEFAULT_RENDERING,
             options: RENDERING_MODES.map(({ value, label, hint }) => ({ value, label, hint })),
           },
           canGoBack,
         ),
+    },
+    {
+      id: 'siteUrl',
+      applies: isPublic,
+      auto: () =>
+        flags.siteUrl !== undefined ? { value: flags.siteUrl } : interactive ? undefined : { value: undefined },
+      ask: (answers, canGoBack) =>
+        ask(
+          'text',
+          {
+            message:
+              'Dominio de producción para el SEO (ej.: https://www.mi-sitio.com). ' +
+              (answers.rendering === 'spa'
+                ? 'Aunque un SPA tiene SEO limitado, el sitio igual publica canonical, sitemap y metadatos con este dominio. '
+                : 'Lo usan los links canónicos, el sitemap y los datos estructurados. ') +
+              'Enter sin escribir nada lo saltea, pero hace falta antes del build de producción: npm run configure:seo.',
+            placeholder: 'https://www.mi-sitio.com',
+            initialValue: answers.siteUrl,
+            validate: (value) => (value?.trim() ? validateSiteUrl(value.trim()) : undefined),
+          },
+          canGoBack,
+        ).then((value) => (value === BACK ? BACK : (typeof value === 'string' && value.trim()) || undefined)),
     },
     {
       id: 'remote',
@@ -424,7 +476,13 @@ export async function resolveOptions({ flags, interactive, prompts, defaultOutDi
   };
   const outDir = answers.outDir ? { outDir: answers.outDir } : {};
   if (answers.type !== 'backoffice') {
-    return { ...common, rendering: answers.rendering, ...outDir, ...setup };
+    return {
+      ...common,
+      rendering: answers.rendering,
+      ...(answers.siteUrl ? { siteUrl: answers.siteUrl } : {}),
+      ...outDir,
+      ...setup,
+    };
   }
   return {
     ...common,

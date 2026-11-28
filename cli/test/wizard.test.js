@@ -10,21 +10,21 @@ const INTERACTIVE = { outDir: LOC, commit: true, install: false };
 const QUIET = { commit: false, install: false };
 
 test('prompts for both values when no flags are given', async () => {
-  const prompts = fakePrompts(['public', 'my-shop', LOC, false, 'ssr', ...TAIL]);
+  const prompts = fakePrompts(['public', 'my-shop', LOC, false, 'ssr', '', ...TAIL]);
 
   const result = await resolveOptions({ flags: {}, interactive: true, prompts });
 
   deepStrictEqual(result, { type: 'public', name: 'my-shop', darkMode: false, rendering: 'ssr', ...INTERACTIVE });
-  strictEqual(prompts.asked.length, 8);
+  strictEqual(prompts.asked.length, 9);
 });
 
 test('does not prompt for values given as flags', async () => {
-  const prompts = fakePrompts(['my-shop', LOC, false, 'ssr', ...TAIL]);
+  const prompts = fakePrompts(['my-shop', LOC, false, 'ssr', '', ...TAIL]);
 
   const result = await resolveOptions({ flags: { type: 'public' }, interactive: true, prompts });
 
   deepStrictEqual(result, { type: 'public', name: 'my-shop', darkMode: false, rendering: 'ssr', ...INTERACTIVE });
-  strictEqual(prompts.asked.length, 7);
+  strictEqual(prompts.asked.length, 8);
 });
 
 test('the name prompt validates inline so the user can correct it', async () => {
@@ -80,12 +80,12 @@ test('backoffice: declining Keycloak returns no settings and asks nothing else',
 });
 
 test('public: never asks about Keycloak', async () => {
-  const prompts = fakePrompts(['public', 'my-site', LOC, false, 'ssr', ...TAIL]);
+  const prompts = fakePrompts(['public', 'my-site', LOC, false, 'ssr', '', ...TAIL]);
 
   const result = await resolveOptions({ flags: {}, interactive: true, prompts });
 
   deepStrictEqual(result, { type: 'public', name: 'my-site', darkMode: false, rendering: 'ssr', ...INTERACTIVE });
-  strictEqual(prompts.asked.length, 8, 'no Keycloak or mock API questions');
+  strictEqual(prompts.asked.length, 9, 'no Keycloak or mock API questions');
 });
 
 test('Keycloak prompts validate inline', async () => {

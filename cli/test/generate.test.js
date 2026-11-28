@@ -23,7 +23,7 @@ test('copies a template without node_modules and build output', async () => {
 
   await copyTemplate(join(templates, 'public'), target);
 
-  deepStrictEqual((await readdir(target)).sort(), ['logo.bin', 'package.json', 'scripts', 'src']);
+  deepStrictEqual((await readdir(target)).sort(), ['logo.bin', 'package.json', 'public', 'scripts', 'src']);
 });
 
 test('replaces the placeholder in text files and leaves binary files untouched', async () => {
@@ -34,7 +34,9 @@ test('replaces the placeholder in text files and leaves binary files untouched',
 
   const changed = await replacePlaceholders(target, 'my-shop');
 
-  strictEqual(changed, 2);
+  // package.json and index.html, plus the two real environment files (`siteName`) and llms.txt
+  // that the fixture copies, which hold the placeholder.
+  strictEqual(changed, 5);
   strictEqual(JSON.parse(await readFile(join(target, 'package.json'), 'utf8')).name, 'my-shop');
   match(await readFile(join(target, 'src', 'index.html'), 'utf8'), /<title>my-shop<\/title>/);
   const binary = await readFile(join(target, 'logo.bin'));
@@ -145,4 +147,23 @@ test('runs one script call per environment', () => {
   addEnvironments('/x', ['dev', 'qa'], (args) => calls.push(args[2]));
   configureKeycloak('/x', {}, (args) => calls.push(args));
   deepStrictEqual(calls, ['dev', 'qa']);
+});
+
+test('a project generated from the real public template carries the web-quality guidance', async () => {
+  const root = await makeTempDir();
+  const target = join(root, 'my-shop');
+  const template = join(import.meta.dirname, '..', '..', 'templates', 'public');
+
+  await copyTemplate(template, target);
+  await replacePlaceholders(target, 'my-shop');
+  await assertNoPlaceholders(target, 'my-shop');
+
+  const skill = await readFile(join(target, '.claude', 'skills', 'web-quality-review', 'SKILL.md'), 'utf8');
+  match(skill, /^name: web-quality-review$/m);
+  const claude = await readFile(join(target, 'CLAUDE.md'), 'utf8');
+  match(claude, /^# my-shop \(public website\)/m);
+  match(claude, /^## SEO, GEO and web quality$/m);
+  for (const file of ['robots.txt', 'sitemap.xml', 'llms.txt']) {
+    await access(join(target, 'public', file));
+  }
 });

@@ -211,6 +211,17 @@ export function configureRendering(directory, mode, runNode = defaultRunNode) {
 }
 
 /**
+ * Sets the production domain of the public website by running the project's own
+ * `scripts/configure-seo.mjs`, the same script behind `npm run configure:seo`.
+ * @param {string} directory - Generated project directory.
+ * @param {string} siteUrl - Absolute http(s) origin of the site.
+ * @param {(args: string[], cwd: string) => void} [runNode] - Node runner, injectable for tests.
+ */
+export function configureSeo(directory, siteUrl, runNode = defaultRunNode) {
+  runNode(['scripts/configure-seo.mjs', '--site-url', siteUrl], directory);
+}
+
+/**
  * Generates a project: checks the target, copies the template, renames it, verifies the
  * rename and initializes git. Each step is reported through `runStep`.
  * @param {object} options
@@ -229,6 +240,8 @@ export function configureRendering(directory, mode, runNode = defaultRunNode) {
  * @param {boolean} [options.darkMode] - True enables dark mode support (default false: light only).
  * @param {'ssr' | 'ssg' | 'spa'} [options.rendering] - Public website only; ssg and spa convert the
  *   template (default ssr: left as it is).
+ * @param {string} [options.siteUrl] - Public website only: production domain written into the SEO
+ *   settings (default: the template's placeholder stays).
  * @param {(args: string[], cwd: string) => void} [options.runNode] - Node runner, injectable for tests.
  * @param {string} [options.remote] - Git remote URL registered as `origin` (never pushed).
  * @param {boolean} [options.commit] - Creates an initial commit (default false).
@@ -248,6 +261,7 @@ export async function generateProject({
   mockApi = true,
   darkMode = false,
   rendering = 'ssr',
+  siteUrl,
   runNode,
   remote,
   commit = false,
@@ -286,6 +300,9 @@ export async function generateProject({
     await runStep(`Configurando el renderizado (${rendering.toUpperCase()})`, () =>
       configureRendering(targetDir, rendering, runNode),
     );
+  }
+  if (siteUrl) {
+    await runStep(`Configurando el dominio (${siteUrl})`, () => configureSeo(targetDir, siteUrl, runNode));
   }
   await runStep('Inicializando el repositorio git', () => initGit(targetDir, runGit));
   if (remote) {

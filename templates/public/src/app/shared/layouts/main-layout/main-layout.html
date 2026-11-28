@@ -1,6 +1,14 @@
 <div class="main-layout" data-testid="main-layout">
+  <!-- Once the app is running, the click moves the focus by hand and leaves the URL untouched. -->
+  <a
+    class="main-layout__skip-link"
+    [href]="skipLinkHref()"
+    data-testid="skip-link"
+    (click)="$event.preventDefault(); main.focus()"
+    >Saltar al contenido</a
+  >
   <app-header />
-  <main class="main-layout__content">
+  <main #main id="main-content" class="main-layout__content" tabindex="-1">
     <router-outlet />
   </main>
   <app-footer />

@@ -76,6 +76,28 @@ export function validateRendering(mode) {
 }
 
 /**
+ * Validates the production domain of a public website: an absolute http(s) origin, the same rule
+ * as the template's `configure:seo` script.
+ * @param {string | undefined} value
+ * @returns {string | undefined} An error message, or undefined when valid.
+ */
+export function validateSiteUrl(value) {
+  let url;
+  try {
+    url = new URL(value ?? '');
+  } catch {
+    return `"${value ?? ''}" no es una URL absoluta. Usá algo como https://www.mi-sitio.com.`;
+  }
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+    return 'La URL del sitio tiene que empezar con http:// o https://.';
+  }
+  if (url.pathname !== '/' || url.search || url.hash) {
+    return 'Ingresá solo el origen del sitio, sin ruta, query ni hash (ej.: https://www.mi-sitio.com).';
+  }
+  return undefined;
+}
+
+/**
  * Validates the name of an extra environment (`local` and `prod` always exist).
  * @param {string | undefined} name
  * @returns {string | undefined} An error message, or undefined when valid.

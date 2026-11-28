@@ -28,6 +28,9 @@ export default defineConfig([
   {
     files: ['**/*.html'],
     extends: [angular.configs.templateRecommended, angular.configs.templateAccessibility],
-    rules: {},
+    rules: {
+      // Images go through NgOptimizedImage (ngSrc): lazy loading, explicit size, no layout shift.
+      '@angular-eslint/template/prefer-ngsrc': 'error',
+    },
   },
 ]);

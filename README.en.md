@@ -13,6 +13,15 @@ Two ready-to-run Angular 22 project templates for Coto apps, styled with `@coto-
 
 Both are zoneless, standalone-component apps with ESLint, Prettier, Vitest, Husky + lint-staged, a Dockerfile and nginx config, and Playwright e2e examples. Each template is a normal Angular project that builds and tests on its own.
 
+The public website is built for SEO, GEO (visibility in AI answer engines), accessibility and performance, and those rules are enforced with tests, lint and a Claude Code skill:
+
+- **Per-route metadata** (title, description, canonical, Open Graph, Twitter, `noindex`), `robots.txt`, `sitemap.xml`, `llms.txt` and JSON-LD structured data, all derived from a single `siteUrl` that the wizard asks for when generating (`--site-url`) or that you set later with `npm run configure:seo`. While the example domain is still there, `npm run build` fails.
+- **Real 404** under SSR, security headers and correct caching (hashed assets for a year, HTML not cached).
+- **WCAG 2.2 AA accessibility** checked with axe in e2e, a "Skip to content" link and a single `h1` per page; **images** go through `NgOptimizedImage`, enforced by lint.
+- A `CLAUDE.md` with the per-page checklist and the `web-quality-review` skill (`.claude/skills/`) to audit all of it on demand; both are copied into every generated project.
+
+Details are in the template README (`templates/public/README.en.md`, section "SEO, GEO and web quality").
+
 ## Table of Contents
 
 - [Requirements](#requirements)
@@ -60,7 +69,7 @@ The wizard copies the template into a folder **next to this repository** (a sibl
 
 **Public site only**
 
-- **Rendering mode**: SSR (default, Node server), SSG (prerendered static pages) or SPA (client only, no SEO). It is applied with `npm run configure:rendering` inside the generated project.
+- **Rendering mode**: SSR (default, Node server), SSG (prerendered static pages) or SPA (client only, limited SEO). It is applied with `npm run configure:rendering` inside the generated project.
 
 The wizard texts are in Spanish. Press **Esc to go back** to the previous question or **Ctrl+C to exit** (nothing is written). Then:
 
@@ -89,7 +98,8 @@ npm run create -- --type backoffice --name my-admin --yes --no-mock-api --dark-m
 | `--keycloak-client-id <id>`   | Backoffice: client id (default: the project name)                                        |
 | `--no-mock-api`               | Backoffice: no mock API; the ABM uses a JSON file and keeps changes in memory            |
 | `--dark-mode`                 | Support dark mode (toggle in the header; default: light only)                            |
-| `--rendering <ssr\|ssg\|spa>` | Public site: rendering mode (default `ssr`; `spa` has no SEO)                            |
+| `--rendering <ssr\|ssg\|spa>` | Public site: rendering mode (default `ssr`; `spa` has limited SEO)                        |
+| `--site-url <url>`            | Public site: production domain (e.g. `https://www.my-site.com`); without it, `npm run build` fails until it is set |
 | `--remote <url>`              | Connect an existing git repository as `origin` (never pushes)                            |
 | `--no-commit`                 | Skip the initial commit (without a terminal there is no commit by default)               |
 | `--install` / `--no-install`  | Run `npm install` after generating (default: no)                                         |
