@@ -45,7 +45,7 @@ export class UsageError extends Error {}
  * In a terminal the user can go back to the previous question (`prompts.isBack`, Esc) to change an
  * answer; Ctrl+C cancels. Without a terminal nothing is asked and the defaults apply.
  * @param {object} options
- * @param {{ type?: string, name?: string, outDir?: string, remote?: string, commit?: boolean, install?: boolean, keycloakUrl?: string, keycloakRealm?: string, keycloakClientId?: string, environments?: string, keycloak?: string[], mockApi?: boolean, darkMode?: boolean, rendering?: string, siteUrl?: string }} options.flags
+ * @param {{ type?: string, name?: string, outDir?: string, remote?: string, commit?: boolean, install?: boolean, angularSkill?: boolean, keycloakUrl?: string, keycloakRealm?: string, keycloakClientId?: string, environments?: string, keycloak?: string[], mockApi?: boolean, darkMode?: boolean, rendering?: string, siteUrl?: string }} options.flags
  *   Values given on the command line. `mockApi: false` and `darkMode: true` are the only flag values.
  *   Unanswered questions use their defaults without a terminal (mock API included, light only).
  * @param {string} [options.defaultOutDir] - Location offered by the location question.
@@ -305,6 +305,14 @@ export async function resolveOptions({ flags, interactive, prompts, defaultOutDi
         '¿Querés instalar las dependencias ahora (npm install)? Necesita acceso al registry privado de @coto-dev/ui-kit desde tu red; ' +
         'si falla, el proyecto igual queda generado.',
     }),
+    confirmStep('angularSkill', {
+      flagValue: () => flags.angularSkill,
+      fallback: false,
+      initial: false,
+      message:
+        '¿Querés instalar el skill oficial de Angular (angular-developer) para Claude Code? Se descarga de github.com/angular/skills con npx, ' +
+        'así que necesita red; si falla, el proyecto igual queda generado. Las reglas del CLAUDE.md del proyecto prevalecen sobre el skill.',
+    }),
   ];
 
   // Sub-questions of the Keycloak and remote steps keep their own answers so Esc steps through them.
@@ -478,6 +486,7 @@ export async function resolveOptions({ flags, interactive, prompts, defaultOutDi
     ...(answers.remote ? { remote: answers.remote } : {}),
     commit: answers.commit,
     install: answers.install,
+    angularSkill: answers.angularSkill,
   };
   const outDir = answers.outDir ? { outDir: answers.outDir } : {};
   if (answers.type !== 'backoffice') {

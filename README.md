@@ -109,6 +109,7 @@ npm run create -- --type backoffice --name my-admin --yes --no-mock-api --dark-m
 | `--remote <url>`              | Conectar un repositorio git existente como `origin` (nunca hace push)                       |
 | `--no-commit`                 | Omitir el commit inicial (sin terminal no hay commit por defecto)                           |
 | `--install` / `--no-install`  | Ejecutar `npm install` tras generar (por defecto: no)                                       |
+| `--angular-skill` / `--no-angular-skill` | Instalar el skill oficial de Angular (`angular-developer`) con `npx skills add`; necesita red y no rompe la generación si falla (por defecto: no) |
 | `-y`, `--yes`                 | Sin preguntas, salida en texto plano (requiere `--type` y `--name`)                         |
 | `-h`, `--help`                | Mostrar la ayuda                                                                            |
 

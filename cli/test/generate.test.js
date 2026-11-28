@@ -163,7 +163,17 @@ test('a project generated from the real website template carries the web-quality
   const claude = await readFile(join(target, 'CLAUDE.md'), 'utf8');
   match(claude, /^# my-shop \(public website\)/m);
   match(claude, /^## SEO, GEO and web quality$/m);
+  match(claude, /rules in this file take precedence over it/);
   for (const file of ['robots.txt', 'sitemap.xml', 'llms.txt']) {
     await access(join(target, 'public', file));
   }
+});
+
+test('a project generated from the real backoffice template states that its rules override the Angular skill', async () => {
+  const root = await makeTempDir();
+  const target = join(root, 'my-admin');
+
+  await copyTemplate(join(import.meta.dirname, '..', '..', 'templates', 'backoffice'), target);
+
+  match(await readFile(join(target, 'CLAUDE.md'), 'utf8'), /rules in this file take precedence over it/);
 });

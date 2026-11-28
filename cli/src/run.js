@@ -37,6 +37,9 @@ Opciones:
   --no-commit                 No crear el commit inicial (con -y o sin terminal tampoco se crea)
   --install                   Instalar las dependencias al terminar (npm install)
   --no-install                No instalar las dependencias (es el valor por defecto)
+  --angular-skill             Instalar el skill oficial de Angular (angular-developer) para Claude Code
+                              con npx skills add; necesita red y no es obligatorio
+  --no-angular-skill          No instalar el skill de Angular (es el valor por defecto)
   -y, --yes                   Sin preguntas; salida en texto plano (requiere --type y --name)
   -h, --help                  Muestra esta ayuda
 `;
@@ -66,6 +69,7 @@ export async function run(argv, deps = {}) {
     runGit,
     runNode,
     runNpm,
+    runSkills,
     write = (line) => console.log(line),
   } = deps;
 
@@ -90,6 +94,8 @@ export async function run(argv, deps = {}) {
         'no-commit': { type: 'boolean' },
         install: { type: 'boolean' },
         'no-install': { type: 'boolean' },
+        'angular-skill': { type: 'boolean' },
+        'no-angular-skill': { type: 'boolean' },
         yes: { type: 'boolean', short: 'y' },
         help: { type: 'boolean', short: 'h' },
       },
@@ -109,6 +115,11 @@ export async function run(argv, deps = {}) {
     return 1;
   }
 
+  if (values['angular-skill'] && values['no-angular-skill']) {
+    write(`Error: --angular-skill y --no-angular-skill no se pueden usar juntas.\n\n${HELP}`);
+    return 1;
+  }
+
   const interactive = isTTY && !values.yes;
   const reporter =
     reporterFactory?.(interactive) ??
@@ -117,7 +128,7 @@ export async function run(argv, deps = {}) {
   await reporter.intro();
 
   try {
-    const { type, name, keycloak, environments, mockApi, darkMode, rendering, siteUrl, outDir, remote, commit, install } = await resolveOptions({
+    const { type, name, keycloak, environments, mockApi, darkMode, rendering, siteUrl, outDir, remote, commit, install, angularSkill } = await resolveOptions({
       flags: {
         type: values.type,
         name: values.name,
@@ -134,6 +145,7 @@ export async function run(argv, deps = {}) {
         remote: values.remote,
         commit: values['no-commit'] ? false : undefined,
         install: values.install ? true : values['no-install'] ? false : undefined,
+        angularSkill: values['angular-skill'] ? true : values['no-angular-skill'] ? false : undefined,
       },
       interactive,
       prompts,
@@ -142,7 +154,7 @@ export async function run(argv, deps = {}) {
     });
     const targetDir = resolve(cwd, outDir ?? defaultOutDir, name);
 
-    const { committed, installed } = await generateProject({
+    const { committed, installed, skillInstalled } = await generateProject({
       templateDir: join(templatesDir, type),
       targetDir,
       projectName: name,
@@ -157,8 +169,10 @@ export async function run(argv, deps = {}) {
       remote,
       commit,
       install,
+      angularSkill,
       runNode,
       runNpm,
+      runSkills,
     });
     reporter.summary({
       name,
@@ -174,6 +188,8 @@ export async function run(argv, deps = {}) {
       remote,
       committed,
       installed,
+      angularSkill,
+      skillInstalled,
     });
     return 0;
   } catch (error) {

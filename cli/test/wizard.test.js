@@ -4,10 +4,10 @@ import { CancelledError, UsageError, resolveOptions } from '../src/wizard.js';
 import { CANCEL, fakePrompts } from '../support/test-helpers.js';
 
 const LOC = '/work';
-/** Remote: no, initial commit: yes, install: no. */
-const TAIL = [false, true, false];
-const INTERACTIVE = { outDir: LOC, commit: true, install: false };
-const QUIET = { commit: false, install: false };
+/** Remote: no, initial commit: yes, install: no, Angular skill: no. */
+const TAIL = [false, true, false, false];
+const INTERACTIVE = { outDir: LOC, commit: true, install: false, angularSkill: false };
+const QUIET = { commit: false, install: false, angularSkill: false };
 
 test('prompts for both values when no flags are given', async () => {
   const prompts = fakePrompts(['website', 'my-shop', LOC, false, 'ssr', '', ...TAIL]);
@@ -15,7 +15,7 @@ test('prompts for both values when no flags are given', async () => {
   const result = await resolveOptions({ flags: {}, interactive: true, prompts });
 
   deepStrictEqual(result, { type: 'website', name: 'my-shop', darkMode: false, rendering: 'ssr', ...INTERACTIVE });
-  strictEqual(prompts.asked.length, 9);
+  strictEqual(prompts.asked.length, 10);
 });
 
 test('does not prompt for values given as flags', async () => {
@@ -24,7 +24,7 @@ test('does not prompt for values given as flags', async () => {
   const result = await resolveOptions({ flags: { type: 'website' }, interactive: true, prompts });
 
   deepStrictEqual(result, { type: 'website', name: 'my-shop', darkMode: false, rendering: 'ssr', ...INTERACTIVE });
-  strictEqual(prompts.asked.length, 8);
+  strictEqual(prompts.asked.length, 9);
 });
 
 test('the name prompt validates inline so the user can correct it', async () => {
@@ -76,7 +76,7 @@ test('backoffice: declining Keycloak returns no settings and asks nothing else',
   const result = await resolveOptions({ flags: {}, interactive: true, prompts });
 
   deepStrictEqual(result, { type: 'backoffice', name: 'my-admin', mockApi: true, environments: [], darkMode: false, ...INTERACTIVE });
-  strictEqual(prompts.asked.length, 11, 'type, name, location, environments, Keycloak local and prod, mock API, dark mode, remote, commit, install');
+  strictEqual(prompts.asked.length, 12, 'type, name, location, environments, Keycloak local and prod, mock API, dark mode, remote, commit, install, Angular skill');
 });
 
 test('public: never asks about Keycloak', async () => {
@@ -85,7 +85,7 @@ test('public: never asks about Keycloak', async () => {
   const result = await resolveOptions({ flags: {}, interactive: true, prompts });
 
   deepStrictEqual(result, { type: 'website', name: 'my-site', darkMode: false, rendering: 'ssr', ...INTERACTIVE });
-  strictEqual(prompts.asked.length, 9, 'no Keycloak or mock API questions');
+  strictEqual(prompts.asked.length, 10, 'no Keycloak or mock API questions');
 });
 
 test('Keycloak prompts validate inline', async () => {
@@ -280,4 +280,18 @@ test('environment flags are rejected when invalid, mixed with the legacy ones, o
   await rejects(attempt({ ...base, keycloak: [`prod=${KC.url},r`], keycloakUrl: KC.url, keycloakRealm: 'r' }), UsageError);
   await rejects(attempt({ type: 'website', name: 'my-site', environments: 'qa' }), UsageError);
   await rejects(attempt({ type: 'website', name: 'my-site', keycloak: [`prod=${KC.url},r`] }), UsageError);
+});
+
+test('the Angular skill question defaults to no and its flag skips it', async () => {
+  const prompts = fakePrompts(['website', 'my-shop', LOC, false, 'ssr', '', false, true, false, true]);
+  const asked = await resolveOptions({ flags: {}, interactive: true, prompts });
+  strictEqual(asked.angularSkill, true);
+  const question = prompts.asked.at(-1);
+  strictEqual(question.initialValue, false);
+  match(question.message, /angular-developer/);
+
+  const flagged = fakePrompts(['website', 'my-shop', LOC, false, 'ssr', '', false, true, false]);
+  const result = await resolveOptions({ flags: { angularSkill: true }, interactive: true, prompts: flagged });
+  strictEqual(result.angularSkill, true);
+  strictEqual(flagged.asked.length, 9);
 });

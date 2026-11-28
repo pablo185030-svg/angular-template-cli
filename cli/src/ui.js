@@ -44,6 +44,8 @@ export function buildSummary({
   remote,
   committed = false,
   installed = false,
+  angularSkill = false,
+  skillInstalled = false,
 }) {
   const commands = [`cd ${cdPath}`];
   if (!installed) commands.push('npm install');
@@ -144,6 +146,15 @@ export function buildSummary({
             '',
           ];
 
+  const skillLines = skillInstalled
+    ? []
+    : [
+        angularSkill
+          ? 'No se instaló el skill de Angular. Para instalarlo: npx skills add https://github.com/angular/skills -s angular-developer -a claude-code --copy'
+          : 'Skill oficial de Angular (opcional): npx skills add https://github.com/angular/skills -s angular-developer -a claude-code --copy',
+        '',
+      ];
+
   return {
     title: `Proyecto "${name}" creado en ${targetDir}`,
     lines: [
@@ -157,6 +168,7 @@ export function buildSummary({
       ...renderingLines,
       ...siteUrlLines,
       ...themeLines,
+      ...skillLines,
       '@coto-dev/ui-kit se instala desde el registry privado configurado en .npmrc;',
       'tiene que ser accesible desde tu red al correr npm install.',
     ],

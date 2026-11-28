@@ -27,6 +27,7 @@ Run a single unit spec with `npx ng test --watch=false --include "src/app/**/hea
 - Files and folders are kebab-case. Types live in `models/` folders, not in component or service files.
 - Unit tests next to the code (`*.spec.ts`). Select elements with `data-testid`, not CSS classes.
 - All code, comments and docs are written in English; user-visible UI text is in Spanish.
+- If the official Angular skill (`.claude/skills/angular-developer`) is installed, the rules in this file take precedence over it wherever they differ (Signal Forms, BEM, ui-kit colors, `data-testid`, file layout).
 
 ## Structure
 

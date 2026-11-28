@@ -103,7 +103,7 @@ test('without a terminal nothing is asked and the result is unchanged', async ()
 
   const result = await resolveOptions({ flags: { type: 'website', name: 'a-b' }, interactive: false, prompts });
 
-  deepStrictEqual(result, { type: 'website', name: 'a-b', darkMode: false, rendering: 'ssr', commit: false, install: false });
+  deepStrictEqual(result, { type: 'website', name: 'a-b', darkMode: false, rendering: 'ssr', commit: false, install: false, angularSkill: false });
   strictEqual(prompts.asked.length, 0);
 });
 

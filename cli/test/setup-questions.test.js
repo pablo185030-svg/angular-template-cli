@@ -99,7 +99,7 @@ test('a failing install is reported but does not abort and the summary lists npm
 test('the initial commit adds everything; a failing commit is only a warning', async () => {
   // Without a terminal the commit is off, so the commit itself is exercised through the guided flow.
   const { cwd, templatesDir, write, runGit, runNpm, gitCalls } = await setup();
-  const prompts = fakePrompts(['website', 'my-site', cwd, false, 'ssr', '', false, true, false]);
+  const prompts = fakePrompts(['website', 'my-site', cwd, false, 'ssr', '', false, true, false, false]);
   const reporterFactory = () => createPlainReporter(write);
 
   const code = await run([], { templatesDir, cwd, write, isTTY: true, prompts, reporterFactory, runGit, runNpm });
@@ -113,7 +113,7 @@ test('the initial commit adds everything; a failing commit is only a warning', a
     cwd: failing.cwd,
     write: failing.write,
     isTTY: true,
-    prompts: fakePrompts(['website', 'my-site', failing.cwd, false, 'ssr', '', false, true, false]),
+    prompts: fakePrompts(['website', 'my-site', failing.cwd, false, 'ssr', '', false, true, false, false]),
     reporterFactory: () => createPlainReporter(failing.write),
     runNpm: failing.runNpm,
     runGit: (args) => { if (args[0] === 'commit') throw new Error('no identity'); },
@@ -159,7 +159,7 @@ test('the guided flow asks the location (default: the sibling folder) and uses i
 
 test('remote and install prompts explain themselves and validate', async () => {
   const { cwd, templatesDir, write, runGit, runNpm } = await setup();
-  const prompts = fakePrompts(['website', 'my-site', cwd, false, 'ssr', '', true, 'git@h:o/r.git', false, true]);
+  const prompts = fakePrompts(['website', 'my-site', cwd, false, 'ssr', '', true, 'git@h:o/r.git', false, true, false]);
 
   await run([], {
     templatesDir, cwd, write, isTTY: true, prompts, runGit, runNpm,
@@ -169,7 +169,7 @@ test('remote and install prompts explain themselves and validate', async () => {
   const urlQuestion = prompts.asked.find((question) => /URL del repositorio/.test(question.message));
   strictEqual(typeof urlQuestion.validate('a b'), 'string');
   strictEqual(urlQuestion.validate('git@h:o/r.git'), undefined);
-  const install = prompts.asked.at(-1);
+  const install = prompts.asked.at(-2);
   strictEqual(install.initialValue, false);
   match(install.message, /registry privado de @coto-dev\/ui-kit/);
 });
@@ -190,4 +190,59 @@ test('the summary leaves out npm install when installed and handles remote witho
   match(noCommit, /Cuando hagas el primer commit: git push -u origin main/);
   match(committed, /Para publicar el código: git push -u origin main/);
   ok(!/git push/.test(buildSummary(base).lines.join('\n')));
+});
+
+test('--angular-skill installs the skill in the project before the initial commit', async () => {
+  const { cwd, templatesDir, write, runGit, output } = await setup();
+  const calls = [];
+
+  const code = await run([...BASE, '--angular-skill'], {
+    templatesDir, cwd, write, isTTY: false, runGit,
+    runSkills: (args, dir) => calls.push({ args, dir }),
+  });
+
+  strictEqual(code, 0);
+  strictEqual(calls.length, 1);
+  strictEqual(calls[0].dir, join(cwd, 'my-site'));
+  ok(calls[0].args.includes('https://github.com/angular/skills'));
+  ok(calls[0].args.includes('angular-developer'));
+  const text = output.join('\n');
+  match(text, /Instalando el skill oficial de Angular/);
+  ok(!/No se instaló el skill/.test(text));
+});
+
+test('without --angular-skill, or with --no-angular-skill, nothing is downloaded', async () => {
+  for (const extra of [[], ['--no-angular-skill']]) {
+    const { cwd, templatesDir, write, runGit, output } = await setup();
+    const code = await run([...BASE, ...extra], {
+      templatesDir, cwd, write, isTTY: false, runGit,
+      runSkills: () => { throw new Error('must not run'); },
+    });
+    strictEqual(code, 0);
+    match(output.join('\n'), /npx skills add https:\/\/github.com\/angular\/skills/);
+  }
+});
+
+test('a failing skill installation only warns, keeps the project and shows the manual command', async () => {
+  const { cwd, templatesDir, write, runGit, output } = await setup();
+
+  const code = await run([...BASE, '--angular-skill'], {
+    templatesDir, cwd, write, isTTY: false, runGit,
+    runSkills: () => { throw Object.assign(new Error('ENOTFOUND'), { stderr: 'getaddrinfo ENOTFOUND github.com' }); },
+  });
+
+  strictEqual(code, 0);
+  const text = output.join('\n');
+  match(text, /Instalando el skill oficial de Angular.*AVISO.*ENOTFOUND/);
+  match(text, /No se instaló el skill de Angular.*npx skills add https:\/\/github.com\/angular\/skills/);
+  const { access } = await import('node:fs/promises');
+  await access(join(cwd, 'my-site', 'package.json'));
+});
+
+test('--angular-skill and --no-angular-skill together are rejected', async () => {
+  const { cwd, templatesDir, write } = await setup();
+
+  strictEqual(await run([...BASE, '--angular-skill', '--no-angular-skill'], { templatesDir, cwd, write, isTTY: false }), 1);
+  const { readdir } = await import('node:fs/promises');
+  deepStrictEqual(await readdir(cwd), []);
 });

@@ -130,6 +130,22 @@ export function installDependencies(directory, runNpm = defaultRunNpm) {
   runNpm(['install'], directory);
 }
 
+export const ANGULAR_SKILL_REPO = 'https://github.com/angular/skills';
+
+/**
+ * Installs the official Angular skill (`angular-developer`) into the project's `.claude/skills/`
+ * with the `skills` CLI. Files are copied (not symlinked) so they can be committed.
+ * @param {string} directory - Generated project directory.
+ * @param {(args: string[], cwd: string) => void} [runSkills] - `npx` runner, injectable for tests.
+ */
+export function installAngularSkill(directory, runSkills = defaultRunSkills) {
+  runSkills(['-y', 'skills', 'add', ANGULAR_SKILL_REPO, '-s', 'angular-developer', '-a', 'claude-code', '--copy', '-y'], directory);
+}
+
+function defaultRunSkills(args, cwd) {
+  execFileSync(process.platform === 'win32' ? 'npx.cmd' : 'npx', args, { cwd, stdio: 'ignore' });
+}
+
 function defaultRunNpm(args, cwd) {
   const windows = process.platform === 'win32';
   execFileSync(windows ? 'npm.cmd' : 'npm', args, {
@@ -247,7 +263,9 @@ export function configureSeo(directory, siteUrl, runNode = defaultRunNode) {
  * @param {boolean} [options.commit] - Creates an initial commit (default false).
  * @param {boolean} [options.install] - Runs `npm install` (default false).
  * @param {(args: string[], cwd: string) => void} [options.runNpm] - npm runner, injectable for tests.
- * @returns {Promise<{ committed: boolean, installed: boolean }>} What was actually done. Commit and
+ * @param {boolean} [options.angularSkill] - Installs the official Angular skill (default false).
+ * @param {(args: string[], cwd: string) => void} [options.runSkills] - npx runner, injectable for tests.
+ * @returns {Promise<{ committed: boolean, installed: boolean, skillInstalled: boolean }>} What was actually done. Commit and
  *   install failures are not fatal: their step reports a warning and the project is kept.
  */
 export async function generateProject({
@@ -267,6 +285,8 @@ export async function generateProject({
   commit = false,
   install = false,
   runNpm,
+  angularSkill = false,
+  runSkills,
 }) {
   const templateExists = await stat(templateDir).then(
     (info) => info.isDirectory(),
@@ -309,6 +329,18 @@ export async function generateProject({
     await runStep('Conectando el repositorio remoto (origin)', () => addRemote(targetDir, remote, runGit));
   }
 
+  let skillInstalled = false;
+  if (angularSkill) {
+    await runStep('Instalando el skill oficial de Angular', () => {
+      try {
+        installAngularSkill(targetDir, runSkills);
+        skillInstalled = true;
+      } catch (error) {
+        return `No se pudo instalar el skill de Angular; corré npx skills add ${ANGULAR_SKILL_REPO} más tarde. ${failureDetail(error)}`;
+      }
+    });
+  }
+
   let installed = false;
   if (install) {
     await runStep('Instalando dependencias (puede tardar)', () => {
@@ -332,5 +364,5 @@ export async function generateProject({
       }
     });
   }
-  return { committed, installed };
+  return { committed, installed, skillInstalled };
 }
