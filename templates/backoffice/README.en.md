@@ -302,6 +302,14 @@ e2e/                            Playwright specs
 
 To add a feature, create `domains/<name>/` and a lazy route in `app.routes.ts`. Files and folders are kebab-case; types live in `models/` folders.
 
+### AI agents
+
+This project works with any AI coding agent (Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI and others), not only Claude:
+
+- `AGENTS.md` holds the project instructions (commands, conventions and rules). Most agents read it; edit this one.
+- `CLAUDE.md` only contains `@AGENTS.md`, so Claude Code reads the same instructions.
+- `.agents/skills/` holds the project skills (for example `angular-developer`, if you chose it when generating). `.claude/skills/` are links to that folder for Claude Code.
+
 ---
 
 <a id="path-aliases"></a>

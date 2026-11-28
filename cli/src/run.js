@@ -37,7 +37,7 @@ Opciones:
   --no-commit                 No crear el commit inicial (con -y o sin terminal tampoco se crea)
   --install                   Instalar las dependencias al terminar (npm install)
   --no-install                No instalar las dependencias (es el valor por defecto)
-  --angular-skill             Instalar el skill oficial de Angular (angular-developer) para Claude Code
+  --angular-skill             Instalar el skill oficial de Angular (angular-developer)
                               con npx skills add; necesita red y no es obligatorio
   --no-angular-skill          No instalar el skill de Angular (es el valor por defecto)
   -y, --yes                   Sin preguntas; salida en texto plano (requiere --type y --name)

@@ -301,6 +301,14 @@ e2e/                            specs de Playwright
 
 Para agregar una funcionalidad, creá `domains/<nombre>/` y una ruta lazy en `app.routes.ts`. Los archivos y carpetas van en kebab-case; los tipos viven en carpetas `models/`.
 
+### Agentes de IA
+
+Este proyecto funciona con cualquier agente de IA para programar (Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI y otros), no solo con Claude:
+
+- `AGENTS.md` tiene las instrucciones del proyecto (comandos, convenciones y reglas). Es el archivo que leen la mayoría de los agentes; editá este.
+- `CLAUDE.md` solo contiene `@AGENTS.md`, para que Claude Code lea las mismas instrucciones.
+- `.agents/skills/` guarda los skills del proyecto (por ejemplo `angular-developer`, si lo elegiste al generar). `.claude/skills/` son enlaces a esa carpeta para Claude Code.
+
 ---
 
 <a id="path-aliases"></a>

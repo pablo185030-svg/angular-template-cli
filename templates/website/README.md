@@ -183,7 +183,7 @@ El template viene listo para buscadores y para motores de respuesta con IA (GEO)
 - **Imágenes**: usá `NgOptimizedImage` (`ngSrc`) con `width` y `height`; el lint falla con un `<img src>` común. `priority` solo en la imagen más grande visible sin hacer scroll (LCP); el resto carga de forma diferida. Preferí AVIF/WebP y siempre un `alt` en español (vacío si es decorativa).
 - **Rendimiento y seguridad**: assets con hash cacheados un año, HTML sin caché, y los headers `X-Content-Type-Options`, `Referrer-Policy` y `X-Frame-Options` en el servidor Node y en nginx.
 
-Para agregar una página que cumpla todo esto: ruta con `title` y `description`, entrada en `sitemap.xml`, un solo `h1`, imágenes con `ngSrc` y, si corresponde, JSON-LD. Los tests y el lint avisan si algo falta. La carpeta `.claude/skills/web-quality-review` incluye una skill de Claude Code que audita todo esto bajo demanda (con Lighthouse opcional); como complemento opcional existen skills de la comunidad como [claude-seo](https://github.com/AgriciDaniel/claude-seo) o [tvl-seo-geo-audit](https://academy.tvl.tech/en/skills/tvl-seo-geo-audit/), que no se incluyen en el template.
+Para agregar una página que cumpla todo esto: ruta con `title` y `description`, entrada en `sitemap.xml`, un solo `h1`, imágenes con `ngSrc` y, si corresponde, JSON-LD. Los tests y el lint avisan si algo falta. La carpeta `.agents/skills/web-quality-review` incluye una skill para agentes de IA que audita todo esto bajo demanda (con Lighthouse opcional); como complemento opcional existen skills de la comunidad como [claude-seo](https://github.com/AgriciDaniel/claude-seo) o [tvl-seo-geo-audit](https://academy.tvl.tech/en/skills/tvl-seo-geo-audit/), que no se incluyen en el template.
 
 ---
 
@@ -210,6 +210,17 @@ e2e/                     specs de Playwright
 ```
 
 Para agregar una funcionalidad, creá `domains/<nombre>/pages/<nombre>-page/` y una ruta lazy en `app.routes.ts`. Los archivos y carpetas van en kebab-case; los tipos viven en carpetas `models/`.
+
+### Agentes de IA
+
+Este proyecto funciona con cualquier agente de IA para programar (Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI y otros), no solo con Claude:
+
+- `AGENTS.md` tiene las instrucciones del proyecto (comandos, convenciones y reglas). Es el archivo que leen la mayoría de los agentes; editá este.
+- `CLAUDE.md` solo contiene `@AGENTS.md`, para que Claude Code lea las mismas instrucciones.
+- `.agents/skills/` guarda los skills del proyecto (`web-quality-review` y, si lo elegiste al generar, `angular-developer`). `.claude/skills/` son enlaces a esa carpeta para Claude Code.
+
+Si tu agente no soporta skills, `AGENTS.md` indica leer `.agents/skills/web-quality-review/SKILL.md` como una guía de auditoría común.
+
 
 ---
 

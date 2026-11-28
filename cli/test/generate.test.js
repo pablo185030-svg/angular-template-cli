@@ -1,4 +1,5 @@
 import { deepStrictEqual, match, rejects, strictEqual } from 'node:assert';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { access, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -9,6 +10,8 @@ import {
   addEnvironments,
   configureKeycloak,
   generateProject,
+  installAngularSkill,
+  linkSkillsForClaude,
   replacePlaceholders,
 } from '../src/generate.js';
 import { makeTempDir, makeTemplates } from '../support/test-helpers.js';
@@ -158,12 +161,16 @@ test('a project generated from the real website template carries the web-quality
   await replacePlaceholders(target, 'my-shop');
   await assertNoPlaceholders(target, 'my-shop');
 
-  const skill = await readFile(join(target, '.claude', 'skills', 'web-quality-review', 'SKILL.md'), 'utf8');
+  const skill = await readFile(join(target, '.agents', 'skills', 'web-quality-review', 'SKILL.md'), 'utf8');
   match(skill, /^name: web-quality-review$/m);
-  const claude = await readFile(join(target, 'CLAUDE.md'), 'utf8');
-  match(claude, /^# my-shop \(public website\)/m);
-  match(claude, /^## SEO, GEO and web quality$/m);
-  match(claude, /rules in this file take precedence over it/);
+  const agents = await readFile(join(target, 'AGENTS.md'), 'utf8');
+  match(agents, /^# my-shop \(public website\)/m);
+  match(agents, /^## SEO, GEO and web quality$/m);
+  match(agents, /rules in this file take precedence over it/);
+  strictEqual((await readFile(join(target, 'CLAUDE.md'), 'utf8')).trim(), '@AGENTS.md');
+
+  await linkSkillsForClaude(target);
+  strictEqual(await readFile(join(target, '.claude', 'skills', 'web-quality-review', 'SKILL.md'), 'utf8'), skill);
   for (const file of ['robots.txt', 'sitemap.xml', 'llms.txt']) {
     await access(join(target, 'public', file));
   }
@@ -175,5 +182,40 @@ test('a project generated from the real backoffice template states that its rule
 
   await copyTemplate(join(import.meta.dirname, '..', '..', 'templates', 'backoffice'), target);
 
-  match(await readFile(join(target, 'CLAUDE.md'), 'utf8'), /rules in this file take precedence over it/);
+  match(await readFile(join(target, 'AGENTS.md'), 'utf8'), /rules in this file take precedence over it/);
+  strictEqual((await readFile(join(target, 'CLAUDE.md'), 'utf8')).trim(), '@AGENTS.md');
+});
+
+test('linkSkillsForClaude links each neutral skill, keeps existing ones and is idempotent', async () => {
+  const dir = await makeTempDir();
+  await mkdir(join(dir, '.agents', 'skills', 'one'), { recursive: true });
+  await mkdir(join(dir, '.agents', 'skills', 'two'), { recursive: true });
+  await writeFile(join(dir, '.agents', 'skills', 'one', 'SKILL.md'), 'one');
+  await writeFile(join(dir, '.agents', 'skills', 'two', 'SKILL.md'), 'two');
+  await mkdir(join(dir, '.claude', 'skills', 'two'), { recursive: true });
+  await writeFile(join(dir, '.claude', 'skills', 'two', 'SKILL.md'), 'custom');
+
+  await linkSkillsForClaude(dir);
+  await linkSkillsForClaude(dir);
+
+  strictEqual(await readFile(join(dir, '.claude', 'skills', 'one', 'SKILL.md'), 'utf8'), 'one');
+  strictEqual(await readFile(join(dir, '.claude', 'skills', 'two', 'SKILL.md'), 'utf8'), 'custom');
+});
+
+test('linkSkillsForClaude does nothing without neutral skills', async () => {
+  const dir = await makeTempDir();
+  await linkSkillsForClaude(dir);
+  await rejects(access(join(dir, '.claude')));
+});
+
+test('installAngularSkill leaves the skill in .agents/skills', async () => {
+  const dir = await makeTempDir();
+  installAngularSkill(dir, (_args, cwd) => {
+    mkdirSync(join(cwd, '.claude', 'skills', 'angular-developer'), { recursive: true });
+    writeFileSync(join(cwd, '.claude', 'skills', 'angular-developer', 'SKILL.md'), 'angular');
+  });
+  await linkSkillsForClaude(dir);
+
+  strictEqual(await readFile(join(dir, '.agents', 'skills', 'angular-developer', 'SKILL.md'), 'utf8'), 'angular');
+  strictEqual(await readFile(join(dir, '.claude', 'skills', 'angular-developer', 'SKILL.md'), 'utf8'), 'angular');
 });

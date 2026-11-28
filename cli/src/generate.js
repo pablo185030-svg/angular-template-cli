@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
-import { cp, mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { existsSync, lstatSync, mkdirSync, renameSync } from 'node:fs';
+import { cp, mkdir, readFile, readdir, stat, symlink, writeFile } from 'node:fs/promises';
+import { join, relative } from 'node:path';
 import { EXCLUDED_NAMES, TEMPLATE_NAME } from './constants.js';
 
 /**
@@ -133,13 +134,47 @@ export function installDependencies(directory, runNpm = defaultRunNpm) {
 export const ANGULAR_SKILL_REPO = 'https://github.com/angular/skills';
 
 /**
- * Installs the official Angular skill (`angular-developer`) into the project's `.claude/skills/`
- * with the `skills` CLI. Files are copied (not symlinked) so they can be committed.
+ * Installs the official Angular skill (`angular-developer`) with the `skills` CLI and leaves it in the
+ * agent-neutral `.agents/skills/`. The CLI copies it (not symlinks) into `.claude/skills/`, so the real
+ * folder is moved to `.agents/skills/` and `linkSkillsForClaude` exposes it to Claude Code again.
  * @param {string} directory - Generated project directory.
  * @param {(args: string[], cwd: string) => void} [runSkills] - `npx` runner, injectable for tests.
  */
 export function installAngularSkill(directory, runSkills = defaultRunSkills) {
   runSkills(['-y', 'skills', 'add', ANGULAR_SKILL_REPO, '-s', 'angular-developer', '-a', 'claude-code', '--copy', '-y'], directory);
+  const claudeCopy = join(directory, '.claude', 'skills', 'angular-developer');
+  const neutral = join(directory, '.agents', 'skills', 'angular-developer');
+  if (existsSync(claudeCopy) && !lstatSync(claudeCopy).isSymbolicLink() && !existsSync(neutral)) {
+    mkdirSync(join(directory, '.agents', 'skills'), { recursive: true });
+    renameSync(claudeCopy, neutral);
+  }
+}
+
+/**
+ * Exposes every skill in `.agents/skills/` to Claude Code under `.claude/skills/`: a relative symlink,
+ * or a copy where symlinks are not allowed. Skills already present in `.claude/skills/` are left alone.
+ * @param {string} directory - Generated project directory.
+ */
+export async function linkSkillsForClaude(directory) {
+  const source = join(directory, '.agents', 'skills');
+  let skills;
+  try {
+    skills = await readdir(source, { withFileTypes: true });
+  } catch (error) {
+    if (error.code === 'ENOENT') return;
+    throw error;
+  }
+  const target = join(directory, '.claude', 'skills');
+  await mkdir(target, { recursive: true });
+  for (const skill of skills.filter((entry) => entry.isDirectory())) {
+    const link = join(target, skill.name);
+    if (existsSync(link)) continue;
+    try {
+      await symlink(relative(target, join(source, skill.name)), link, 'dir');
+    } catch {
+      await cp(join(source, skill.name), link, { recursive: true });
+    }
+  }
 }
 
 function defaultRunSkills(args, cwd) {
@@ -340,6 +375,8 @@ export async function generateProject({
       }
     });
   }
+
+  await linkSkillsForClaude(targetDir);
 
   let installed = false;
   if (install) {

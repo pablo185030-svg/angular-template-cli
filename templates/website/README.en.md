@@ -183,7 +183,7 @@ The template is ready for search engines and AI answer engines (GEO), and follow
 - **Images**: use `NgOptimizedImage` (`ngSrc`) with `width` and `height`; lint fails on a plain `<img src>`. `priority` only on the largest image visible without scrolling (LCP); the rest loads lazily. Prefer AVIF/WebP and always a Spanish `alt` (empty when decorative).
 - **Performance and security**: hashed assets cached for a year, HTML not cached, and the `X-Content-Type-Options`, `Referrer-Policy` and `X-Frame-Options` headers on the Node server and in nginx.
 
-To add a page that meets all of this: a route with `title` and `description`, an entry in `sitemap.xml`, a single `h1`, images with `ngSrc` and, when relevant, JSON-LD. Tests and lint tell you when something is missing. The `.claude/skills/web-quality-review` folder holds a Claude Code skill that audits all of it on demand (Lighthouse optional); community skills such as [claude-seo](https://github.com/AgriciDaniel/claude-seo) or [tvl-seo-geo-audit](https://academy.tvl.tech/en/skills/tvl-seo-geo-audit/) are optional extras and are not included in the template.
+To add a page that meets all of this: a route with `title` and `description`, an entry in `sitemap.xml`, a single `h1`, images with `ngSrc` and, when relevant, JSON-LD. Tests and lint tell you when something is missing. The `.agents/skills/web-quality-review` folder holds an AI agent skill that audits all of it on demand (Lighthouse optional); community skills such as [claude-seo](https://github.com/AgriciDaniel/claude-seo) or [tvl-seo-geo-audit](https://academy.tvl.tech/en/skills/tvl-seo-geo-audit/) are optional extras and are not included in the template.
 
 ---
 
@@ -210,6 +210,17 @@ e2e/                     Playwright specs
 ```
 
 To add a feature, create `domains/<name>/pages/<name>-page/` and a lazy route in `app.routes.ts`. Files and folders are kebab-case; types live in `models/` folders.
+
+### AI agents
+
+This project works with any AI coding agent (Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI and others), not only Claude:
+
+- `AGENTS.md` holds the project instructions (commands, conventions and rules). Most agents read it; edit this one.
+- `CLAUDE.md` only contains `@AGENTS.md`, so Claude Code reads the same instructions.
+- `.agents/skills/` holds the project skills (`web-quality-review` and, if you chose it when generating, `angular-developer`). `.claude/skills/` are links to that folder for Claude Code.
+
+If your agent does not support skills, `AGENTS.md` tells it to read `.agents/skills/web-quality-review/SKILL.md` as a plain audit guide.
+
 
 ---
 

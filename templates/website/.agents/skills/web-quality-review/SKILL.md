@@ -5,7 +5,7 @@ description: Audit this website for SEO, GEO (AI answer engine visibility), acce
 
 # Web quality review
 
-Audit the site against the rules in the "SEO, GEO and web quality" section of `CLAUDE.md`. Read that section first: it is the source of truth, and this skill only says how to check it. Report problems, do not fix them unless the user asks.
+Audit the site against the rules in the "SEO, GEO and web quality" section of `AGENTS.md`. Read that section first: it is the source of truth, and this skill only says how to check it. Report problems, do not fix them unless the user asks.
 
 ## 1. Know the project
 

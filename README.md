@@ -13,12 +13,12 @@ Dos templates de proyecto Angular 22 listos para usar en apps de Coto, con estil
 
 Ambos son apps zoneless con componentes standalone, con ESLint, Prettier, Vitest, Husky + lint-staged, un Dockerfile y configuración de nginx, y ejemplos de e2e con Playwright. Cada template es un proyecto Angular normal que compila y se testea por sí solo.
 
-El sitio público viene preparado para SEO, GEO (visibilidad en motores de respuesta con IA), accesibilidad y rendimiento, y esas reglas se hacen cumplir con tests, lint y una skill de Claude Code:
+El sitio público viene preparado para SEO, GEO (visibilidad en motores de respuesta con IA), accesibilidad y rendimiento, y esas reglas se hacen cumplir con tests, lint y una skill para agentes de IA:
 
 - **Metadatos por ruta** (título, descripción, canonical, Open Graph, Twitter, `noindex`), `robots.txt`, `sitemap.xml`, `llms.txt` y datos estructurados JSON-LD, todos derivados de una única `siteUrl` que el wizard te pide al generar (`--site-url`) o que definís después con `npm run configure:seo`. Mientras quede el dominio de ejemplo, `npm run build` falla.
 - **404 real** con SSR, headers de seguridad y caché correcta (assets con hash por un año, HTML sin caché).
 - **Accesibilidad WCAG 2.2 AA** verificada con axe en e2e, enlace "Saltar al contenido" y un único `h1` por página; **imágenes** con `NgOptimizedImage` obligatorio por lint.
-- Un `CLAUDE.md` con la checklist por página y la skill `web-quality-review` (`.claude/skills/`) para auditar todo bajo demanda; ambos se copian a cada proyecto generado.
+- Un `AGENTS.md` (con un `CLAUDE.md` que lo importa) con la checklist por página y la skill `web-quality-review` (`.agents/skills/`, enlazada en `.claude/skills/`) para auditar todo bajo demanda; ambos se copian a cada proyecto generado.
 
 El detalle está en el README del template (`templates/website/README.md`, sección "SEO, GEO y calidad web").
 
@@ -26,6 +26,7 @@ El detalle está en el README del template (`templates/website/README.md`, secci
 
 - [Requisitos](#requirements)
 - [Crear un proyecto](#create-a-project)
+- [Agentes de IA](#ai-agents)
 - [Desarrollar los templates](#develop-the-templates)
 - [Estructura del repositorio](#repository-layout)
 
@@ -115,6 +116,21 @@ npm run create -- --type backoffice --name my-admin --yes --no-mock-api --dark-m
 
 El CLI se niega a escribir en un directorio que no esté vacío.
 
+<a id="ai-agents"></a>
+
+## Agentes de IA
+
+Los proyectos generados funcionan con cualquier agente de IA para programar (Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI y otros), no solo con Claude. No hay nada que elegir en el wizard: siempre se genera el mismo esquema neutral.
+
+| Archivo o carpeta | Para qué sirve |
+| ----------------- | -------------- |
+| `AGENTS.md` | Instrucciones del proyecto (comandos, convenciones, checklist de SEO). Es el estándar que leen la mayoría de los agentes. |
+| `CLAUDE.md` | Contiene solo `@AGENTS.md`, para que Claude Code lea las mismas instrucciones sin duplicarlas. |
+| `.agents/skills/` | Skills del proyecto (`web-quality-review` en el sitio público y, si lo elegís, `angular-developer`). Es la ubicación neutral. |
+| `.claude/skills/` | Enlaces (symlinks) a `.agents/skills/`, para que Claude Code descubra los skills. En Windows sin permiso para symlinks se copian las carpetas. |
+
+Si tu agente no soporta skills, igual cumple las reglas: `AGENTS.md` indica leer el `SKILL.md` de `.agents/skills/web-quality-review` como una guía de auditoría común. Las reglas de `AGENTS.md` prevalecen sobre el skill oficial de Angular. Editá solo `AGENTS.md` y `.agents/skills/`; `CLAUDE.md` y `.claude/skills/` no se tocan.
+
 <a id="develop-the-templates"></a>
 
 ## Desarrollar los templates
@@ -136,7 +152,7 @@ npm run verify:quick    # sin Playwright
 
 `node scripts/verify-templates.mjs --template website --only lint,test` ejecuta un subconjunto. Una corrida completa también genera un backoffice con `--no-mock-api --dark-mode` y lo verifica (se omite con `--skip-variant`). El script termina con código distinto de cero si falla algún paso.
 
-Cada template tiene un `README.md` (español, por defecto) y un `README.en.md` (copia en inglés), ambos se generan en cada proyecto nuevo, y un `CLAUDE.md` (comandos, estructura y convenciones para asistentes de IA); mantenelos sincronizados. El nombre `coto-angular-template` es el placeholder que reemplaza el CLI, así que seguí usándolo en los archivos de los templates.
+Cada template tiene un `README.md` (español, por defecto) y un `README.en.md` (copia en inglés), ambos se generan en cada proyecto nuevo, y un `AGENTS.md` (comandos, estructura y convenciones para asistentes de IA; `CLAUDE.md` solo lo importa); mantenelos sincronizados. El nombre `coto-angular-template` es el placeholder que reemplaza el CLI, así que seguí usándolo en los archivos de los templates.
 
 <a id="repository-layout"></a>
 

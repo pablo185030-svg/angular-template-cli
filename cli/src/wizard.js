@@ -328,8 +328,8 @@ export async function resolveOptions({ flags, interactive, prompts, defaultOutDi
       fallback: false,
       initial: false,
       message:
-        '¿Querés instalar el skill oficial de Angular (angular-developer) para Claude Code? Se descarga de github.com/angular/skills con npx, ' +
-        'así que necesita red; si falla, el proyecto igual queda generado. Las reglas del CLAUDE.md del proyecto prevalecen sobre el skill.',
+        '¿Querés instalar el skill oficial de Angular (angular-developer)? Se descarga de github.com/angular/skills con npx, ' +
+        'así que necesita red; si falla, el proyecto igual queda generado. Las reglas del AGENTS.md del proyecto prevalecen sobre el skill.',
     }),
   ];
 
