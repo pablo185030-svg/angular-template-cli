@@ -1,4 +1,4 @@
-# public-template Specification
+# website-template Specification
 
 ## Purpose
 
@@ -7,30 +7,30 @@ Provides a simple but functional starting point for a public-facing website, ser
 ## Requirements
 
 ### Requirement: Buildable and runnable out of the box
-The public template SHALL install, build, run and pass its tests without any modification after generation, given access to the private registry.
+The website template SHALL install, build, run and pass its tests without any modification after generation, given access to the private registry.
 
 #### Scenario: Fresh project works
-- **WHEN** a project is generated from the public template and dependencies are installed
+- **WHEN** a project is generated from the website template and dependencies are installed
 - **THEN** the build, the unit tests and the lint check complete successfully
 - **AND** the development server serves the home page
 
 ### Requirement: Server-side rendering
-The public template SHALL render pages on the server and provide a production server entry point and container image definition.
+The website template SHALL render pages on the server and provide a production server entry point and container image definition.
 
 #### Scenario: Server-rendered response
 - **WHEN** the production server receives a request for the home page
 - **THEN** the response HTML contains the rendered page content
 
 ### Requirement: Folder scaffolding
-The public template SHALL organize application code into `core/` (app-wide singletons), `shared/` (reusable layouts and components) and `domains/` (one folder per feature area), with kebab-case folder and file names.
+The website template SHALL organize application code into `core/` (app-wide singletons), `shared/` (reusable layouts and components) and `domains/` (one folder per feature area), with kebab-case folder and file names.
 
 #### Scenario: Scaffolding present
-- **WHEN** a project is generated from the public template
+- **WHEN** a project is generated from the website template
 - **THEN** the application source contains `core/`, `shared/` and `domains/` directories
 - **AND** `domains/` contains one folder each for the home and about pages
 
 ### Requirement: Main layout
-The public template SHALL provide a main layout composed of a header, the routed page content and a footer, shared by all pages. The layout SHALL be responsive and mobile-first: no page SHALL scroll horizontally on a 320px wide viewport. From 768px wide up the header SHALL show the navigation links inline. Below 768px the header SHALL show an animated hamburger button that opens a drawer containing the navigation links and, when dark mode is enabled, the theme toggle.
+The website template SHALL provide a main layout composed of a header, the routed page content and a footer, shared by all pages. The layout SHALL be responsive and mobile-first: no page SHALL scroll horizontally on a 320px wide viewport. From 768px wide up the header SHALL show the navigation links inline. Below 768px the header SHALL show an animated hamburger button that opens a drawer containing the navigation links and, when dark mode is enabled, the theme toggle.
 
 #### Scenario: Layout on every page
 - **WHEN** the user visits any page of the application
@@ -59,7 +59,7 @@ The public template SHALL provide a main layout composed of a header, the routed
 - **THEN** the drawer and the hamburger icon change state without animation
 
 ### Requirement: Home and about pages
-The public template SHALL provide a home page at `/` and an about page at `/acerca-de`, both reachable through navigation links in the header. The home description SHALL link to the Coto UI Kit repository.
+The website template SHALL provide a home page at `/` and an about page at `/acerca-de`, both reachable through navigation links in the header. The home description SHALL link to the Coto UI Kit repository.
 
 #### Scenario: Navigate to about
 - **WHEN** the user activates the About link in the header
@@ -74,14 +74,14 @@ The public template SHALL provide a home page at `/` and an about page at `/acer
 - **THEN** the description names "Coto UI Kit" as a link to the ui-kit repository that opens in a new tab
 
 ### Requirement: README
-The public template SHALL include a Spanish README (`README.md`, the default) and an English copy (`README.en.md`), each linking to the other, that explain what it is, how to start it, its stack, commands, environments, server-side rendering settings, project structure and deployment.
+The website template SHALL include a Spanish README (`README.md`, the default) and an English copy (`README.en.md`), each linking to the other, that explain what it is, how to start it, its stack, commands, environments, server-side rendering settings, project structure and deployment.
 
 #### Scenario: README present
-- **WHEN** a project is generated from the public template
+- **WHEN** a project is generated from the website template
 - **THEN** it contains a README covering those topics
 
 ### Requirement: Shared design system usage
-The public template SHALL obtain its theme, typography and shared components from `@coto-dev/ui-kit` and MUST NOT define its own color palette.
+The website template SHALL obtain its theme, typography and shared components from `@coto-dev/ui-kit` and MUST NOT define its own color palette.
 
 #### Scenario: Theme from the ui-kit
 - **WHEN** the application styles are built
@@ -89,18 +89,18 @@ The public template SHALL obtain its theme, typography and shared components fro
 - **AND** the application source defines no color palette of its own
 
 ### Requirement: Minimal tooling baseline
-The public template SHALL include linting, formatting, unit testing with example specs, a pre-commit hook, a container definition with web server configuration, and one end-to-end test example.
+The website template SHALL include linting, formatting, unit testing with example specs, a pre-commit hook, a container definition with web server configuration, and one end-to-end test example.
 
 #### Scenario: Example tests pass
 - **WHEN** the unit test command and the end-to-end test command are run on a fresh project
 - **THEN** all example tests pass
 
 #### Scenario: Team policy tooling absent
-- **WHEN** a project is generated from the public template
+- **WHEN** a project is generated from the website template
 - **THEN** it contains no mutation testing, duplicate-code detection, Jira-ticket commit rules, CI pipeline file or service catalog file
 
 ### Requirement: Spanish user-facing text
-The public template SHALL render all user-visible text in Spanish, including navigation, page titles and bodies, the footer, the not-found page and accessible labels, and SHALL declare `lang="es"` on the document. Code, identifiers, routes and `data-testid` values SHALL remain in English.
+The website template SHALL render all user-visible text in Spanish, including navigation, page titles and bodies, the footer, the not-found page and accessible labels, and SHALL declare `lang="es"` on the document. Code, identifiers, routes and `data-testid` values SHALL remain in English.
 
 #### Scenario: Spanish navigation and pages
 - **WHEN** the user opens the home, about or an unknown page
@@ -111,7 +111,7 @@ The public template SHALL render all user-visible text in Spanish, including nav
 - **THEN** the `html` element has `lang="es"`
 
 ### Requirement: Optional dark mode
-The public template SHALL read a theme setting from its environment. When dark mode is enabled, the header SHALL show a toggle that switches between light and dark themes and remembers the choice, and the site SHALL start in light mode. When it is disabled, the site SHALL always use the light theme and show no toggle. Server-side rendering SHALL keep working in both cases.
+The website template SHALL read a theme setting from its environment. When dark mode is enabled, the header SHALL show a toggle that switches between light and dark themes and remembers the choice, and the site SHALL start in light mode. When it is disabled, the site SHALL always use the light theme and show no toggle. Server-side rendering SHALL keep working in both cases.
 
 #### Scenario: Toggle between themes
 - **WHEN** dark mode is enabled and the user activates the header toggle
@@ -129,7 +129,7 @@ When dark mode is enabled, the theme toggle SHALL be an icon button that shows a
 - **THEN** the sun icon animates into the moon icon, or the reverse, while the theme changes
 
 ### Requirement: Rendering mode script
-The public template SHALL ship a `configure:rendering` script that converts the project from SSR to SSG or SPA, and SHALL itself remain server-side rendered. For SSG it SHALL configure static prerendering of every route and replace the container and web server definitions with a static one. For SPA it SHALL build a client-only app, remove the server entry point, server configuration and server-only dependencies, and replace the container and web server definitions with a static one that falls back to `index.html`. The script SHALL refuse to run on a project that is no longer SSR, and SHALL accept only `ssg` and `spa`.
+The website template SHALL ship a `configure:rendering` script that converts the project from SSR to SSG or SPA, and SHALL itself remain server-side rendered. For SSG it SHALL configure static prerendering of every route and replace the container and web server definitions with a static one. For SPA it SHALL build a client-only app, remove the server entry point, server configuration and server-only dependencies, and replace the container and web server definitions with a static one that falls back to `index.html`. The script SHALL refuse to run on a project that is no longer SSR, and SHALL accept only `ssg` and `spa`.
 
 #### Scenario: Convert to SSG
 - **WHEN** `npm run configure:rendering -- --mode ssg` runs on the shipped template
@@ -150,7 +150,7 @@ The public template SHALL ship a `configure:rendering` script that converts the 
 - **THEN** it is server-side rendered as before
 
 ### Requirement: App version display
-The public template SHALL show the version declared in its `package.json` in the footer, and SHALL print a single styled banner in the browser console once after the first render, with the project name, the environment name, the version and the load time. The banner SHALL NOT be printed during server-side rendering.
+The website template SHALL show the version declared in its `package.json` in the footer, and SHALL print a single styled banner in the browser console once after the first render, with the project name, the environment name, the version and the load time. The banner SHALL NOT be printed during server-side rendering.
 
 #### Scenario: Version in the footer
 - **WHEN** any page is displayed

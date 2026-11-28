@@ -17,7 +17,7 @@ async function project(type) {
 
 const read = (dir, file) => readFile(join(dir, 'src', 'environments', file), 'utf8');
 
-for (const type of ['public', 'backoffice']) {
+for (const type of ['website', 'backoffice']) {
   test(`${type}: ships light only`, async () => {
     match(await readFile(join(TEMPLATES, type, 'src', 'environments', 'environment.ts'), 'utf8'), /darkMode: false/);
   });
@@ -38,7 +38,7 @@ for (const type of ['public', 'backoffice']) {
 
 test('the theme script is identical in both templates', async () => {
   const [a, b] = await Promise.all(
-    ['public', 'backoffice'].map((type) => readFile(join(TEMPLATES, type, 'scripts', 'configure-theme.mjs'), 'utf8')),
+    ['website', 'backoffice'].map((type) => readFile(join(TEMPLATES, type, 'scripts', 'configure-theme.mjs'), 'utf8')),
   );
 
   strictEqual(a, b);

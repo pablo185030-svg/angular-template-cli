@@ -146,7 +146,7 @@ The CLI SHALL run on macOS, Linux and Windows with only Node.js installed, and S
 - **THEN** it generates the same project content as on macOS or Linux
 
 ### Requirement: Optional mock API for the backoffice
-When the app type is backoffice, the wizard SHALL ask whether to include the mock API, explaining in Spanish, in at most three short sentences, what it is (a local server that simulates the products API so the example works without a backend) and what happens if it is declined (the products load from a JSON file and changes are lost on reload). The default SHALL be to include it. The `--no-mock-api` flag SHALL answer the question negatively and SHALL be rejected for the public template.
+When the app type is backoffice, the wizard SHALL ask whether to include the mock API, explaining in Spanish, in at most three short sentences, what it is (a local server that simulates the products API so the example works without a backend) and what happens if it is declined (the products load from a JSON file and changes are lost on reload). The default SHALL be to include it. The `--no-mock-api` flag SHALL answer the question negatively and SHALL be rejected for the website template.
 
 #### Scenario: Include the mock API
 - **WHEN** the user generates a backoffice and accepts the default
@@ -157,7 +157,7 @@ When the app type is backoffice, the wizard SHALL ask whether to include the moc
 - **THEN** the project contains no mock API server or `mock:api` script
 - **AND** the products example is configured to use the JSON data source
 
-#### Scenario: Not asked for the public template
+#### Scenario: Not asked for the website template
 - **WHEN** the user generates a public site
 - **THEN** the wizard does not ask about the mock API
 
@@ -260,7 +260,7 @@ The wizard SHALL ask whether to install dependencies now, defaulting to no, warn
 When the app type is the public website, the wizard SHALL ask how the site is rendered, offering SSR (server-side rendering), SSG (static prerendering, no Node server) and SPA (client only), explaining each in Spanish and warning that SPA loses SEO. The default SHALL be SSR. The `--rendering <ssr|ssg|spa>` flag SHALL answer the question, SHALL be validated against those values, and SHALL be rejected for the backoffice. The question SHALL NOT be asked for the backoffice.
 
 #### Scenario: SSR by default
-- **WHEN** the user generates a public website and accepts the default
+- **WHEN** the user generates a website and accepts the default
 - **THEN** the project is the unchanged server-side rendered template
 
 #### Scenario: Choose SSG or SPA
@@ -283,10 +283,10 @@ Without a terminal or with `--yes`, the wizard SHALL NOT ask the rendering mode 
 - **THEN** the project keeps server-side rendering
 
 ### Requirement: Rendering mode in the summary
-For a public website, the final summary SHALL state the chosen rendering mode. When the mode is SSR it SHALL also show how to convert it later with `npm run configure:rendering`; when it is SSG or SPA it SHALL say that going back to SSR means regenerating the project or using git.
+For a website, the final summary SHALL state the chosen rendering mode. When the mode is SSR it SHALL also show how to convert it later with `npm run configure:rendering`; when it is SSG or SPA it SHALL say that going back to SSR means regenerating the project or using git.
 
 #### Scenario: Summary note
-- **WHEN** a public website is generated
+- **WHEN** a website is generated
 - **THEN** the summary names the rendering mode
 - **AND** for SSR it shows the command to convert it later, and for SSG or SPA it explains how to go back
 
@@ -299,7 +299,7 @@ In an interactive terminal the wizard SHALL let the user press Esc to return to 
 - **AND** changing it and continuing uses the new value
 
 #### Scenario: Back skips questions that were not asked
-- **WHEN** the user generates a public website and presses Esc on the first question after the dark mode question
+- **WHEN** the user generates a website and presses Esc on the first question after the dark mode question
 - **THEN** the dark mode question is shown, not the Keycloak or mock API questions
 
 #### Scenario: Back over flag-provided answers
@@ -369,14 +369,14 @@ The domain question SHALL say that the domain is asked for SEO, that pressing En
 - **THEN** it also explains that canonical, sitemap and metadata still use the domain despite the limited SEO
 
 ### Requirement: Production domain in the summary
-For a public website, the final summary SHALL state the configured domain and remind the user to add its hostname to `ssr.allowedHosts` when the site is server-rendered. When no domain was given, it SHALL warn that the production build fails until `npm run configure:seo -- --site-url <url>` runs.
+For a website, the final summary SHALL state the configured domain and remind the user to add its hostname to `ssr.allowedHosts` when the site is server-rendered. When no domain was given, it SHALL warn that the production build fails until `npm run configure:seo -- --site-url <url>` runs.
 
 #### Scenario: Summary with a domain
-- **WHEN** a public website is generated with a domain
+- **WHEN** a website is generated with a domain
 - **THEN** the summary names the domain
 
 #### Scenario: Summary without a domain
-- **WHEN** a public website is generated without a domain
+- **WHEN** a website is generated without a domain
 - **THEN** the summary warns that `npm run build` fails until `configure:seo` is run with the real domain
 
 ### Requirement: Redirect URIs in the summary

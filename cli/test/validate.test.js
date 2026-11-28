@@ -16,7 +16,7 @@ test('rejects invalid project names with a message', () => {
 });
 
 test('validates the app type', () => {
-  strictEqual(validateAppType('public'), undefined);
+  strictEqual(validateAppType('website'), undefined);
   strictEqual(validateAppType('backoffice'), undefined);
   strictEqual(typeof validateAppType('mobile'), 'string');
   strictEqual(typeof validateAppType(undefined), 'string');

@@ -1,4 +1,4 @@
-# public-seo Specification
+# website-seo Specification
 
 ## Purpose
 
@@ -7,7 +7,7 @@ Makes every page of the public website template discoverable and citable by sear
 ## Requirements
 
 ### Requirement: Site URL setting
-The public template SHALL read the public base URL of the site from a single `siteUrl` setting in its environments. Every absolute URL the template emits (canonical, social tags, sitemap, structured data) SHALL be derived from it. The shipped value SHALL be an obvious placeholder.
+The website template SHALL read the public base URL of the site from a single `siteUrl` setting in its environments. Every absolute URL the template emits (canonical, social tags, sitemap, structured data) SHALL be derived from it. The shipped value SHALL be an obvious placeholder.
 
 #### Scenario: One source of truth
 - **WHEN** `siteUrl` is changed in the environments
@@ -19,7 +19,7 @@ The public template SHALL read the public base URL of the site from a single `si
 - **AND** a value that is not an absolute http(s) URL makes the script exit with an error and change nothing
 
 ### Requirement: Per-route title and description
-Every routed page of the public template SHALL declare a Spanish title and a Spanish meta description. The document title SHALL be the page title followed by the site name. The metadata SHALL be present in the server-rendered HTML and SHALL change when the user navigates.
+Every routed page of the website template SHALL declare a Spanish title and a Spanish meta description. The document title SHALL be the page title followed by the site name. The metadata SHALL be present in the server-rendered HTML and SHALL change when the user navigates.
 
 #### Scenario: Server-rendered metadata
 - **WHEN** the server renders the about page
@@ -100,7 +100,7 @@ The SEO behavior SHALL keep working after `configure:rendering` converts the pro
 - **THEN** `robots.txt`, `sitemap.xml` and `llms.txt` are part of the build output
 
 ### Requirement: Placeholder domain guard
-The public template SHALL refuse a production build while the site URL is still a placeholder (`example.com`, `example.org` or `example.net`) in the production environment or in `robots.txt`, `sitemap.xml` or `llms.txt`. The check SHALL name every offending file and the `configure:seo` command, SHALL run automatically before `npm run build` only, and SHALL be skippable with `ALLOW_PLACEHOLDER_SITE_URL=1`.
+The website template SHALL refuse a production build while the site URL is still a placeholder (`example.com`, `example.org` or `example.net`) in the production environment or in `robots.txt`, `sitemap.xml` or `llms.txt`. The check SHALL name every offending file and the `configure:seo` command, SHALL run automatically before `npm run build` only, and SHALL be skippable with `ALLOW_PLACEHOLDER_SITE_URL=1`.
 
 #### Scenario: Placeholder in production build
 - **WHEN** `npm run build` runs on a project whose `siteUrl` is still `https://www.example.com`

@@ -29,7 +29,7 @@ async function setup() {
   };
 }
 
-const BASE = ['--type', 'public', '--name', 'my-site', '--yes'];
+const BASE = ['--type', 'website', '--name', 'my-site', '--yes'];
 
 test('without flags nothing new happens: no remote, no commit, no install', async () => {
   const { cwd, templatesDir, write, runGit, runNpm, gitCalls, npmCalls, output } = await setup();
@@ -99,7 +99,7 @@ test('a failing install is reported but does not abort and the summary lists npm
 test('the initial commit adds everything; a failing commit is only a warning', async () => {
   // Without a terminal the commit is off, so the commit itself is exercised through the guided flow.
   const { cwd, templatesDir, write, runGit, runNpm, gitCalls } = await setup();
-  const prompts = fakePrompts(['public', 'my-site', cwd, false, 'ssr', '', false, true, false]);
+  const prompts = fakePrompts(['website', 'my-site', cwd, false, 'ssr', '', false, true, false]);
   const reporterFactory = () => createPlainReporter(write);
 
   const code = await run([], { templatesDir, cwd, write, isTTY: true, prompts, reporterFactory, runGit, runNpm });
@@ -113,7 +113,7 @@ test('the initial commit adds everything; a failing commit is only a warning', a
     cwd: failing.cwd,
     write: failing.write,
     isTTY: true,
-    prompts: fakePrompts(['public', 'my-site', failing.cwd, false, 'ssr', '', false, true, false]),
+    prompts: fakePrompts(['website', 'my-site', failing.cwd, false, 'ssr', '', false, true, false]),
     reporterFactory: () => createPlainReporter(failing.write),
     runNpm: failing.runNpm,
     runGit: (args) => { if (args[0] === 'commit') throw new Error('no identity'); },
@@ -124,7 +124,7 @@ test('the initial commit adds everything; a failing commit is only a warning', a
 
 test('--no-commit declines the commit even in the guided flow, without asking', async () => {
   const { cwd, templatesDir, write, runGit, runNpm, gitCalls } = await setup();
-  const prompts = fakePrompts(['public', 'my-site', cwd, false, 'ssr', false, false, false]);
+  const prompts = fakePrompts(['website', 'my-site', cwd, false, 'ssr', false, false, false]);
 
   await run(['--no-commit'], {
     templatesDir, cwd, write, isTTY: true, prompts, runGit, runNpm,
@@ -144,7 +144,7 @@ test('--install and --no-install together are rejected', async () => {
 test('the guided flow asks the location (default: the sibling folder) and uses it', async () => {
   const { cwd, templatesDir, write, runGit, runNpm } = await setup();
   const elsewhere = join(cwd, 'elsewhere');
-  const prompts = fakePrompts(['public', 'my-site', elsewhere, false, 'ssr', false, false, false]);
+  const prompts = fakePrompts(['website', 'my-site', elsewhere, false, 'ssr', false, false, false]);
 
   const code = await run([], {
     templatesDir, cwd, write, isTTY: true, prompts, runGit, runNpm,
@@ -159,7 +159,7 @@ test('the guided flow asks the location (default: the sibling folder) and uses i
 
 test('remote and install prompts explain themselves and validate', async () => {
   const { cwd, templatesDir, write, runGit, runNpm } = await setup();
-  const prompts = fakePrompts(['public', 'my-site', cwd, false, 'ssr', '', true, 'git@h:o/r.git', false, true]);
+  const prompts = fakePrompts(['website', 'my-site', cwd, false, 'ssr', '', true, 'git@h:o/r.git', false, true]);
 
   await run([], {
     templatesDir, cwd, write, isTTY: true, prompts, runGit, runNpm,
@@ -181,7 +181,7 @@ test('validateRemoteUrl rejects empty values and spaces', () => {
 });
 
 test('the summary leaves out npm install when installed and handles remote without a commit', () => {
-  const base = { name: 'a-b', type: 'public', targetDir: '/x/a-b' };
+  const base = { name: 'a-b', type: 'website', targetDir: '/x/a-b' };
   const installed = buildSummary({ ...base, installed: true }).lines.join('\n');
   const noCommit = buildSummary({ ...base, remote: 'u', committed: false }).lines.join('\n');
   const committed = buildSummary({ ...base, remote: 'u', committed: true }).lines.join('\n');

@@ -1,8 +1,8 @@
-# public-agent-guidance Specification
+# website-agent-guidance Specification
 
 ## Purpose
 
-Ensures AI coding agents working in a project generated from the public template follow its SEO, GEO and web-quality rules, through concise project instructions and an on-demand audit skill that ship with every generated project.
+Ensures AI coding agents working in a project generated from the website template follow its SEO, GEO and web-quality rules, through concise project instructions and an on-demand audit skill that ship with every generated project.
 
 ## Requirements
 
@@ -10,7 +10,7 @@ Ensures AI coding agents working in a project generated from the public template
 The template's `CLAUDE.md` SHALL contain an SEO, GEO and web-quality section with a per-page checklist covering route title and description, sitemap entry, a single `h1`, semantic landmarks, image rules, structured data and accessibility. It SHALL tell agents to use the SEO service instead of touching the document directly, and to run the audit skill before finishing a UI change.
 
 #### Scenario: Checklist present
-- **WHEN** a project is generated from the public template
+- **WHEN** a project is generated from the website template
 - **THEN** its `CLAUDE.md` contains the web-quality section with the per-page checklist
 
 #### Scenario: Instructions stay in sync

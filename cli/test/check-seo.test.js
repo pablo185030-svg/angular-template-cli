@@ -5,10 +5,10 @@ import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { makeTempDir } from '../support/test-helpers.js';
-import { applySiteUrl } from '../../templates/public/scripts/configure-seo.mjs';
-import { findPlaceholderUrls } from '../../templates/public/scripts/check-seo.mjs';
+import { applySiteUrl } from '../../templates/website/scripts/configure-seo.mjs';
+import { findPlaceholderUrls } from '../../templates/website/scripts/check-seo.mjs';
 
-const TEMPLATE = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'templates', 'public');
+const TEMPLATE = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'templates', 'website');
 const SCRIPT = join(TEMPLATE, 'scripts', 'check-seo.mjs');
 
 /** A copy of the files the check reads, in the real template layout. */

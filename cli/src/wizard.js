@@ -85,15 +85,15 @@ export async function resolveOptions({ flags, interactive, prompts, defaultOutDi
   if (flags.rendering !== undefined) {
     const error = validateRendering(flags.rendering);
     if (error) throw new UsageError(error);
-    if (type !== undefined && type !== 'public') {
-      throw new UsageError('--rendering solo aplica al tipo public (sitio web).');
+    if (type !== undefined && type !== 'website') {
+      throw new UsageError('--rendering solo aplica al tipo website (sitio web).');
     }
   }
   if (flags.siteUrl !== undefined) {
     const error = validateSiteUrl(flags.siteUrl);
     if (error) throw new UsageError(`--site-url: ${error}`);
-    if (type !== undefined && type !== 'public') {
-      throw new UsageError('--site-url solo aplica al tipo public (sitio web).');
+    if (type !== undefined && type !== 'website') {
+      throw new UsageError('--site-url solo aplica al tipo website (sitio web).');
     }
   }
 
@@ -138,9 +138,9 @@ export async function resolveOptions({ flags, interactive, prompts, defaultOutDi
           if (keycloakFlags) throw new UsageError('Las opciones de Keycloak solo aplican al tipo backoffice.');
           if (flags.mockApi === false) throw new UsageError('--no-mock-api solo aplica al tipo backoffice.');
         } else if (flags.rendering !== undefined) {
-          throw new UsageError('--rendering solo aplica al tipo public (sitio web).');
+          throw new UsageError('--rendering solo aplica al tipo website (sitio web).');
         } else if (flags.siteUrl !== undefined) {
-          throw new UsageError('--site-url solo aplica al tipo public (sitio web).');
+          throw new UsageError('--site-url solo aplica al tipo website (sitio web).');
         }
       },
     },
@@ -245,10 +245,15 @@ export async function resolveOptions({ flags, interactive, prompts, defaultOutDi
           'select',
           {
             message:
-              '¿Cómo querés renderizar el sitio? Podés empezar en SSR y pasar a SSG o SPA más adelante con npm run configure:rendering, pero no volver atrás: para eso hay que regenerar el proyecto.\n\n' +
-              renderingGuide(),
+              '¿Cómo querés renderizar el sitio?\n\n' +
+              renderingGuide() +
+              '\n\n' +
+              pc.dim(
+                'Nota: podés empezar en SSR y pasar a SSG o SPA más adelante con npm run configure:rendering, pero no volver atrás: para eso hay que regenerar el proyecto.',
+              ) +
+              '\n',
             initialValue: answers.rendering ?? DEFAULT_RENDERING,
-            options: RENDERING_MODES.map(({ value, label, hint }) => ({ value, label, hint })),
+            options: RENDERING_MODES.map(({ value, label }) => ({ value, label })),
           },
           canGoBack,
         ),

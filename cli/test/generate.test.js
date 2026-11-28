@@ -21,7 +21,7 @@ test('copies a template without node_modules and build output', async () => {
   const templates = await makeTemplates(root);
   const target = join(root, 'out');
 
-  await copyTemplate(join(templates, 'public'), target);
+  await copyTemplate(join(templates, 'website'), target);
 
   deepStrictEqual((await readdir(target)).sort(), ['logo.bin', 'package.json', 'public', 'scripts', 'src']);
 });
@@ -30,7 +30,7 @@ test('replaces the placeholder in text files and leaves binary files untouched',
   const root = await makeTempDir();
   const templates = await makeTemplates(root);
   const target = join(root, 'out');
-  await copyTemplate(join(templates, 'public'), target);
+  await copyTemplate(join(templates, 'website'), target);
 
   const changed = await replacePlaceholders(target, 'my-shop');
 
@@ -65,7 +65,7 @@ test('rejects a non-empty target directory and does not modify it', async () => 
   await writeFile(join(target, 'keep.txt'), 'mine');
 
   await rejects(
-    generateProject({ templateDir: join(templates, 'public'), targetDir: target, projectName: 'taken', runStep }),
+    generateProject({ templateDir: join(templates, 'website'), targetDir: target, projectName: 'taken', runStep }),
     /ya existe y no está vacío/,
   );
 
@@ -111,7 +111,7 @@ test('uses path APIs only: works with a target inside a path with spaces', async
   const templates = await makeTemplates(root);
   const target = join(root, 'dir with spaces', 'my-shop');
 
-  await generateProject({ templateDir: join(templates, 'public'), targetDir: target, projectName: 'my-shop', runStep });
+  await generateProject({ templateDir: join(templates, 'website'), targetDir: target, projectName: 'my-shop', runStep });
 
   strictEqual(JSON.parse(await readFile(join(target, 'package.json'), 'utf8')).name, 'my-shop');
 });
@@ -149,10 +149,10 @@ test('runs one script call per environment', () => {
   deepStrictEqual(calls, ['dev', 'qa']);
 });
 
-test('a project generated from the real public template carries the web-quality guidance', async () => {
+test('a project generated from the real website template carries the web-quality guidance', async () => {
   const root = await makeTempDir();
   const target = join(root, 'my-shop');
-  const template = join(import.meta.dirname, '..', '..', 'templates', 'public');
+  const template = join(import.meta.dirname, '..', '..', 'templates', 'website');
 
   await copyTemplate(template, target);
   await replacePlaceholders(target, 'my-shop');

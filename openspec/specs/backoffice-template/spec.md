@@ -15,7 +15,7 @@ The backoffice template SHALL install, build, run and pass its tests without any
 - **AND** the development server serves the application
 
 ### Requirement: Folder scaffolding and layout
-The backoffice template SHALL use the same `core/`, `shared/` and `domains/` organization and the same main layout (header, routed content, footer) as the public template, with kebab-case names. Its home description SHALL link to the Coto UI Kit repository. The layout SHALL be responsive and mobile-first with the same header behavior as the public template: inline navigation from 768px wide up, and below 768px an animated hamburger button that opens a drawer. In the backoffice the drawer SHALL also contain the user area (theme toggle when dark mode is enabled, demo badge in demo mode, user name and logout button), which is shown inline in the header from 768px up. No page, including the products list and the product form, SHALL scroll the page horizontally on a 320px wide viewport.
+The backoffice template SHALL use the same `core/`, `shared/` and `domains/` organization and the same main layout (header, routed content, footer) as the website template, with kebab-case names. Its home description SHALL link to the Coto UI Kit repository. The layout SHALL be responsive and mobile-first with the same header behavior as the website template: inline navigation from 768px wide up, and below 768px an animated hamburger button that opens a drawer. In the backoffice the drawer SHALL also contain the user area (theme toggle when dark mode is enabled, demo badge in demo mode, user name and logout button), which is shown inline in the header from 768px up. No page, including the products list and the product form, SHALL scroll the page horizontally on a 320px wide viewport.
 
 #### Scenario: Same structure as public
 - **WHEN** a project is generated from the backoffice template
@@ -195,7 +195,7 @@ The backoffice template SHALL obtain its theme, typography and shared components
 - **AND** the application source defines no color palette of its own
 
 ### Requirement: Minimal tooling baseline
-The backoffice template SHALL include the same minimal tooling baseline as the public template and MUST NOT include charting libraries, guided-tour libraries or demo pages.
+The backoffice template SHALL include the same minimal tooling baseline as the website template and MUST NOT include charting libraries, guided-tour libraries or demo pages.
 
 #### Scenario: Example tests pass without Keycloak
 - **WHEN** the unit and end-to-end test commands are run on a fresh project with no Keycloak server available

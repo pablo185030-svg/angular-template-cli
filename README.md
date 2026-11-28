@@ -8,7 +8,7 @@ Dos templates de proyecto Angular 22 listos para usar en apps de Coto, con estil
 
 | Template               | Qué es                                                                                                              |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `templates/public`     | Sitio web público. Renderizado en el servidor, layout principal (header + footer), páginas de inicio y "acerca de". |
+| `templates/website`     | Sitio web público. Renderizado en el servidor, layout principal (header + footer), páginas de inicio y "acerca de". |
 | `templates/backoffice` | App web privada. SPA, login con Keycloak, mismo layout y páginas, más un ABM de productos.                          |
 
 Ambos son apps zoneless con componentes standalone, con ESLint, Prettier, Vitest, Husky + lint-staged, un Dockerfile y configuración de nginx, y ejemplos de e2e con Playwright. Cada template es un proyecto Angular normal que compila y se testea por sí solo.
@@ -20,7 +20,7 @@ El sitio público viene preparado para SEO, GEO (visibilidad en motores de respu
 - **Accesibilidad WCAG 2.2 AA** verificada con axe en e2e, enlace "Saltar al contenido" y un único `h1` por página; **imágenes** con `NgOptimizedImage` obligatorio por lint.
 - Un `CLAUDE.md` con la checklist por página y la skill `web-quality-review` (`.claude/skills/`) para auditar todo bajo demanda; ambos se copian a cada proyecto generado.
 
-El detalle está en el README del template (`templates/public/README.md`, sección "SEO, GEO y calidad web").
+El detalle está en el README del template (`templates/website/README.md`, sección "SEO, GEO y calidad web").
 
 ## Tabla de contenidos
 
@@ -94,7 +94,7 @@ npm run create -- --type backoffice --name my-admin --yes --no-mock-api --dark-m
 
 | Flag                          | Significado                                                                                 |
 | ----------------------------- | ------------------------------------------------------------------------------------------- |
-| `--type public\|backoffice`   | Tipo de app                                                                                 |
+| `--type website\|backoffice`   | Tipo de app                                                                                 |
 | `--name <nombre>`             | Nombre del proyecto: minúsculas, números y guiones simples                                  |
 | `--out <dir>`                 | Directorio padre del proyecto nuevo (por defecto: la carpeta que contiene este repositorio) |
 | `--environments <lista>`      | Backoffice: ambientes adicionales separados por coma (`local` y `prod` siempre existen)     |
@@ -133,7 +133,7 @@ npm run verify          # completo
 npm run verify:quick    # sin Playwright
 ```
 
-`node scripts/verify-templates.mjs --template public --only lint,test` ejecuta un subconjunto. Una corrida completa también genera un backoffice con `--no-mock-api --dark-mode` y lo verifica (se omite con `--skip-variant`). El script termina con código distinto de cero si falla algún paso.
+`node scripts/verify-templates.mjs --template website --only lint,test` ejecuta un subconjunto. Una corrida completa también genera un backoffice con `--no-mock-api --dark-mode` y lo verifica (se omite con `--skip-variant`). El script termina con código distinto de cero si falla algún paso.
 
 Cada template tiene un `README.md` (español, por defecto) y un `README.en.md` (copia en inglés), ambos se generan en cada proyecto nuevo, y un `CLAUDE.md` (comandos, estructura y convenciones para asistentes de IA); mantenelos sincronizados. El nombre `coto-angular-template` es el placeholder que reemplaza el CLI, así que seguí usándolo en los archivos de los templates.
 

@@ -19,7 +19,7 @@ export function makeTempDir() {
  */
 export async function makeTemplates(root) {
   const templatesDir = join(root, 'templates');
-  for (const type of ['public', 'backoffice']) {
+  for (const type of ['website', 'backoffice']) {
     const dir = join(templatesDir, type);
     await mkdir(join(dir, 'src'), { recursive: true });
     await mkdir(join(dir, 'node_modules', 'dep'), { recursive: true });
@@ -35,7 +35,7 @@ export async function makeTemplates(root) {
     );
   }
   await addProjectScripts(join(templatesDir, 'backoffice'), 'backoffice');
-  await addProjectScripts(join(templatesDir, 'public'), 'public');
+  await addProjectScripts(join(templatesDir, 'website'), 'website');
   return templatesDir;
 }
 
@@ -49,7 +49,7 @@ async function addProjectScripts(dir, type) {
   await mkdir(join(dir, 'src', 'environments'), { recursive: true });
   await cp(join(real, 'src', 'environments'), join(dir, 'src', 'environments'), { recursive: true });
   await cp(join(real, 'scripts', 'configure-theme.mjs'), join(dir, 'scripts', 'configure-theme.mjs'));
-  if (type === 'public') {
+  if (type === 'website') {
     await cp(join(real, 'scripts', 'configure-seo.mjs'), join(dir, 'scripts', 'configure-seo.mjs'));
     await cp(join(real, 'public'), join(dir, 'public'), { recursive: true });
   }
@@ -110,6 +110,6 @@ const RENDERING_FILES = [
 export async function addRenderingFiles(directory) {
   for (const file of RENDERING_FILES) {
     await mkdir(dirname(join(directory, file)), { recursive: true });
-    await cp(join(REAL_TEMPLATES, 'public', file), join(directory, file));
+    await cp(join(REAL_TEMPLATES, 'website', file), join(directory, file));
   }
 }

@@ -4,7 +4,7 @@ export const TEMPLATE_NAME = 'coto-angular-template';
 /** Available application types. `value` is also the folder name under `templates/`. */
 export const APP_TYPES = [
   {
-    value: 'public',
+    value: 'website',
     label: 'Website',
     hint: 'Sitio web público',
   },
@@ -39,16 +39,14 @@ export const RENDERING_MODES = [
   {
     value: 'ssg',
     label: 'SSG (Static Site Generation)',
-    hint: 'sin servidor Node',
     meaning: 'Static Site Generation, páginas prearmadas una vez en el build',
-    pros: 'SEO completo, muy rápido, hosting estático barato (nginx o CDN)',
+    pros: 'SEO completo, muy rápido, hosting estático barato (nginx, Apache, IIS o CDN)',
     cons: 'El contenido cambia solo al volver a compilar y desplegar; sin 404 real',
     ideal: 'sitios institucionales, landings, documentación o blogs con contenido estable',
   },
   {
     value: 'spa',
     label: 'SPA (Single Page Application)',
-    hint: 'solo si el SEO no importa',
     meaning: 'Single Page Application, todo se renderiza en el navegador',
     pros: 'El hosting más simple, navegación fluida',
     cons: 'SEO limitado (los buscadores ven una página vacía hasta que ejecutan JavaScript) y sin 404 real',

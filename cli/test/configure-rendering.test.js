@@ -4,9 +4,9 @@ import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { addRenderingFiles, makeTempDir } from '../support/test-helpers.js';
-import { applyRendering } from '../../templates/public/scripts/configure-rendering.mjs';
+import { applyRendering } from '../../templates/website/scripts/configure-rendering.mjs';
 
-const TEMPLATE = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'templates', 'public');
+const TEMPLATE = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'templates', 'website');
 const exists = (path) => access(path).then(() => true, () => false);
 const read = (dir, file) => readFile(join(dir, file), 'utf8');
 

@@ -24,7 +24,7 @@ async function setup() {
 test('generates a project from flags with plain output and no ANSI codes', async () => {
   const { cwd, templatesDir, output, write } = await setup();
 
-  const code = await run(['--type', 'public', '--name', 'my-shop', '--yes'], {
+  const code = await run(['--type', 'website', '--name', 'my-shop', '--yes'], {
     templatesDir, cwd, write, isTTY: true,
   });
 
@@ -40,7 +40,7 @@ test('generates a project from flags with plain output and no ANSI codes', async
 test('does not prompt without a terminal and fails when flags are missing', async () => {
   const { cwd, templatesDir, output, write } = await setup();
 
-  const code = await run(['--type', 'public'], { templatesDir, cwd, write, isTTY: false });
+  const code = await run(['--type', 'website'], { templatesDir, cwd, write, isTTY: false });
 
   strictEqual(code, 2);
   match(output.join('\n'), /Faltan --type y\/o --name/);
@@ -62,7 +62,7 @@ test('guided flow with prompts generates the chosen template', async () => {
 
 test('cancelling a prompt exits without writing anything', async () => {
   const { cwd, templatesDir, write } = await setup();
-  const prompts = fakePrompts(['public', CANCEL]);
+  const prompts = fakePrompts(['website', CANCEL]);
 
   const code = await run([], {
     templatesDir, cwd, write, prompts, isTTY: true,
@@ -78,7 +78,7 @@ test('an existing non-empty target exits non-zero and keeps its files', async ()
   await mkdir(join(cwd, 'my-shop'));
   await writeFile(join(cwd, 'my-shop', 'keep.txt'), 'mine');
 
-  const code = await run(['--type', 'public', '--name', 'my-shop', '--yes'], { templatesDir, cwd, write, isTTY: false });
+  const code = await run(['--type', 'website', '--name', 'my-shop', '--yes'], { templatesDir, cwd, write, isTTY: false });
 
   strictEqual(code, 1);
   match(output.join('\n'), /ya existe y no está vacío/);
@@ -88,7 +88,7 @@ test('an existing non-empty target exits non-zero and keeps its files', async ()
 test('an invalid name is rejected before anything is written', async () => {
   const { cwd, templatesDir, output, write } = await setup();
 
-  const code = await run(['--type', 'public', '--name', 'My Shop', '--yes'], { templatesDir, cwd, write, isTTY: false });
+  const code = await run(['--type', 'website', '--name', 'My Shop', '--yes'], { templatesDir, cwd, write, isTTY: false });
 
   strictEqual(code, 2);
   match(output.join('\n'), /minúsculas/);
@@ -98,7 +98,7 @@ test('an invalid name is rejected before anything is written', async () => {
 test('a failing step is reported and exits non-zero', async () => {
   const { cwd, templatesDir, output, write } = await setup();
 
-  const code = await run(['--type', 'public', '--name', 'my-shop', '--yes'], {
+  const code = await run(['--type', 'website', '--name', 'my-shop', '--yes'], {
     templatesDir, cwd, write, isTTY: false,
     runGit: () => { throw new Error('git is not installed'); },
   });
@@ -112,7 +112,7 @@ test('a failing step is reported and exits non-zero', async () => {
 test('--out places the project in another parent directory', async () => {
   const { root, cwd, templatesDir, write } = await setup();
 
-  const code = await run(['--type', 'public', '--name', 'my-shop', '--yes', '--out', join(root, 'elsewhere')], {
+  const code = await run(['--type', 'website', '--name', 'my-shop', '--yes', '--out', join(root, 'elsewhere')], {
     templatesDir, cwd, write, isTTY: false,
   });
 
@@ -131,7 +131,7 @@ test('unknown flags print usage and exit non-zero', async () => {
 
 test('the summary lists the mock API step only for the backoffice', () => {
   const backoffice = buildSummary({ name: 'a-b', type: 'backoffice', targetDir: '/x/a-b' }).lines.join('\n');
-  const publicApp = buildSummary({ name: 'a-b', type: 'public', targetDir: '/x/a-b' }).lines.join('\n');
+  const publicApp = buildSummary({ name: 'a-b', type: 'website', targetDir: '/x/a-b' }).lines.join('\n');
 
   match(backoffice, /npm run mock:api/);
   ok(!/mock:api/.test(publicApp));
@@ -162,7 +162,7 @@ test('by default the project is created next to this repository, not inside it',
 test('relative --out is resolved from the current directory', async () => {
   const { cwd, templatesDir, write } = await setup();
 
-  const code = await run(['--type', 'public', '--name', 'my-shop', '--yes', '--out', 'sub'], { templatesDir, cwd, write, isTTY: false });
+  const code = await run(['--type', 'website', '--name', 'my-shop', '--yes', '--out', 'sub'], { templatesDir, cwd, write, isTTY: false });
 
   strictEqual(code, 0);
   strictEqual(await exists(join(cwd, 'sub', 'my-shop', 'package.json')), true);
@@ -235,7 +235,7 @@ test('backoffice without Keycloak stays in demo mode and the summary says how to
 test('the public summary does not mention Keycloak', async () => {
   const { cwd, templatesDir, output, write } = await setup();
 
-  await run(['--type', 'public', '--name', 'my-shop', '--yes'], { templatesDir, cwd, write, isTTY: false });
+  await run(['--type', 'website', '--name', 'my-shop', '--yes'], { templatesDir, cwd, write, isTTY: false });
 
   ok(!/Keycloak/.test(output.join('\n')));
 });
@@ -255,7 +255,7 @@ test('a failing Keycloak step is reported and exits non-zero', async () => {
 test('the summary tells the user where to cd, relative to the current directory', async () => {
   const { cwd, templatesDir, output, write } = await setup();
 
-  await run(['--type', 'public', '--name', 'my-shop', '--yes'], { templatesDir, cwd, write, isTTY: false });
+  await run(['--type', 'website', '--name', 'my-shop', '--yes'], { templatesDir, cwd, write, isTTY: false });
 
   match(output.join('\n'), /cd my-shop/);
 });
@@ -266,7 +266,7 @@ test('the summary uses the absolute path when the relative one climbs too far, a
   await mkdir(deep, { recursive: true });
   const out = join(root, 'dir with spaces');
 
-  await run(['--type', 'public', '--name', 'my-shop', '--yes', '--out', out], { templatesDir, cwd: deep, write, isTTY: false });
+  await run(['--type', 'website', '--name', 'my-shop', '--yes', '--out', out], { templatesDir, cwd: deep, write, isTTY: false });
 
   match(output.join('\n'), new RegExp(`cd "${join(out, 'my-shop').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
 });
@@ -306,7 +306,7 @@ test('--no-mock-api removes the mock API and switches the products example to JS
 });
 
 test('--dark-mode enables dark mode in a public site and in a backoffice', async () => {
-  for (const type of ['public', 'backoffice']) {
+  for (const type of ['website', 'backoffice']) {
     const { code, output, read } = await generated(['--type', type, '--name', 'my-app', '--yes', '--dark-mode']);
 
     strictEqual(code, 0, type);
@@ -319,7 +319,7 @@ test('--dark-mode enables dark mode in a public site and in a backoffice', async
 test('--no-mock-api with a public site exits non-zero and writes nothing', async () => {
   const { cwd, templatesDir, output, write } = await setup();
 
-  const code = await run(['--type', 'public', '--name', 'my-shop', '--yes', '--no-mock-api'], { templatesDir, cwd, write, isTTY: false });
+  const code = await run(['--type', 'website', '--name', 'my-shop', '--yes', '--no-mock-api'], { templatesDir, cwd, write, isTTY: false });
 
   strictEqual(code, 2);
   match(output.join('\n'), /--no-mock-api/);

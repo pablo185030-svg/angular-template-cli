@@ -15,7 +15,7 @@ export const HELP = `Uso: npm run create -- [opciones]
 Genera un proyecto Angular nuevo a partir de un template de Coto.
 
 Opciones:
-  --type <public|backoffice>  Tipo de app a crear
+  --type <website|backoffice>  Tipo de app a crear
   --name <nombre-proyecto>    Nombre del proyecto (minúsculas, números y guiones)
   --out <directorio>          Directorio donde crear el proyecto
                               (por defecto: la carpeta que contiene este repositorio)

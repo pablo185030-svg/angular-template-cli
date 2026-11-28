@@ -76,7 +76,7 @@ export function validateRendering(mode) {
 }
 
 /**
- * Validates the production domain of a public website: an absolute http(s) origin, the same rule
+ * Validates the production domain of a website: an absolute http(s) origin, the same rule
  * as the template's `configure:seo` script.
  * @param {string | undefined} value
  * @returns {string | undefined} An error message, or undefined when valid.

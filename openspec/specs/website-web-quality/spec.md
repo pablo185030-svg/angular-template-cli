@@ -1,4 +1,4 @@
-# public-web-quality Specification
+# website-web-quality Specification
 
 ## Purpose
 
@@ -62,5 +62,5 @@ The production server and the shipped web server configuration SHALL compress te
 Both READMEs SHALL document the SEO, GEO, accessibility and image rules, how to set the site URL, how to add a page that meets them, and how to block AI crawlers if the owner wants to.
 
 #### Scenario: README sections
-- **WHEN** a project is generated from the public template
+- **WHEN** a project is generated from the website template
 - **THEN** its READMEs contain those topics

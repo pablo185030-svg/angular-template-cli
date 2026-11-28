@@ -70,7 +70,7 @@ export function buildSummary({
     : [];
 
   const renderingLines =
-    type !== 'public' || !rendering
+    type !== 'website' || !rendering
       ? []
       : rendering === 'ssr'
         ? [
@@ -85,7 +85,7 @@ export function buildSummary({
           ];
 
   const siteUrlLines =
-    type !== 'public'
+    type !== 'website'
       ? []
       : siteUrl
         ? [

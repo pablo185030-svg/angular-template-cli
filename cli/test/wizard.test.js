@@ -10,25 +10,25 @@ const INTERACTIVE = { outDir: LOC, commit: true, install: false };
 const QUIET = { commit: false, install: false };
 
 test('prompts for both values when no flags are given', async () => {
-  const prompts = fakePrompts(['public', 'my-shop', LOC, false, 'ssr', '', ...TAIL]);
+  const prompts = fakePrompts(['website', 'my-shop', LOC, false, 'ssr', '', ...TAIL]);
 
   const result = await resolveOptions({ flags: {}, interactive: true, prompts });
 
-  deepStrictEqual(result, { type: 'public', name: 'my-shop', darkMode: false, rendering: 'ssr', ...INTERACTIVE });
+  deepStrictEqual(result, { type: 'website', name: 'my-shop', darkMode: false, rendering: 'ssr', ...INTERACTIVE });
   strictEqual(prompts.asked.length, 9);
 });
 
 test('does not prompt for values given as flags', async () => {
   const prompts = fakePrompts(['my-shop', LOC, false, 'ssr', '', ...TAIL]);
 
-  const result = await resolveOptions({ flags: { type: 'public' }, interactive: true, prompts });
+  const result = await resolveOptions({ flags: { type: 'website' }, interactive: true, prompts });
 
-  deepStrictEqual(result, { type: 'public', name: 'my-shop', darkMode: false, rendering: 'ssr', ...INTERACTIVE });
+  deepStrictEqual(result, { type: 'website', name: 'my-shop', darkMode: false, rendering: 'ssr', ...INTERACTIVE });
   strictEqual(prompts.asked.length, 8);
 });
 
 test('the name prompt validates inline so the user can correct it', async () => {
-  const prompts = fakePrompts(['public', 'ok-name', LOC, false, 'ssr', ...TAIL]);
+  const prompts = fakePrompts(['website', 'ok-name', LOC, false, 'ssr', ...TAIL]);
   await resolveOptions({ flags: {}, interactive: true, prompts });
 
   const { validate } = prompts.asked[1];
@@ -43,15 +43,15 @@ test('cancelling any prompt throws CancelledError', async () => {
     CancelledError,
   );
   await rejects(
-    resolveOptions({ flags: {}, interactive: true, prompts: fakePrompts(['public', CANCEL]) }),
+    resolveOptions({ flags: {}, interactive: true, prompts: fakePrompts(['website', CANCEL]) }),
     CancelledError,
   );
 });
 
 test('without a terminal, both flags are required', async () => {
-  await rejects(resolveOptions({ flags: { type: 'public' }, interactive: false, prompts: fakePrompts([]) }), UsageError);
-  const result = await resolveOptions({ flags: { type: 'public', name: 'a-b' }, interactive: false, prompts: fakePrompts([]) });
-  deepStrictEqual(result, { type: 'public', name: 'a-b', darkMode: false, rendering: 'ssr', ...QUIET });
+  await rejects(resolveOptions({ flags: { type: 'website' }, interactive: false, prompts: fakePrompts([]) }), UsageError);
+  const result = await resolveOptions({ flags: { type: 'website', name: 'a-b' }, interactive: false, prompts: fakePrompts([]) });
+  deepStrictEqual(result, { type: 'website', name: 'a-b', darkMode: false, rendering: 'ssr', ...QUIET });
 });
 
 test('rejects an invalid flag value even when interactive', async () => {
@@ -80,11 +80,11 @@ test('backoffice: declining Keycloak returns no settings and asks nothing else',
 });
 
 test('public: never asks about Keycloak', async () => {
-  const prompts = fakePrompts(['public', 'my-site', LOC, false, 'ssr', '', ...TAIL]);
+  const prompts = fakePrompts(['website', 'my-site', LOC, false, 'ssr', '', ...TAIL]);
 
   const result = await resolveOptions({ flags: {}, interactive: true, prompts });
 
-  deepStrictEqual(result, { type: 'public', name: 'my-site', darkMode: false, rendering: 'ssr', ...INTERACTIVE });
+  deepStrictEqual(result, { type: 'website', name: 'my-site', darkMode: false, rendering: 'ssr', ...INTERACTIVE });
   strictEqual(prompts.asked.length, 9, 'no Keycloak or mock API questions');
 });
 
@@ -127,7 +127,7 @@ test('Keycloak flags are rejected when incomplete, invalid, or used with a publi
   await rejects(attempt({ ...base, keycloakUrl: KC.url }), UsageError);
   await rejects(attempt({ ...base, keycloakUrl: 'not a url', keycloakRealm: 'r' }), UsageError);
   await rejects(attempt({ ...base, keycloakRealm: 'r' }), UsageError);
-  await rejects(attempt({ type: 'public', name: 'my-site', keycloakUrl: KC.url, keycloakRealm: 'r' }), UsageError);
+  await rejects(attempt({ type: 'website', name: 'my-site', keycloakUrl: KC.url, keycloakRealm: 'r' }), UsageError);
 });
 
 test('without a terminal and without Keycloak flags, the backoffice is left in demo mode', async () => {
@@ -159,8 +159,8 @@ test('backoffice: declining the mock API is reported as mockApi false', async ()
 });
 
 test('the dark mode question defaults to no, and yes is reported as darkMode true', async () => {
-  const declined = fakePrompts(['public', 'my-site', LOC, false, 'ssr', ...TAIL]);
-  const accepted = fakePrompts(['public', 'my-site', LOC, true, 'ssr', ...TAIL]);
+  const declined = fakePrompts(['website', 'my-site', LOC, false, 'ssr', ...TAIL]);
+  const accepted = fakePrompts(['website', 'my-site', LOC, true, 'ssr', ...TAIL]);
 
   await resolveOptions({ flags: {}, interactive: true, prompts: declined });
   const result = await resolveOptions({ flags: {}, interactive: true, prompts: accepted });
@@ -185,11 +185,11 @@ test('--no-mock-api and --dark-mode skip their questions', async () => {
 
 test('--no-mock-api is rejected for a public site', async () => {
   await rejects(
-    resolveOptions({ flags: { type: 'public', name: 'a-b', mockApi: false }, interactive: false, prompts: fakePrompts([]) }),
+    resolveOptions({ flags: { type: 'website', name: 'a-b', mockApi: false }, interactive: false, prompts: fakePrompts([]) }),
     UsageError,
   );
   await rejects(
-    resolveOptions({ flags: { mockApi: false }, interactive: true, prompts: fakePrompts(['public', 'a-b']) }),
+    resolveOptions({ flags: { mockApi: false }, interactive: true, prompts: fakePrompts(['website', 'a-b']) }),
     UsageError,
   );
 });
@@ -200,7 +200,7 @@ test('cancelling the mock API or dark mode question throws CancelledError', asyn
     CancelledError,
   );
   await rejects(
-    resolveOptions({ flags: {}, interactive: true, prompts: fakePrompts(['public', 'a-b', LOC, '', CANCEL]) }),
+    resolveOptions({ flags: {}, interactive: true, prompts: fakePrompts(['website', 'a-b', LOC, '', CANCEL]) }),
     CancelledError,
   );
 });
@@ -278,6 +278,6 @@ test('environment flags are rejected when invalid, mixed with the legacy ones, o
   await rejects(attempt({ ...base, keycloak: ['prod=nourl,r'] }), UsageError);
   await rejects(attempt({ ...base, keycloak: [`prod=${KC.url},r`, `prod=${KC.url},r`] }), UsageError);
   await rejects(attempt({ ...base, keycloak: [`prod=${KC.url},r`], keycloakUrl: KC.url, keycloakRealm: 'r' }), UsageError);
-  await rejects(attempt({ type: 'public', name: 'my-site', environments: 'qa' }), UsageError);
-  await rejects(attempt({ type: 'public', name: 'my-site', keycloak: [`prod=${KC.url},r`] }), UsageError);
+  await rejects(attempt({ type: 'website', name: 'my-site', environments: 'qa' }), UsageError);
+  await rejects(attempt({ type: 'website', name: 'my-site', keycloak: [`prod=${KC.url},r`] }), UsageError);
 });

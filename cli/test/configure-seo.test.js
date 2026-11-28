@@ -4,9 +4,9 @@ import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { makeTempDir } from '../support/test-helpers.js';
-import { applySiteUrl, normalizeSiteUrl } from '../../templates/public/scripts/configure-seo.mjs';
+import { applySiteUrl, normalizeSiteUrl } from '../../templates/website/scripts/configure-seo.mjs';
 
-const TEMPLATE = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'templates', 'public');
+const TEMPLATE = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'templates', 'website');
 
 async function project() {
   const dir = await makeTempDir();

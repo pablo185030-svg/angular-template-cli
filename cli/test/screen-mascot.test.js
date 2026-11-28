@@ -95,7 +95,7 @@ async function rejects(action) {
 
 test('the backoffice summary says the products ABM is only a sample', () => {
   const backoffice = buildSummary({ name: 'a-b', type: 'backoffice', targetDir: '/x/a-b' }).lines.join('\n');
-  const publicApp = buildSummary({ name: 'a-b', type: 'public', targetDir: '/x/a-b' }).lines.join('\n');
+  const publicApp = buildSummary({ name: 'a-b', type: 'website', targetDir: '/x/a-b' }).lines.join('\n');
 
   match(backoffice, /ABM de productos es solo de prueba/);
   ok(!/ABM/.test(publicApp));

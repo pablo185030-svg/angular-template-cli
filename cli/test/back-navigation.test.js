@@ -14,7 +14,7 @@ const resolve = (answers, flags = {}) => {
 test('Esc returns to the previous question, offering the previous answer, and the new answer is used', async () => {
   // public: type, name, location, (back to location), dark, rendering, remote, commit, install
   const { result, prompts } = await resolve([
-    'public', 'my-site', '/a', BACK, '/b', false, 'ssr', false, true, false,
+    'website', 'my-site', '/a', BACK, '/b', false, 'ssr', false, true, false,
   ]);
 
   strictEqual(result.outDir, '/b');
@@ -25,7 +25,7 @@ test('Esc returns to the previous question, offering the previous answer, and th
 
 test('going back skips the questions that do not apply to the app type', async () => {
   // public: Esc on the remote question goes back to rendering, not to Keycloak or the mock API
-  const { prompts } = await resolve(['public', 'a-b', LOC, false, 'ssr', BACK, 'ssg', false, true, false]);
+  const { prompts } = await resolve(['website', 'a-b', LOC, false, 'ssr', BACK, 'ssg', false, true, false]);
 
   const messages = prompts.asked.map((question) => question.message);
   ok(!messages.some((message) => /Keycloak|API mock/.test(message)));
@@ -35,7 +35,7 @@ test('going back skips the questions that do not apply to the app type', async (
 test('going back over a question answered by a flag stays on the first asked question', async () => {
   const { result, prompts } = await resolve(
     [BACK, 'my-site', LOC, false, 'ssr', false, true, false],
-    { type: 'public' },
+    { type: 'website' },
   );
 
   strictEqual(result.name, 'my-site');
@@ -44,7 +44,7 @@ test('going back over a question answered by a flag stays on the first asked que
 });
 
 test('the first asked question is not offered a way back, later ones are', async () => {
-  const { prompts } = await resolve(['public', 'a-b', LOC, false, 'ssr', false, true, false]);
+  const { prompts } = await resolve(['website', 'a-b', LOC, false, 'ssr', false, true, false]);
 
   strictEqual(prompts.asked[0].back, false);
   ok(prompts.asked.slice(1).every((question) => question.back === true));
@@ -54,10 +54,10 @@ test('changing the app type on the way back drops the answers that no longer app
   // backoffice: type, name, location, keycloak no, mock yes, then back x4 to type; pick public
   const { result } = await resolve([
     'backoffice', 'a-b', LOC, '', false, false, true, BACK, BACK, BACK, BACK, BACK, BACK, BACK,
-    'public', 'a-b', LOC, false, 'spa', false, true, false,
+    'website', 'a-b', LOC, false, 'spa', false, true, false,
   ]);
 
-  strictEqual(result.type, 'public');
+  strictEqual(result.type, 'website');
   strictEqual(result.rendering, 'spa');
   ok(!('mockApi' in result) && !('keycloak' in result));
 });
@@ -85,12 +85,12 @@ test('Esc on the first Keycloak sub-question goes back to the environments quest
 });
 
 test('Ctrl+C still cancels, also after going back', async () => {
-  await rejects(resolve(['public', 'a-b', LOC, BACK, CANCEL]), CancelledError);
+  await rejects(resolve(['website', 'a-b', LOC, BACK, CANCEL]), CancelledError);
 });
 
 test('going back asks the reporter to redraw with the answers so far', async () => {
   const redraws = [];
-  const prompts = fakePrompts(['public', 'my-site', '/a', BACK, '/b', false, 'ssr', false, true, false]);
+  const prompts = fakePrompts(['website', 'my-site', '/a', BACK, '/b', false, 'ssr', false, true, false]);
 
   await resolveOptions({ flags: {}, interactive: true, prompts, defaultOutDir: LOC, redraw: (lines) => redraws.push(lines) });
 
@@ -101,9 +101,9 @@ test('going back asks the reporter to redraw with the answers so far', async () 
 test('without a terminal nothing is asked and the result is unchanged', async () => {
   const prompts = fakePrompts([]);
 
-  const result = await resolveOptions({ flags: { type: 'public', name: 'a-b' }, interactive: false, prompts });
+  const result = await resolveOptions({ flags: { type: 'website', name: 'a-b' }, interactive: false, prompts });
 
-  deepStrictEqual(result, { type: 'public', name: 'a-b', darkMode: false, rendering: 'ssr', commit: false, install: false });
+  deepStrictEqual(result, { type: 'website', name: 'a-b', darkMode: false, rendering: 'ssr', commit: false, install: false });
   strictEqual(prompts.asked.length, 0);
 });
 

@@ -50,7 +50,7 @@ function npm(args, cwd) {
     cwd,
     stdio: 'inherit',
     shell: process.platform === 'win32',
-    // HUSKY: do not let husky touch this repository's git config. The public template ships a
+    // HUSKY: do not let husky touch this repository's git config. The website template ships a
     // placeholder domain that its prebuild check rejects; verification builds it on purpose.
     env: { ...process.env, HUSKY: '0', ALLOW_PLACEHOLDER_SITE_URL: '1' },
   });
@@ -114,7 +114,7 @@ if (!values['skip-variant'] && fullRun && templates.includes('backoffice')) {
 
 // Public site converted to each rendering mode. The conversion edits package.json but not the
 // lockfile, so these projects use `npm install` instead of `npm ci`.
-if (!values['skip-variant'] && fullRun && templates.includes('public')) {
+if (!values['skip-variant'] && fullRun && templates.includes('website')) {
   if (!existsSync(join(cliDir, 'node_modules'))) fail('variant: run `npm install --prefix cli` first');
   for (const rendering of ['ssg', 'spa']) {
     const outDir = mkdtempSync(join(tmpdir(), 'coto-verify-'));
@@ -122,16 +122,16 @@ if (!values['skip-variant'] && fullRun && templates.includes('public')) {
       process.execPath,
       [
         join(cliDir, 'index.js'),
-        ...['--type', 'public', '--name', `verify-${rendering}`, '--yes', '--rendering', rendering],
+        ...['--type', 'website', '--name', `verify-${rendering}`, '--yes', '--rendering', rendering],
         ...['--out', outDir],
       ],
       { stdio: 'inherit' },
     );
-    if (generated.status !== 0) fail(`public (--rendering ${rendering}): generation`);
+    if (generated.status !== 0) fail(`website (--rendering ${rendering}): generation`);
     const projectDir = join(outDir, `verify-${rendering}`);
     for (const step of stepNames) {
       const args = step === 'install' ? ['install', '--no-audit', '--no-fund'] : STEPS[step];
-      if (!npm(args, projectDir)) fail(`public (--rendering ${rendering}): ${step}`);
+      if (!npm(args, projectDir)) fail(`website (--rendering ${rendering}): ${step}`);
     }
     rmSync(outDir, { recursive: true, force: true });
   }

@@ -13,7 +13,7 @@ const exists = (path) => access(path).then(() => true, () => false);
 async function setup() {
   const root = await makeTempDir();
   const templatesDir = await makeTemplates(root);
-  await addRenderingFiles(join(templatesDir, 'public'));
+  await addRenderingFiles(join(templatesDir, 'website'));
   const cwd = join(root, 'work');
   await mkdir(cwd);
   const output = [];
@@ -21,7 +21,7 @@ async function setup() {
 }
 
 test('the public site asks the rendering mode, SSR by default, with a warning about SPA', async () => {
-  const prompts = fakePrompts(['public', 'my-site', '/w', false, 'ssg', false, true, false]);
+  const prompts = fakePrompts(['website', 'my-site', '/w', false, 'ssg', false, true, false]);
 
   const result = await resolveOptions({ flags: {}, interactive: true, prompts });
 
@@ -54,8 +54,8 @@ test('the backoffice never asks the rendering mode', async () => {
 test('--rendering answers the question; without a terminal the default is ssr', async () => {
   const prompts = fakePrompts([]);
 
-  const flagged = await resolveOptions({ flags: { type: 'public', name: 'a-b', rendering: 'spa' }, interactive: false, prompts });
-  const quiet = await resolveOptions({ flags: { type: 'public', name: 'a-b' }, interactive: false, prompts });
+  const flagged = await resolveOptions({ flags: { type: 'website', name: 'a-b', rendering: 'spa' }, interactive: false, prompts });
+  const quiet = await resolveOptions({ flags: { type: 'website', name: 'a-b' }, interactive: false, prompts });
 
   strictEqual(flagged.rendering, 'spa');
   strictEqual(quiet.rendering, 'ssr');
@@ -66,7 +66,7 @@ test('--rendering is rejected when invalid or used with the backoffice', async (
   const attempt = (flags, answers = []) =>
     resolveOptions({ flags, interactive: false, prompts: fakePrompts(answers) });
 
-  await rejects(attempt({ type: 'public', name: 'a-b', rendering: 'hybrid' }), UsageError);
+  await rejects(attempt({ type: 'website', name: 'a-b', rendering: 'hybrid' }), UsageError);
   await rejects(attempt({ type: 'backoffice', name: 'a-b', rendering: 'ssg' }), UsageError);
   await rejects(
     resolveOptions({ flags: { rendering: 'ssg' }, interactive: true, prompts: fakePrompts(['backoffice', 'a-b']) }),
@@ -77,7 +77,7 @@ test('--rendering is rejected when invalid or used with the backoffice', async (
 test('--rendering ssg converts the generated project as a reported step', async () => {
   const { cwd, templatesDir, output, write, runGit } = await setup();
 
-  const code = await run(['--type', 'public', '--name', 'my-site', '--yes', '--rendering', 'ssg'], {
+  const code = await run(['--type', 'website', '--name', 'my-site', '--yes', '--rendering', 'ssg'], {
     templatesDir, cwd, write, isTTY: false, runGit,
   });
 
@@ -95,7 +95,7 @@ test('--rendering spa removes the server files', async () => {
   const { cwd, templatesDir, write, runGit } = await setup();
 
   strictEqual(
-    await run(['--type', 'public', '--name', 'my-site', '--yes', '--rendering', 'spa'], { templatesDir, cwd, write, isTTY: false, runGit }),
+    await run(['--type', 'website', '--name', 'my-site', '--yes', '--rendering', 'spa'], { templatesDir, cwd, write, isTTY: false, runGit }),
     0,
   );
 
@@ -105,7 +105,7 @@ test('--rendering spa removes the server files', async () => {
 test('by default the public site stays SSR, with no conversion step', async () => {
   const { cwd, templatesDir, output, write, runGit } = await setup();
 
-  await run(['--type', 'public', '--name', 'my-site', '--yes'], { templatesDir, cwd, write, isTTY: false, runGit });
+  await run(['--type', 'website', '--name', 'my-site', '--yes'], { templatesDir, cwd, write, isTTY: false, runGit });
 
   const text = output.join('\n');
   ok(!/renderizado/i.test(text.split('Próximos pasos')[0]), 'a conversion step ran');
@@ -117,7 +117,7 @@ test('by default the public site stays SSR, with no conversion step', async () =
 test('a bad --rendering value writes nothing and exits with a usage error', async () => {
   const { cwd, templatesDir, write } = await setup();
 
-  const code = await run(['--type', 'public', '--name', 'my-site', '--yes', '--rendering', 'hybrid'], { templatesDir, cwd, write, isTTY: false });
+  const code = await run(['--type', 'website', '--name', 'my-site', '--yes', '--rendering', 'hybrid'], { templatesDir, cwd, write, isTTY: false });
 
   strictEqual(code, 2);
   strictEqual(await exists(join(cwd, 'my-site')), false);
@@ -125,8 +125,8 @@ test('a bad --rendering value writes nothing and exits with a usage error', asyn
 
 test('the summary mentions the rendering mode only for the public site', () => {
   const base = { name: 'a-b', targetDir: '/x/a-b' };
-  const ssr = buildSummary({ ...base, type: 'public', rendering: 'ssr' }).lines.join('\n');
-  const spa = buildSummary({ ...base, type: 'public', rendering: 'spa' }).lines.join('\n');
+  const ssr = buildSummary({ ...base, type: 'website', rendering: 'ssr' }).lines.join('\n');
+  const spa = buildSummary({ ...base, type: 'website', rendering: 'spa' }).lines.join('\n');
   const backoffice = buildSummary({ ...base, type: 'backoffice' }).lines.join('\n');
 
   match(ssr, /npm run configure:rendering/);

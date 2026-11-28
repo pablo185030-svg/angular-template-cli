@@ -29,7 +29,7 @@ test('validateSiteUrl accepts an http(s) origin and rejects anything else', () =
 });
 
 test('the public site asks for the domain after the rendering mode; empty keeps the placeholder', async () => {
-  const answers = ['public', 'my-site', '/w', false, 'ssr', '', false, true, false];
+  const answers = ['website', 'my-site', '/w', false, 'ssr', '', false, true, false];
   const prompts = fakePrompts(answers);
 
   const result = await resolveOptions({ flags: {}, interactive: true, prompts });
@@ -44,7 +44,7 @@ test('the public site asks for the domain after the rendering mode; empty keeps 
 
 test('the domain question says it can wait, and explains itself for SPA', async () => {
   const ask = async (mode) => {
-    const prompts = fakePrompts(['public', 'my-site', '/w', false, mode, '', false, true, false]);
+    const prompts = fakePrompts(['website', 'my-site', '/w', false, mode, '', false, true, false]);
     await resolveOptions({ flags: {}, interactive: true, prompts });
     return prompts.asked[5].message;
   };
@@ -60,7 +60,7 @@ test('the domain question says it can wait, and explains itself for SPA', async 
 });
 
 test('a typed domain is trimmed and returned', async () => {
-  const prompts = fakePrompts(['public', 'my-site', '/w', false, 'ssr', '  https://www.mi-sitio.com ', false, true, false]);
+  const prompts = fakePrompts(['website', 'my-site', '/w', false, 'ssr', '  https://www.mi-sitio.com ', false, true, false]);
 
   const result = await resolveOptions({ flags: {}, interactive: true, prompts });
 
@@ -71,11 +71,11 @@ test('--site-url answers the question; without a terminal and without the flag n
   const prompts = fakePrompts([]);
 
   const flagged = await resolveOptions({
-    flags: { type: 'public', name: 'a-b', siteUrl: 'https://www.mi-sitio.com' },
+    flags: { type: 'website', name: 'a-b', siteUrl: 'https://www.mi-sitio.com' },
     interactive: false,
     prompts,
   });
-  const quiet = await resolveOptions({ flags: { type: 'public', name: 'a-b' }, interactive: false, prompts });
+  const quiet = await resolveOptions({ flags: { type: 'website', name: 'a-b' }, interactive: false, prompts });
 
   strictEqual(flagged.siteUrl, 'https://www.mi-sitio.com');
   ok(!('siteUrl' in quiet));
@@ -85,7 +85,7 @@ test('--site-url answers the question; without a terminal and without the flag n
 test('--site-url is rejected when invalid or used with the backoffice, and the backoffice is never asked', async () => {
   const attempt = (flags) => resolveOptions({ flags, interactive: false, prompts: fakePrompts([]) });
 
-  await rejects(attempt({ type: 'public', name: 'a-b', siteUrl: 'no-es-una-url' }), UsageError);
+  await rejects(attempt({ type: 'website', name: 'a-b', siteUrl: 'no-es-una-url' }), UsageError);
   await rejects(attempt({ type: 'backoffice', name: 'a-b', siteUrl: 'https://www.mi-sitio.com' }), UsageError);
   await rejects(
     resolveOptions({ flags: { siteUrl: 'https://www.mi-sitio.com' }, interactive: true, prompts: fakePrompts(['backoffice', 'a-b']) }),
@@ -100,7 +100,7 @@ test('--site-url is rejected when invalid or used with the backoffice, and the b
 test('--site-url configures the generated project as a reported step', async () => {
   const { cwd, templatesDir, output, write, runGit } = await setup();
 
-  const code = await run(['--type', 'public', '--name', 'my-site', '--yes', '--site-url', 'https://www.mi-sitio.com'], {
+  const code = await run(['--type', 'website', '--name', 'my-site', '--yes', '--site-url', 'https://www.mi-sitio.com'], {
     templatesDir, cwd, write, isTTY: false, runGit,
   });
 
@@ -119,7 +119,7 @@ test('--site-url configures the generated project as a reported step', async () 
 test('without a domain no step runs and the summary warns about the build', async () => {
   const { cwd, templatesDir, output, write, runGit } = await setup();
 
-  await run(['--type', 'public', '--name', 'my-site', '--yes'], { templatesDir, cwd, write, isTTY: false, runGit });
+  await run(['--type', 'website', '--name', 'my-site', '--yes'], { templatesDir, cwd, write, isTTY: false, runGit });
 
   const text = output.join('\n');
   ok(!/Configurando el dominio/.test(text));
@@ -130,7 +130,7 @@ test('without a domain no step runs and the summary warns about the build', asyn
 test('a bad --site-url writes nothing and exits with a usage error', async () => {
   const { cwd, templatesDir, write } = await setup();
 
-  const code = await run(['--type', 'public', '--name', 'my-site', '--yes', '--site-url', 'mi-sitio.com'], {
+  const code = await run(['--type', 'website', '--name', 'my-site', '--yes', '--site-url', 'mi-sitio.com'], {
     templatesDir, cwd, write, isTTY: false,
   });
 
@@ -140,8 +140,8 @@ test('a bad --site-url writes nothing and exits with a usage error', async () =>
 
 test('the summary mentions the domain only for the public site, and skips allowedHosts outside SSR', () => {
   const base = { name: 'a-b', targetDir: '/x/a-b' };
-  const ssr = buildSummary({ ...base, type: 'public', rendering: 'ssr', siteUrl: 'https://x.test' }).lines.join('\n');
-  const ssg = buildSummary({ ...base, type: 'public', rendering: 'ssg', siteUrl: 'https://x.test' }).lines.join('\n');
+  const ssr = buildSummary({ ...base, type: 'website', rendering: 'ssr', siteUrl: 'https://x.test' }).lines.join('\n');
+  const ssg = buildSummary({ ...base, type: 'website', rendering: 'ssg', siteUrl: 'https://x.test' }).lines.join('\n');
   const backoffice = buildSummary({ ...base, type: 'backoffice' }).lines.join('\n');
 
   match(ssr, /allowedHosts/);

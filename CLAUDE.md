@@ -1,12 +1,12 @@
 # Project Guidelines
 
 ## Overview
-- This repository holds two Angular 22 project templates (`templates/public`, `templates/backoffice`) styled with `@coto-dev/ui-kit`, and a Node CLI wizard (`cli/`) that generates a new project from either one. See `README.md`.
+- This repository holds two Angular 22 project templates (`templates/website`, `templates/backoffice`) styled with `@coto-dev/ui-kit`, and a Node CLI wizard (`cli/`) that generates a new project from either one. See `README.md`.
 - This project is developed using [OpenSpec](https://github.com/Fission-AI/OpenSpec) (spec-driven development). Specs and change proposals live in the `openspec/` directory.
 
 ## Layout
 - `cli/`: the wizard (ESM JavaScript, `@clack/prompts`; creates projects as siblings of this repo by default). Tests: `npm test --prefix cli` (Node's built-in runner).
-- `templates/public/`, `templates/backoffice/`: complete, buildable Angular projects. Each has its own `CLAUDE.md` with commands and conventions; read it before changing that template. A template can also carry its own `.claude/skills/` (the public template ships `web-quality-review`); the CLI copies it into every generated project, so it is not one of this repository's own skills.
+- `templates/website/`, `templates/backoffice/`: complete, buildable Angular projects. Each has its own `CLAUDE.md` with commands and conventions; read it before changing that template. A template can also carry its own `.claude/skills/` (the website template ships `web-quality-review`); the CLI copies it into every generated project, so it is not one of this repository's own skills.
 - `scripts/verify-templates.mjs`: installs, lints, tests, builds and runs e2e for every template, then the CLI tests (`npm run verify`).
 - `openspec/`: specs (`openspec/specs/`) and changes (`openspec/changes/`).
 
